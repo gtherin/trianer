@@ -1,3 +1,5 @@
+__version__ = "1.0.0"
+
 from .gpx import *
 from .fueling import *
 from .weather import *

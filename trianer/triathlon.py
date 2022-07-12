@@ -184,8 +184,7 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
                 del self.gpx[c]
 
         for d, discipline in enumerate(self.disciplines):
-            df = self.gpx.query(f"discipline=='{discipline}'")
-
+            df = self.gpx.query(f"discipline=='{discipline}'").copy()
             df = athlete.calculate_speed(df, discipline)
             df["duration"] = (df["distance"].diff().clip(0, 1000) / df["speed"]).fillna(0)
 
@@ -201,7 +200,7 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
                         "duration": 0.5 * athlete.transitions / 60.0,
                     }
                 )
-                df = df.append(transition, ignore_index=True)
+                df = pd.concat([df, pd.DataFrame.from_records([transition])], ignore_index=True)
 
             data.append(df)
 
