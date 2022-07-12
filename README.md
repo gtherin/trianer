@@ -11,3 +11,7 @@ Alternatively, you can deploy it using this Heroku Button:
 For more information about using Python on Heroku, see these Dev Center articles:
 
 - [Python on Heroku](https://devcenter.heroku.com/categories/python)
+
+# Procfile
+web: gunicorn gettingstarted.wsgi
+web: sh setup.sh && streamlit run streamlit_app.py
