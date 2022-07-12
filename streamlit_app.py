@@ -2,8 +2,31 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import streamlit as st
+from datetime import time
 
-st.title("Visualizing Central Limit Theorem")
+st.set_option("deprecation.showPyplotGlobalUse", False)
+st.sidebar.title("Athlete")
+
+
+poids = st.sidebar.slider(label="Poids (en kg)", min_value=50, max_value=100, value=80)
+# epreuve = st.sidebar.slider(label="Poids (en kg)", min_value=50, max_value=100, value=80)
+
+epreuve = st.sidebar.selectbox("Epreuve", ["Elsassman", "Deauville", "Bois"])
+longueur = st.sidebar.selectbox("Longueur", ["S", "M", "L"], index=2)
+
+# natation = st.sidebar.slider(label="Poids (en kg)", min_value=50, max_value=100, value=80)
+# natation = st.sidebar.selectbox("Longueur", ["S", "M", "L"])
+
+
+natation = st.sidebar.slider("Allure au 100m", value=time(2, 10), min_value=time(1, 30), max_value=time(3, 0))
+transition1 = st.sidebar.slider("Transition 1", value=time(5, 0), min_value=time(1, 0), max_value=time(10, 0))
+cyclisme = st.sidebar.slider("Vitesse en km", value=28, min_value=20, max_value=40)
+transition2 = st.sidebar.slider("Transition 2", value=time(5, 0), min_value=time(1, 0), max_value=time(10, 0))
+course = st.sidebar.slider("Allure au km", value=time(5, 0), min_value=time(3, 0), max_value=time(8, 0))
+
+st.write("Natation ", natation, "min/100m, cyclisme ", cyclisme, " km/h, course ", course, " min/km")
+
+st.title("Performance")
 
 POP_MIN, POP_MAX = st.sidebar.slider(
     "Select the population range (Example: range of age is 0-100)", 0, 10000, (0, 1000)
@@ -48,19 +71,32 @@ def generate_samples():
 
 sample_means = generate_samples()
 
-fig = plt.figure()
-plt.hist(sample_means, density=True)
-plt.axis("off")
-plt.title("Sampling distribution of sample means")
-st.pyplot(fig)
+import trianer
 
-fig1 = plt.figure()
-plt.hist(population, density=True)
-plt.axis("off")
-plt.title("Population distribution")
-st.pyplot(fig1)
+# trianer.Triathlon(epreuve=epreuve, longueur=longueur).show_weather_forecasts()
 
-st.sidebar.write(
-    f"(Mean, std of sample means): ({np.round(np.mean(sample_means), 2)}, {np.round(np.std(sample_means), 2)})"
+guillaume = trianer.Triathlon(
+    epreuve=epreuve,
+    longueur=longueur,
+    temperature=[17, 21],
+    athlete=trianer.Athlete(
+        name="Guillaume",
+        poids=poids,
+        natation="2min15s/100m",
+        cyclisme="25.0km/h",
+        course="6min0s/km",
+        transitions="10min",
+        sudation="faible",
+    ),
 )
-st.sidebar.write(f"pop std / sqrt(n): {np.round(np.std(population) / np.sqrt(sample_size), 2)}")
+
+
+from streamlit_folium import folium_static
+import folium
+
+with st.echo():
+    folium_static(guillaume.show_gpx_track())
+st.pyplot(guillaume.show_race_details())
+# st.pyplot(guillaume.show_race_details(xaxis = "itime"))
+st.pyplot(guillaume.show_nutrition())
+st.write(guillaume.show_roadmap())

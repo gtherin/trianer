@@ -24,10 +24,7 @@ ipywidgets
 jupyterlab-geojson
 
 tqdm
-#argcomplete
 black
 
-# For luigi
-#luigi
-#sqlalchemy
 folium
+streamlit-folium

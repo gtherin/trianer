@@ -15,3 +15,6 @@ For more information about using Python on Heroku, see these Dev Center articles
 # Procfile
 web: gunicorn gettingstarted.wsgi
 web: sh setup.sh && streamlit run streamlit_app.py
+
+#Heroku
+heroku restart

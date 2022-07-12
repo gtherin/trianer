@@ -136,13 +136,22 @@ def haversine(lat1, lon1, lat2, lon2, to_radians=True, earth_radius=6371):
 
 def get_data_from_file(filename):
 
-    if not os.path.exists(filename):
-        print(f"{filename}: File does not exist")
+    import requests
+
+    filename = "http://wildcamp.guydegnol.net/" + filename
+    url_req = requests.get(filename)
+
+    if ("http" in filename and "404 Not Found" in url_req.text) or (
+        "http" not in filename and not os.path.exists(filename)
+    ):
+        print(f"{filename} : File does not exist")
         return
 
     ext = filename.split(".")[-1]
 
-    if ext == "tcx":
+    if "http" in filename:
+        xml = url_req.text.split("<trkpt")
+    elif ext == "tcx":
         xml = open(filename, "r").read().split("<Trackpoint")
     else:
         xml = open(filename, "r").read().split("<trkpt")
@@ -196,6 +205,7 @@ def enrich_data(data, target_distance=None, target_elelevation=None):
 
 
 def has_data(epreuve=None, longueur=None, discipline="all", options="", filename=None):
+    return True
     if filename is not None:
         pass
     elif "M" in options:
@@ -207,6 +217,7 @@ def has_data(epreuve=None, longueur=None, discipline="all", options="", filename
 
 
 def get_data(epreuve=None, longueur=None, discipline="all", options="", filename=None):
+
     if filename is not None:
         pass
     elif "M" in options:
