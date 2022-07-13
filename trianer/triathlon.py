@@ -517,8 +517,6 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
             + pd.to_timedelta(ff["duration"].cumsum(), unit="h")
         ).dt.strftime("%H:%M")
 
-        print(ff.index[-1])
-
         ff = ff[(~ff["Boisson"].isna()) | (ff.index[-1] == ff.index)]
 
         for c in ["dtime", "hydration", "kcalories", "duration"]:

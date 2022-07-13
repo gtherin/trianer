@@ -198,3 +198,5 @@ def show_kcalories():
 
     ax.grid()
     ax.legend(loc=1, prop={"size": 16})
+
+    return fig

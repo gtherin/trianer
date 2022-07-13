@@ -138,12 +138,15 @@ def get_data_from_file(filename):
 
     import requests
 
-    filename = "http://wildcamp.guydegnol.net/" + filename
-    url_req = requests.get(filename)
+    if "pace_data" not in filename:
+        filename = "http://wildcamp.guydegnol.net/" + filename
 
-    if ("http" in filename and "404 Not Found" in url_req.text) or (
-        "http" not in filename and not os.path.exists(filename)
-    ):
+    if "http" in filename:
+        url_req = requests.get(filename)
+        if "404 Not Found" in url_req.text:
+            print(f"{filename} : File does not exist")
+            return
+    elif not os.path.exists(filename):
         print(f"{filename} : File does not exist")
         return
 
@@ -205,7 +208,6 @@ def enrich_data(data, target_distance=None, target_elelevation=None):
 
 
 def has_data(epreuve=None, longueur=None, discipline="all", options="", filename=None):
-    return True
     if filename is not None:
         pass
     elif "M" in options:

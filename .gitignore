@@ -10,3 +10,4 @@ notebooks/.ipynb_checkpoints/*
 *.egg-info
 notebooks/colab_installer.py
 **.pyc
+trianer_db_credentials.json

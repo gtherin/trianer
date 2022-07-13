@@ -28,3 +28,6 @@ black
 
 folium
 streamlit-folium
+
+google-cloud
+google-cloud-firestore
