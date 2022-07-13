@@ -29,7 +29,7 @@ class Triathlon:
             return 0.0
         return self.elevations[d]
 
-    def __init__(self, epreuve, longueur, athlete=None, temperature=None) -> None:
+    def __init__(self, epreuve, longueur=None, athlete=None, temperature=None, races_configs=None) -> None:
 
         self.disciplines = ["natation", "cyclisme", "course"]
 
