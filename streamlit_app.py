@@ -15,7 +15,8 @@ st.set_option("deprecation.showPyplotGlobalUse", False)
 
 import os
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/guydegnol/projects/trianer/trianer_db_credentials.json"
+if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/guydegnol/projects/trianer/trianer_db_credentials.json"
 
 
 st.sidebar.markdown("""[website](https://trianer.guydegnol.net/)""")
