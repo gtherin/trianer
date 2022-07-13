@@ -16,5 +16,10 @@ For more information about using Python on Heroku, see these Dev Center articles
 web: gunicorn gettingstarted.wsgi
 web: sh setup.sh && streamlit run streamlit_app.py
 
-#Heroku
+# Heroku
 heroku restart
+git push heroku master
+heroku local
+
+# Configure database
+ https://stackoverflow.com/questions/47446480/how-to-use-google-api-credentials-json-on-heroku
