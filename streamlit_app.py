@@ -3,39 +3,40 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import streamlit as st
 import datetime
-from datetime import time
 import trianer
 from streamlit_folium import folium_static
-import folium
 
 from google.cloud import firestore
+
+from trianer.trianer import athlete
 
 
 st.set_option("deprecation.showPyplotGlobalUse", False)
 
 import os
 
-if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/guydegnol/projects/trianer/trianer_db_credentials.json"
+# if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
+#    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/guydegnol/projects/trianer/trianer_db_credentials.json"
 
 
 st.sidebar.markdown("""[website](https://trianer.guydegnol.net/)""")
 
 
-athletes = firestore.Client().collection("athletes")
-docs = athletes.stream()
+# docs = firestore.Client().collection("athletes").stream()
+# athletes_configs = {doc.id: doc.to_dict() for doc in docs}
 
-athletes_configs = {}
-
-gdata = pd.DataFrame()
-for doc in docs:
-    athletes_configs[doc.id] = doc.to_dict()
+# docs = firestore.Client().collection("races").stream()
+# races_configs = {doc.id: doc.to_dict() for doc in docs}
 
 default_user = "sylvia"
 
 athletes_names = athletes_configs.keys()
+# races_names = [r for r in races_configs.keys() if "Info" not in r]
 if "kath_name" not in st.session_state:
     st.session_state["kath_name"] = default_user
+
+# if "race_name" not in st.session_state:
+#    st.session_state["race_name"] = "Elsassman"
 
 
 def update_data():
@@ -46,7 +47,6 @@ def update_data():
             st.session_state[p] = at_config[p] if p != "birthday" else at_config[p].date()
 
 
-races_names = ["Elsassman (L)", "Elsassman (M)", "Elsassman (S)", "Deauville (L)"]
 ath_name = st.sidebar.selectbox("Athlete", athletes_names, key="kath_name", on_change=update_data)
 race_name = st.sidebar.selectbox("Epreuve", races_names, key="race_name")
 
@@ -219,10 +219,14 @@ def configure_physiologie():
 def simulate_race():
     # trianer.Triathlon(epreuve=epreuve, longueur=longueur).show_weather_forecasts()
 
-    guillaume = trianer.Triathlon(
+    epreuve = st.session_state["race_name"]
+    st.write(epreuve)
+
+    simulation = trianer.Triathlon(
         epreuve="Elsassman",
         longueur="L",
         temperature=[17, 21],
+        # races_configs=races_configs,
         athlete=trianer.Athlete(
             name=st.session_state["kath_name"],
             poids=st.session_state["weight"],
@@ -230,10 +234,9 @@ def simulate_race():
             cyclisme=f"{st.session_state['cyclisme']}km/h",
             course=st.session_state["course"],
             transitions="10min",
-            sudation="faible",
         ),
     )
-    folium_static(guillaume.show_gpx_track())
+    folium_static(simulation.show_gpx_track())
 
     st.write(
         "natation ",
@@ -243,15 +246,15 @@ def simulate_race():
         " km/h, course ",
         st.session_state["course"],
     )
-    st.pyplot(guillaume.show_race_details())
-    # st.pyplot(guillaume.show_race_details(xaxis = "itime"))
-    st.pyplot(guillaume.show_nutrition())
-    # st.dataframe(guillaume.show_roadmap(), width=300)
-    st.markdown(guillaume.show_roadmap().to_html(), unsafe_allow_html=True)
+    st.pyplot(simulation.show_race_details())
+    # st.pyplot(simulation.show_race_details(xaxis = "itime"))
+    st.pyplot(simulation.show_nutrition())
+    # st.dataframe(simulation.show_roadmap(), width=300)
+    st.markdown(simulation.show_roadmap().to_html(), unsafe_allow_html=True)
 
 
 page_names_to_funcs = {
-    "Simuler l'epreuve'": simulate_race,
+    "Simuler l'epreuve": simulate_race,
     "Configurer l'epreuve": configure_race,
     "Parametres de performance": configure_performance,
     "Parametres physiologiques": configure_physiologie,
