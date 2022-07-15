@@ -202,7 +202,7 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
                         "hydration": 0.0,
                         "discipline": f"transition {d+1}",
                         "sequence": 2 * d + 1,
-                        "duration": 0.5 * athlete.transitions / 60.0,
+                        "duration": athlete.transition1 / 60.0,
                     }
                 )
                 df = pd.concat([df, pd.DataFrame.from_records([transition])], ignore_index=True)

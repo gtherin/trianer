@@ -9,7 +9,6 @@ class Athlete:
         # poids=80,
         # natation="2min10s/100m",
         # course="5min0s/km",
-        # transitions="5min",
         name="Athlete",
         sudation="normal",
         config=None,
@@ -35,8 +34,11 @@ class Athlete:
         self.speeds = {"natation": self.natation_speed, "cyclisme": self.cyclisme_speed, "course": self.course_speed}
         self.dspeeds_slope = {"natation": 0.0, "cyclisme": 2.6, "course": 0.1}
 
-        self.transition1 = float(self.config["transition1"].replace(" ", "").replace("min", ":").split(":")[0])
-        self.transition2 = float(self.config["transition2"].replace(" ", "").replace("min", ":").split(":")[0])
+        self.transition1 = self.config["transition1"].replace(" ", "").replace("min", ":").replace("s", ":").split(":")
+        self.transition1 = float(self.transition1[0]) * 60 + float(self.transition1[1]) / 60
+
+        self.transition2 = self.config["transition2"].replace(" ", "").replace("min", ":").replace("s", ":").split(":")
+        self.transition2 = float(self.transition2[0]) * 60 + float(self.transition2[1]) / 60
 
         self.sudation = sudation
 
