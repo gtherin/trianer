@@ -248,10 +248,11 @@ def get_data(epreuve=None, longueur=None, discipline="all", options="", filename
         epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename
     )
 
-    st.warning(
-        f"Read {filename}",
-        has_data(epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename),
+    has_data_f = has_data(
+        epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename
     )
+
+    st.warning(f"Read {filename} {has_data_f}")
 
     if not has_data(epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename):
         return pd.DataFrame()
