@@ -234,7 +234,6 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
 
     def show_gpx_track(triathlon):
         from branca.element import Figure
-        from streamlit_folium import folium_static
         import folium
 
         fig = Figure(width=900, height=300)

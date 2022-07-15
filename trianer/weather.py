@@ -5,10 +5,13 @@ import numpy as np
 import pandas as pd
 
 
-def get_default_coordonates() -> tuple:
+def get_default_coordonates(altitude=False) -> tuple:
     # (latitude, longitude, altitude)
     # 53 rue rebeval by default
-    return (48.875017179462446, 2.3795896457900936, 70)
+    if altitude:
+        return (48.875017, 2.3795896, 70)
+    else:
+        return (48.875017, 2.3795896)
 
 
 def get_weather(coordonates=None, start=None, end=None):
