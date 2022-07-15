@@ -143,14 +143,12 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
     def get_gpx(self, discipline=None, index=None):
         if discipline is None:
             data = self.gpx
-        elif type(discipline) == int:
-            data = self.gpx.query(f"discipline=='{self.get_discipline(discipline)}'")
         else:
-            data = self.gpx.query(f"discipline=='{discipline}'")
+            data = self.gpx.query(f"discipline=='{self.get_discipline(discipline)}'")
         if index is not None and index in data.columns:
             data = data.set_index(index)
 
-        if 1:
+        if self.get_discipline(discipline) != "natation":
             d = data.distance.clip(0, 1000).diff()
             cutoff = d.mean() * 3
             data = data[d < cutoff]
@@ -161,7 +159,7 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
         return ["natation", "cyclisme", "course"]
 
     def get_discipline(self, d):
-        return self.get_disciplines()[d]
+        return self.get_disciplines()[d] if type(d) == int else d
 
     def get_org_fueling(self, d):
         if not hasattr(self, "dfuelings"):
