@@ -243,7 +243,7 @@ def simulate_race():
     epreuve = st.session_state["krace_name"]
     current_user = st.session_state["current_user"]
 
-    st.write("Info", st.session_state, current_user, athletes_configs[current_user])
+    # st.write("Info", st.session_state, current_user, athletes_configs[current_user])
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Athlete", st.session_state["current_user"])

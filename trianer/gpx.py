@@ -139,21 +139,10 @@ def get_data_from_file(filename):
 
     import requests
 
-    if "pace_data" not in filename:
-        filename = "http://wildcamp.guydegnol.net/" + filename
-
-    if "http" in filename:
-        url_req = requests.get(filename)
-        if "404 Not Found" in url_req.text:
-            print(f"{filename} : File does not exist")
-            return
-    elif not os.path.exists(filename):
-        print(f"{filename} : File does not exist")
-        return
-
     ext = filename.split(".")[-1]
 
     if "http" in filename:
+        url_req = requests.get(filename)
         xml = url_req.text.split("<trkpt")
     elif ext == "tcx":
         xml = open(filename, "r").read().split("<Trackpoint")
