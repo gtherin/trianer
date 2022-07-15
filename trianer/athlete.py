@@ -11,8 +11,11 @@ class Athlete:
         transitions="5min",
         name="Athlete",
         sudation="normal",
+        config=None,
     ) -> None:
         self.poids = poids  # masse en kilogramme
+
+        print("AAAAAAAAAAAA", name, config)
 
         self.name = name
         # Extract natation perf
