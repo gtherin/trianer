@@ -18,7 +18,7 @@ st.set_option("deprecation.showPyplotGlobalUse", False)
 #    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/guydegnol/projects/trianer/trianer_db_credentials.json"
 
 
-st.sidebar.markdown("""[website](https://trianer.guydegnol.net/)""")
+st.sidebar.markdown("""[website2](https://trianer.guydegnol.net/)""")
 
 
 @st.cache(persist=False, allow_output_mutation=True, suppress_st_warning=True, show_spinner=True)
