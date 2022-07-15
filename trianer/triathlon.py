@@ -148,7 +148,13 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
         else:
             data = self.gpx.query(f"discipline=='{discipline}'")
         if index is not None and index in data.columns:
-            return data.set_index(index)
+            data = data.set_index(index)
+
+        if 1:
+            d = data.distance.clip(0, 1000).diff()
+            cutoff = d.mean() * 3
+            data = data[d < cutoff]
+
         return data
 
     def get_disciplines(self):
@@ -217,7 +223,7 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
 
         # Set temperature
         data = weather.merge_temperature_forecasts(
-            data, coordonates=self.get_mean_coordonates(), start_time=self.start_time, temperature=temperature
+            data, coordonates=self.get_mean_coordonates()[:1], start_time=self.start_time, temperature=temperature
         )
 
         data["fdistance"] = data["distance"].diff().clip(0, 10000).fillna(0.0).cumsum()
@@ -238,7 +244,7 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
         import folium
 
         fig = Figure(width=900, height=300)
-        trimap = folium.Map(location=triathlon.get_mean_coordonates(), zoom_start=10)
+        trimap = folium.Map(location=triathlon.get_mean_coordonates()[:2], zoom_start=10)
         fig.add_child(trimap)
 
         from folium.plugins import MarkerCluster
