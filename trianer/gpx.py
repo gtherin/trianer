@@ -243,7 +243,6 @@ def get_data(epreuve=None, longueur=None, discipline="all", options="", filename
 
     st.warning(f"Read {filename}")
     data = get_data_from_file(filename)
-    st.dataframe(data)
 
     if "x2" in options:
         data = pd.concat([data, data])
