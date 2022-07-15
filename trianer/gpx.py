@@ -201,12 +201,12 @@ def get_filename(epreuve=None, longueur=None, discipline="all", options="", file
     if filename is not None:
         pass
     elif "M" in options:
-        filename = f"races/{epreuve}_M_{discipline}.gpx"
+        filename = f"races/{epreuve}_M_{discipline}.gpx".replace("-", "_")
     else:
-        filename = f"races/{epreuve}_{longueur}_{discipline}.gpx"
+        filename = f"races/{epreuve}_{longueur}_{discipline}.gpx".replace("-", "_")
 
     if "pace_data" not in filename and "http" not in filename:
-        filename = "http://wildcamp.guydegnol.net/" + filename
+        filename = "http://trianer.guydegnol.net/" + filename
 
     return filename
 
