@@ -8,14 +8,14 @@ from streamlit_folium import folium_static
 import os
 
 
-from google.cloud import firestore
+# from google.cloud import firestore
 
 
 st.set_option("deprecation.showPyplotGlobalUse", False)
 
 
-if os.path.exists("/home/guydegnol/projects/trianer/trianer_db_credentials.json"):
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/guydegnol/projects/trianer/trianer_db_credentials.json"
+# if os.path.exists("/home/guydegnol/projects/trianer/trianer_db_credentials.json"):
+#    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/guydegnol/projects/trianer/trianer_db_credentials.json"
 
 
 st.sidebar.markdown("""[website](https://trianer.guydegnol.net/)""")
@@ -145,15 +145,17 @@ page_names_to_funcs = {
 
 def main():
 
-    st.sidebar.selectbox("Athlete", athletes_names, key="current_user")  # , on_change=update_perf_data)
+    # st.sidebar.selectbox("Athlete", athletes_names, key="current_user")  # , on_change=update_perf_data)
 
     # demo_name = st.sidebar.radio("Menu", page_names_to_funcs.keys())
-    st.write(
-        "athletes_configs", {k: v for k, v in athletes_configs[current_user].items() if k in ["natation", "course"]}
-    )
-    st.write("session_state", {k: v for k, v in st.session_state.items() if k in ["natation", "course"]})
+    # st.write(
+    #    "athletes_configs", {k: v for k, v in athletes_configs[current_user].items() if k in ["natation", "course"]}
+    # )
+    # st.write("session_state", {k: v for k, v in st.session_state.items() if k in ["natation", "course"]})
     # st.write("session_state", st.session_state)
     # page_names_to_funcs[demo_name]()
+
+    st.metric("Athlete", 10)
 
 
 main()
