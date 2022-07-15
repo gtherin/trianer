@@ -29,6 +29,6 @@ black
 folium
 streamlit-folium
 
-#google-cloud
+google-cloud
 google-cloud-firestore
 #pydantic
