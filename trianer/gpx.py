@@ -248,10 +248,14 @@ def get_data(epreuve=None, longueur=None, discipline="all", options="", filename
         epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename
     )
 
+    st.warning(f"Read {filename}")
+
     if not has_data(epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename):
         return pd.DataFrame()
 
     data = get_data_from_file(filename)
+    st.dataframe(data)
+
     if "x2" in options:
         data = pd.concat([data, data])
 
