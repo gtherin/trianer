@@ -8,7 +8,7 @@ from streamlit_folium import folium_static
 import os
 
 
-# from google.cloud import firestore
+from google.cloud import firestore
 
 
 st.set_option("deprecation.showPyplotGlobalUse", False)
