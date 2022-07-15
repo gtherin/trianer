@@ -2,6 +2,7 @@ import datetime
 import numpy as np
 import pandas as pd
 import scipy as sp
+import streamlit as st
 
 from .athlete import Athlete
 

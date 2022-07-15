@@ -5,6 +5,7 @@ import json
 import numpy as np
 import pandas as pd
 import scipy as sp
+import streamlit as st
 
 
 def get_default_datetime():
@@ -207,7 +208,7 @@ def enrich_data(data, target_distance=None, target_elelevation=None):
     return data.set_index("fdistance")
 
 
-def has_data(epreuve=None, longueur=None, discipline="all", options="", filename=None):
+def get_filename(epreuve=None, longueur=None, discipline="all", options="", filename=None):
     if filename is not None:
         pass
     elif "M" in options:
@@ -215,17 +216,34 @@ def has_data(epreuve=None, longueur=None, discipline="all", options="", filename
     else:
         filename = f"races/{epreuve}_{longueur}_{discipline}.gpx"
 
-    return os.path.exists(filename)
+    if "pace_data" not in filename:
+        filename = "http://wildcamp.guydegnol.net/" + filename
+
+    return filename
 
 
-def get_data(epreuve=None, longueur=None, discipline="all", options="", filename=None):
+def has_data(**kwargs):
+    import requests
 
-    if filename is not None:
-        pass
-    elif "M" in options:
-        filename = f"races/{epreuve}_M_{discipline}.gpx"
-    else:
-        filename = f"races/{epreuve}_{longueur}_{discipline}.gpx"
+    filename = get_filename(**kwargs)
+
+    if "http" in filename:
+        url_req = requests.get(filename)
+        if "404 Not Found" in url_req.text:
+            print(f"{filename} : File does not exist")
+            return False
+    elif not os.path.exists(filename):
+        print(f"{filename} : File does not exist")
+        return False
+    return True
+
+
+def get_data(options="", **kwargs):
+
+    filename = get_filename(options="", **kwargs)
+
+    if not has_data(options="", **kwargs):
+        return pd.DataFrame()
 
     data = get_data_from_file(filename)
     if "x2" in options:
@@ -248,7 +266,7 @@ def get_data(epreuve=None, longueur=None, discipline="all", options="", filename
     data["elevation"] = (data["altitude"] - data["altitude"].iloc[0]).diff().fillna(0.0)
     # data["elevation"] = data["elevation"].where(data["distance"].diff() > 2.0, other=0)
 
-    data["discipline"] = discipline
+    data["discipline"] = kwargs["discipline"]
 
     return data
 
