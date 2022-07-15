@@ -134,11 +134,11 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
 
     def get_mean_coordonates(self):
         if "latitude" not in self.gpx.columns:
-            return weather.get_default_coordonates()
+            return weather.get_default_coordonates()[:2]
         return self.gpx.latitude.mean(), self.gpx.longitude.mean()
 
     def get_temperature(self):
-        return weather.get_forecasts(coordonates=self.get_mean_coordonates())
+        return weather.get_forecasts(coordonates=self.get_mean_coordonates()[:2])
 
     def get_gpx(self, discipline=None, index=None):
         if discipline is None:
@@ -219,9 +219,11 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
 
         data["dtime"] = self.start_time + pd.to_timedelta(data["duration"].cumsum(), unit="h")
 
+        print()
+
         # Set temperature
         data = weather.merge_temperature_forecasts(
-            data, coordonates=self.get_mean_coordonates()[:1], start_time=self.start_time, temperature=temperature
+            data, coordonates=self.get_mean_coordonates()[:2], start_time=self.start_time, temperature=temperature
         )
 
         data["fdistance"] = data["distance"].diff().clip(0, 10000).fillna(0.0).cumsum()
