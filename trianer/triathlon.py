@@ -33,7 +33,13 @@ class Triathlon:
 
         self.disciplines = ["natation", "cyclisme", "course"]
 
-        if epreuve not in available_races.keys():
+        if "(" in epreuve:
+            self.epreuve = epreuve.split(" (")[0]
+            self.longueur = epreuve[epreuve.find("(") + 1 : epreuve.find(")")]
+        else:
+            self.epreuve, self.longueur = epreuve, longueur
+
+        if self.epreuve not in available_races.keys():
             raise ValueError(
                 f"""Liste des epreuves documentées: 
 
@@ -52,7 +58,6 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
 """
             )
 
-        self.epreuve, self.longueur = epreuve, longueur
         self.start_time = gpx.get_default_datetime()
 
         if self.longueur == "L":

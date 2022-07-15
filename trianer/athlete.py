@@ -15,7 +15,6 @@ class Athlete:
         config=None,
     ) -> None:
 
-        print("AAAAAAAAAAAA", name, config)
         self.config = config
         self.name = name
 
