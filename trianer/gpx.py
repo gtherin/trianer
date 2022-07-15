@@ -216,7 +216,7 @@ def get_filename(epreuve=None, longueur=None, discipline="all", options="", file
     else:
         filename = f"races/{epreuve}_{longueur}_{discipline}.gpx"
 
-    if "pace_data" not in filename:
+    if "pace_data" not in filename and "http" not in filename:
         filename = "http://wildcamp.guydegnol.net/" + filename
 
     return filename
