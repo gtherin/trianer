@@ -233,9 +233,11 @@ def has_data(epreuve=None, longueur=None, discipline="all", options="", filename
         url_req = requests.get(filename)
         if "404 Not Found" in url_req.text:
             print(f"{filename} : File does not exist")
+            st.error(f"{filename} : Url does not exist")
             return False
     elif not os.path.exists(filename):
         print(f"{filename} : File does not exist")
+        st.error(f"{filename} : File does not exist")
         return False
     return True
 
