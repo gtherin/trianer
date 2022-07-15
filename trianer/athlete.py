@@ -27,7 +27,7 @@ class Athlete:
         self.natation_speed = 3600 / (10 * natation_pace)
 
         # Extract natation perf
-        self.cyclisme_speed = float(self.config["cyclisme"].replace(" ", "").replace("k", ":").split(":")[0])
+        self.cyclisme_speed = float(self.config["cyclisme"])
 
         # Extract natation perf
         course = self.config["course"].replace(" ", "").replace("min", ":").replace("s", ":").split(":")
