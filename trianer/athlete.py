@@ -16,7 +16,7 @@ class Athlete:
     ) -> None:
 
         print("AAAAAAAAAAAA", name, config)
-        self.config = config[name]
+        self.config = config
         self.name = name
 
         self.poids = self.config["weight"]  # masse en kilogramme

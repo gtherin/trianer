@@ -17,9 +17,13 @@ web: gunicorn gettingstarted.wsgi
 web: sh setup.sh && streamlit run streamlit_app.py
 
 # Heroku
-heroku restart
 git push heroku master
 heroku local
 
-# Configure database
- https://stackoverflow.com/questions/47446480/how-to-use-google-api-credentials-json-on-heroku
+heroku ps:scale web=0
+heroku ps:scale web=1
+heroku restart
+
+git add streamlit_app.py && git commit -m "Try fix" && git push heroku master
+heroku logs --tail
+heroku builds:cache:purge -a fathomless-brook-99194  --confirm fathomless-brook-99194
