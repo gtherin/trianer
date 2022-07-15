@@ -257,7 +257,6 @@ def simulate_race():
         st.metric("Course, minutes par km", st.session_state["course"], 5)
 
     athlete = trianer.Athlete(name=current_user, config=athletes_configs[current_user])
-    return
     simulation = trianer.Triathlon(epreuve=epreuve, races_configs=races_configs, athlete=athlete)
     folium_static(simulation.show_gpx_track())
 
