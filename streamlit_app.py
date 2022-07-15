@@ -90,11 +90,11 @@ def check_differences():
             changes[p] = {f"{athletes_configs[current_user][p]} => {st.session_state[p]}"}
             do_submit = True
             athletes_configs[current_user][p] = st.session_state[p]
+    # config["birthday"] = datetime.datetime.combine(birthday, datetime.time(0, 0))
 
     if do_submit:
         st.info(f"For {current_user}, update {changes}")
-    # firestore.Client().collection("athletes").document(current_user).set(athletes_configs[current_user])
-    # config["birthday"] = datetime.datetime.combine(birthday, datetime.time(0, 0))
+        firestore.Client().collection("athletes").document(current_user).set(athletes_configs[current_user])
 
     return
 
@@ -269,34 +269,16 @@ def simulate_race():
     # trianer.Triathlon(epreuve=epreuve, longueur=longueur).show_weather_forecasts()
 
     epreuve = st.session_state["krace_name"]
-    st.write(epreuve)
-
-    """
-    simulation = trianer.Triathlon(
-        epreuve="Elsassman",
-        longueur="L",
-        temperature=[17, 21],
-        races_configs=races_configs,
-        athlete=trianer.Athlete(
-            name=st.session_state["current_user"],
-            poids=st.session_state["weight"],
-            natation=st.session_state["natation"],
-            cyclisme=f"{st.session_state['cyclisme']}km/h",
-            course=st.session_state["course"],
-            transitions="10min",
-        ),
-    )
-    
-    """
-
     current_user = st.session_state["current_user"]
-    # athlete = trianer.Athlete(name=name, config=athletes_configs[name])
+
+    athlete = trianer.Athlete(name=current_user, config=athletes_configs[current_user])
 
     # st.write("Info", st.session_state, athletes_configs)
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Athlete", st.session_state["current_user"])
-        st.metric("Natation, minutes par 100m", st.session_state["natation"], 2)
+        athlete.get_nat_pace(st.session_state["natation"])
+        # st.metric("Natation, minutes par 100m", st.session_state["natation"], 2)
     with col2:
         st.metric("transition nat/cyc, minutes", st.session_state["transition1"])
         st.metric("Cyclisme, km par heure", st.session_state["cyclisme"], 22 - 30)
@@ -304,9 +286,9 @@ def simulate_race():
         st.metric("transition cyc/course, minutes", st.session_state["transition2"])
         st.metric("Course, minutes par km", st.session_state["course"], 5)
 
-    # folium_static(simulation.show_gpx_track())
+    simulation = trianer.Triathlon(epreuve=epreuve, races_configs=races_configs, athlete=athlete)
+    folium_static(simulation.show_gpx_track())
 
-    return
     st.pyplot(simulation.show_race_details())
     # st.pyplot(simulation.show_race_details(xaxis = "itime"))
     st.pyplot(simulation.show_nutrition())
