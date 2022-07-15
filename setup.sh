@@ -10,4 +10,8 @@ echo "\
 headless = true\n\
 enableCORS=false\n\
 port = $PORT\n\
+[logger]\n\
+# Level of logging: 'error', 'warning', 'info', or 'debug'.\n\
+# Default: 'info'\n\
+level = \"debug\"\n\
 " > ~/.streamlit/config.toml
