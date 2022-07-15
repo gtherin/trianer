@@ -237,15 +237,11 @@ def get_data(epreuve=None, longueur=None, discipline="all", options="", filename
         epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename
     )
 
-    has_data_f = has_data(
-        epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename
-    )
-
-    st.warning(f"Read {filename} {has_data_f}")
-
     if not has_data(epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename):
+        st.error(f"File {filename} does not exist")
         return pd.DataFrame()
 
+    st.warning(f"Read {filename}")
     data = get_data_from_file(filename)
     st.dataframe(data)
 
