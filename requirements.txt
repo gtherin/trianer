@@ -1,33 +1,34 @@
-django>=4.0, <5.0
-gunicorn
-django-heroku
+#django>=4.0, <5.0
+#gunicorn
+#django-heroku
 streamlit
 
 pandas
 pandas-datareader
-data_cache
+#data_cache
 #psutil
 
-geopandas
+#geopandas
 #mplleaflet
-contextily
-descartes
-meteostat
+#contextily
+#descartes
+#meteostat
 
 seaborn
 plotly
 matplotlib
 
-ipykernel
-jupyterlab
-ipywidgets
-jupyterlab-geojson
+#ipykernel
+#jupyterlab
+#ipywidgets
+#jupyterlab-geojson
 
-tqdm
+#tqdm
 black
 
 folium
 streamlit-folium
 
-google-cloud
+#google-cloud
 google-cloud-firestore
+#pydantic
