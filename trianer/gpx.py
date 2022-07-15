@@ -222,10 +222,12 @@ def get_filename(epreuve=None, longueur=None, discipline="all", options="", file
     return filename
 
 
-def has_data(**kwargs):
+def has_data(epreuve=None, longueur=None, discipline="all", options="", filename=None):
     import requests
 
-    filename = get_filename(**kwargs)
+    filename = get_filename(
+        epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename
+    )
 
     if "http" in filename:
         url_req = requests.get(filename)
@@ -238,11 +240,13 @@ def has_data(**kwargs):
     return True
 
 
-def get_data(options="", **kwargs):
+def get_data(epreuve=None, longueur=None, discipline="all", options="", filename=None):
 
-    filename = get_filename(options="", **kwargs)
+    filename = get_filename(
+        epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename
+    )
 
-    if not has_data(options="", **kwargs):
+    if not has_data(epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename):
         return pd.DataFrame()
 
     data = get_data_from_file(filename)
@@ -266,7 +270,7 @@ def get_data(options="", **kwargs):
     data["elevation"] = (data["altitude"] - data["altitude"].iloc[0]).diff().fillna(0.0)
     # data["elevation"] = data["elevation"].where(data["distance"].diff() > 2.0, other=0)
 
-    data["discipline"] = kwargs["discipline"]
+    data["discipline"] = discipline
 
     return data
 
