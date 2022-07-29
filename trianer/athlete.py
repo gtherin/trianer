@@ -6,9 +6,6 @@ from . import fueling
 class Athlete:
     def __init__(
         self,
-        # poids=80,
-        # natation="2min10s/100m",
-        # course="5min0s/km",
         name="Athlete",
         sudation="normal",
         config=None,
@@ -18,31 +15,37 @@ class Athlete:
         self.name = name
 
         # Masse en kilogramme
-        self.poids = self.config["weight"]
-        # Extract natation perf
-        natation = self.config["natation"].replace(" ", "").replace("min", ":").replace("s", ":").split(":")
-        natation_pace = float(natation[0]) * 60 + float(natation[1]) / 60
-        self.natation_speed = 3600 / (10 * natation_pace)
+        self.weight = self.config["weight_kg"]
 
-        # Extract natation perf
-        self.cyclisme_speed = float(self.config["cyclisme"])
+        # Extract natation_speed
+        swimming_pace = (
+            float(self.config["swimming_sX100m"].hour) * 60 + float(self.config["swimming_sX100m"].minute) / 60
+        )
+        self.swimming_speed = 3600 / (10 * swimming_pace)
 
-        # Extract natation perf
-        course = self.config["course"].replace(" ", "").replace("min", ":").replace("s", ":").split(":")
-        course_pace = float(course[0]) * 60 + float(course[1]) / 60
-        self.course_speed = 3600 / course_pace
+        # Extract cycling_speed
+        self.cycling_speed = float(self.config["cycling_kmXh"])
+
+        # Extract running_speed
+        running_pace = float(self.config["running_sXkm"].hour) * 60 + float(self.config["running_sXkm"].minute) / 60
+        self.running_speed = 3600 / running_pace
+
+        # Global speeds
         self.speeds = {
-            "natation": self.natation_speed,
-            "cyclisme": self.cyclisme_speed,
-            "course": self.course_speed,
+            "natation": self.swimming_speed,
+            "cyclisme": self.cycling_speed,
+            "course": self.running_speed,
         }
         self.dspeeds_slope = {"natation": 0.0, "cyclisme": 2.6, "course": 0.1}
 
-        self.transition1 = self.config["transition1"].replace(" ", "").replace("min", ":").replace("s", ":").split(":")
-        self.transition1 = float(self.transition1[0]) * 60 + float(self.transition1[1]) / 60
-
-        self.transition2 = self.config["transition2"].replace(" ", "").replace("min", ":").replace("s", ":").split(":")
-        self.transition2 = float(self.transition2[0]) * 60 + float(self.transition2[1]) / 60
+        self.transition1 = (
+            float(self.config["transition_cyc2run_s"].hour) * 60
+            + float(self.config["transition_cyc2run_s"].minute) / 60
+        )
+        self.transition2 = (
+            float(self.config["transition_swi2cyc_s"].hour) * 60
+            + float(self.config["transition_swi2cyc_s"].minute) / 60
+        )
 
         self.sudation = sudation
 

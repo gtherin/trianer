@@ -13,3 +13,4 @@ notebooks/pace_data/*
 notebooks/colab_installer.py
 **.pyc
 trianer_db_credentials.json
+nohup.out

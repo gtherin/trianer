@@ -1,6 +1,7 @@
 import datetime
 import os
 import json
+import time
 
 import numpy as np
 import pandas as pd
@@ -231,7 +232,7 @@ def has_data(epreuve=None, longueur=None, discipline="all", options="", filename
     return True
 
 
-def get_data(epreuve=None, longueur=None, discipline="all", options="", filename=None):
+def get_data(epreuve=None, longueur=None, discipline="all", options="", filename=None, info_box=None):
 
     filename = get_filename(
         epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename
@@ -241,7 +242,13 @@ def get_data(epreuve=None, longueur=None, discipline="all", options="", filename
         st.error(f"File {filename} does not exist")
         return pd.DataFrame()
 
-    st.warning(f"Read {filename}")
+    if info_box is None:
+        info_box = st.empty()
+
+    info_box.info(f"⏳ Read {filename}")
+    time.sleep(2)
+    info_box.empty()
+
     data = get_data_from_file(filename)
 
     if "x2" in options:

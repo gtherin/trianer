@@ -30,7 +30,9 @@ class Triathlon:
             return 0.0
         return self.elevations[d]
 
-    def __init__(self, epreuve, longueur=None, athlete=None, temperature=None, races_configs=None) -> None:
+    def __init__(
+        self, epreuve, longueur=None, athlete=None, temperature=None, races_configs=None, info_box=None
+    ) -> None:
 
         self.disciplines = ["natation", "cyclisme", "course"]
 
@@ -40,6 +42,8 @@ class Triathlon:
         else:
             self.epreuve, self.longueur = epreuve, longueur
 
+        self.info_box = st.empty() if info_box is None else info_box
+
         if self.epreuve not in available_races.keys():
             raise ValueError(
                 f"""Liste des epreuves documentées: 
@@ -48,7 +52,7 @@ class Triathlon:
 - {self.disciplines}
 
 # Definir un athlete
-athlete = triaainer.Athlete(poids=80, natation="2min10s/100m", cyclisme="27.0km/h", course="5min30s/km", transitions="10min")
+athlete = triaainer.Athlete(weight=80, natation="2min10s/100m", cyclisme="27.0km/h", course="5min30s/km", transitions="10min")
 
 # Simule une course a pieds de 20km
 course = triaainer.Triathlon(epreuve="course", longueur="20", temperature=[20, 25], athlete=athlete)
@@ -106,13 +110,21 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
         data = []
         self.fuelings = [0]
 
+        info_box = st.empty()
+
         ref_dist = 0
         for d, discipline in enumerate(self.disciplines):
             if "x2" in self.get_option(d) and discipline != "natation":
                 self.dfuelings[d] += [0.5 * self.distances[d] + f for f in self.get_org_fueling(d)]
 
             if gpx.has_data(self.epreuve, self.longueur, self.get_discipline(d), options=self.get_option(d)):
-                df = gpx.get_data(self.epreuve, self.longueur, self.get_discipline(d), options=self.get_option(d))
+                df = gpx.get_data(
+                    self.epreuve,
+                    self.longueur,
+                    self.get_discipline(d),
+                    options=self.get_option(d),
+                    info_box=self.info_box,
+                )
             else:
                 df = (
                     pd.DataFrame(np.linspace(0, self.distances[d], 10), columns=["distance"])
@@ -465,29 +477,29 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
         gperf.set_index("fdistance")["ihydration"].cumsum().plot(ax=ax, color="green", label="")
         gperf.set_index("fdistance")["hydration"].cumsum().plot(ax=ax, lw=3, color="darkcyan")
         ax.hlines(
-            -triathlon.athlete.poids * 0.02 * 1000, xmin=0, xmax=gperf["fdistance"].max(), alpha=0.4, color="red"
+            -triathlon.athlete.weight * 0.02 * 1000, xmin=0, xmax=gperf["fdistance"].max(), alpha=0.4, color="red"
         )
         ax.hlines(
-            -triathlon.athlete.poids * 0.04 * 1000, xmin=0, xmax=gperf["fdistance"].max(), alpha=0.4, color="red"
+            -triathlon.athlete.weight * 0.04 * 1000, xmin=0, xmax=gperf["fdistance"].max(), alpha=0.4, color="red"
         )
 
         ax.fill_between(
             np.linspace(0, gperf["fdistance"].max(), 50),
-            [-triathlon.athlete.poids * 0.02 * 1000] * 50,
-            [-triathlon.athlete.poids * 0.04 * 1000] * 50,
+            [-triathlon.athlete.weight * 0.02 * 1000] * 50,
+            [-triathlon.athlete.weight * 0.04 * 1000] * 50,
             color="red",
             alpha=0.2,
         )
-        plt.text(0.9, -triathlon.athlete.poids * 0.02 * 1000 - 500, "Perte de perf 20%", fontsize=20)
+        plt.text(0.9, -triathlon.athlete.weight * 0.02 * 1000 - 500, "Perte de perf 20%", fontsize=20)
 
         ax.fill_between(
             np.linspace(0, gperf["fdistance"].max(), 50),
-            [-triathlon.athlete.poids * 0.04 * 1000] * 50,
-            [-triathlon.athlete.poids * 0.05 * 1000] * 50,
+            [-triathlon.athlete.weight * 0.04 * 1000] * 50,
+            [-triathlon.athlete.weight * 0.05 * 1000] * 50,
             color="red",
             alpha=0.8,
         )
-        plt.text(0.9, -triathlon.athlete.poids * 0.04 * 1000 - 500, "Zone de risque", fontsize=20)
+        plt.text(0.9, -triathlon.athlete.weight * 0.04 * 1000 - 500, "Zone de risque", fontsize=20)
 
         ax.grid()
 

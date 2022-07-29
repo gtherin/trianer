@@ -4,16 +4,14 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import datetime
 import trianer
+import time
+
 from streamlit_folium import folium_static
 import os
 import streamlit as st
 from persist import persist, load_widget_state
 
 from google.cloud import firestore
-
-
-def get_natation_range():
-    return [f"{m}min{s:02.0f}s/100m" for m in range(1, 4) for s in np.linspace(0, 55, 12)]
 
 
 st.set_option("deprecation.showPyplotGlobalUse", False)
@@ -23,27 +21,65 @@ if os.path.exists("/home/guydegnol/projects/trianer/trianer_db_credentials.json"
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/guydegnol/projects/trianer/trianer_db_credentials.json"
 
 
+info_box = st.empty()
+
+
+def get_time_variables():
+    return ["swimming_sX100m", "transition_swi2cyc_s", "transition_cyc2run_s", "running_sXkm"]
+
+
+def format_db2st(config):
+    nconfig = {}
+    for field, value in config.items():
+        if field in get_time_variables():
+            nconfig[field] = datetime.time(int(value / 60), value % 60)
+        else:
+            nconfig[field] = value
+    return nconfig
+
+
+def format_stdb(config):
+    nconfig = {}
+    for field, value in config.items():
+        if field in get_time_variables():
+            nconfig[field] = value.hour * 60 + value.minute
+        else:
+            nconfig[field] = value
+
+    # config["birthday"] = datetime.datetime.combine(birthday, datetime.time(0, 0))
+    return nconfig
+
+
 @st.cache(persist=False, allow_output_mutation=True, suppress_st_warning=True, show_spinner=True)
 def load_athletes_configs():
-    st.info("Load athletes from db")
+
+    # info_box.info("Load athletes from db")
+    time.sleep(1)
+
     athletes_db = firestore.Client().collection("athletes")
     athletes_stream = athletes_db.stream()
-    athletes_configs = {doc.id: doc.to_dict() for doc in athletes_stream}
+    athletes_configs = {doc.id: format_db2st(doc.to_dict()) for doc in athletes_stream}
+    # info_box.empty()
+
     return athletes_configs
 
 
 @st.cache(persist=False, allow_output_mutation=True, suppress_st_warning=True, show_spinner=True)
 def load_races_configs():
-    st.info("Load races from db")
+    # info_box.info("Load races from db")
+    time.sleep(1)
     races_db = firestore.Client().collection("races")
     races_stream = races_db.stream()
     races_configs = {doc.id: doc.to_dict() for doc in races_stream}
+    # info_box.empty()
     return races_configs
 
 
 @st.cache(persist=False, allow_output_mutation=True, suppress_st_warning=True, show_spinner=True)
 def load_default_user():
-    st.info("Call load_default_user")
+    # info_box.info("Call load_default_user")
+    time.sleep(1)
+    # info_box.empty()
     return "guydegnol"
 
 
@@ -52,7 +88,7 @@ athletes_configs = load_athletes_configs()
 races_configs = load_races_configs()
 
 
-def update_perf_data():
+def update_user_data():
 
     return
     current_user = st.session_state.current_user
@@ -67,40 +103,33 @@ def update_perf_data():
 
 
 def check_differences():
-    return
     current_user = st.session_state.current_user
 
     do_submit = False
 
     changes = {}
-    for p in ["weight", "natation", "transition1", "cyclisme", "transition2", "course"]:
+
+    for p in [
+        "weight_kg",
+        "swimming_sX100m",
+        "transition_swi2cyc_s",
+        "cycling_kmXh",
+        "transition_cyc2run_s",
+        "running_sXkm",
+    ]:
         if athletes_configs[current_user][p] != st.session_state[p]:
             st.write(athletes_configs[current_user][p], st.session_state[p])
             changes[p] = {f"{athletes_configs[current_user][p]} => {st.session_state[p]}"}
             do_submit = True
             athletes_configs[current_user][p] = st.session_state[p]
-    # config["birthday"] = datetime.datetime.combine(birthday, datetime.time(0, 0))
 
     if do_submit:
-        st.info(f"For {current_user}, update {changes}")
-        firestore.Client().collection("athletes").document(current_user).set(athletes_configs[current_user])
-
-    return
-
-
-def update_data():
-    # current_user = st.session_state["current_user"]
-    return
-
-    # for p in ["weight", "natation", "transition1", "cyclisme", "transition2", "course"]:
-    #    athletes_configs[current_user][p] = st.session_state[p]
-    # config["birthday"] = datetime.datetime.combine(birthday, datetime.time(0, 0))
-
-    # for p in ["weight", "birthday", "natation", "transition1", "cyclisme", "transition2", "course"]:
-    #    if p in config:
-    #        st.session_state[p] = config[p] if p != "birthday" else config[p].date()
-
-    # firestore.Client().collection("athletes").document(current_user).set(athletes_configs[current_user])
+        info_box.info(f"For {current_user}, update {changes}")
+        time.sleep(2)
+        firestore.Client().collection("athletes").document(current_user).set(
+            format_stdb(athletes_configs[current_user])
+        )
+        info_box.empty()
 
 
 def configure_race():
@@ -121,36 +150,53 @@ def configure_race():
     st.button("Re-run")
 
 
-def get_natation_range():
-    return [f"{m}min{s:02.0f}s/100m" for m in range(1, 4) for s in np.linspace(0, 55, 12)]
-
-
-def get_transition_range():
-    return [f"{m}min{s:02.0f}s" for m in range(1, 10) for s in np.linspace(0, 50, 6)]
-
-
-def get_course_range():
-    return [f"{m}min{s:02.0f}s/km" for m in range(3, 8) for s in np.linspace(0, 55, 12)]
-
-
 def configure_performance():
 
     st.header("Change settings")
 
-    st.info(type(st.session_state))
+    st.slider(
+        "Allure pour la natation",
+        value=athletes_configs[current_user]["swimming_sX100m"],
+        min_value=datetime.time(1, 0),
+        max_value=datetime.time(5, 0),
+        step=datetime.timedelta(minutes=5),
+        key=persist("swimming_sX100m"),
+    )
 
-    st.text_input("Input", key=persist("text"))
-    st.slider("Slider", 0, 10, key=persist("slider"))
-    st.checkbox("Checkbox", key=persist("checkbox"))
-    st.radio("Radio", st.session_state["options"], key=persist("radio"))
-    st.selectbox("Selectbox", st.session_state["options"], key=persist("selectbox"))
-    st.multiselect("Multiselect", st.session_state["options"], key=persist("multiselect"))
+    st.slider(
+        "Transition nat./cycl.",
+        value=athletes_configs[current_user]["transition_swi2cyc_s"],
+        min_value=datetime.time(1, 0),
+        max_value=datetime.time(5, 0),
+        step=datetime.timedelta(minutes=15),
+        key=persist("transition_swi2cyc_s"),
+    )
 
-    st.select_slider("Allure pour la natation", options=get_natation_range(), key=persist("natation"))
-    st.select_slider("Transition nat./cycl.", get_transition_range(), key=persist("transition1"))
-    st.number_input("Vitesse à plat en cyclisme", min_value=20, max_value=45, key=persist("cyclisme"))
-    st.select_slider("Transition cyc./course", get_transition_range(), key=persist("transition2"))
-    st.select_slider("Allure pour la course à pieds", get_course_range(), key=persist("course"))
+    st.number_input(
+        "Vitesse à plat en cyclisme",
+        min_value=20,
+        max_value=45,
+        value=athletes_configs[current_user]["cycling_kmXh"],
+        key=persist("cycling_kmXh"),
+    )
+
+    st.slider(
+        "Transition nat./cycl.",
+        value=athletes_configs[current_user]["transition_cyc2run_s"],
+        min_value=datetime.time(1, 0),
+        max_value=datetime.time(5, 0),
+        step=datetime.timedelta(minutes=15),
+        key=persist("transition_cyc2run_s"),
+    )
+
+    st.slider(
+        "Allure pour la course à pieds",
+        value=athletes_configs[current_user]["running_sXkm"],
+        min_value=datetime.time(3, 0),
+        max_value=datetime.time(10, 0),
+        step=datetime.timedelta(minutes=5),
+        key=persist("running_sXkm"),
+    )
 
 
 def configure_physiology():
@@ -158,16 +204,11 @@ def configure_physiology():
     if 1:  # with st.form("athlete_form"):
         with st.expander("Parametres generaux"):
 
-            # st.write("Mon nom est ", ath_name)
-
-            st.number_input("Poids (en kg)", min_value=50, max_value=100, key="weight")
+            st.number_input("Poids (en kg)", min_value=50, max_value=100, key=persist("weight_kg"))
             # st.write("Mon poids est de", weight, " kg")
 
             st.date_input("Anniversaire", key="birthday")
             # st.write("Je suis né le ", birthday)
-
-            # if st.form_submit_button("Sauvegarde des changements", on_click=update_data):
-            #    st.write("Sauvegarde faite")
 
         with st.expander("Data format"):
             st.write(
@@ -175,7 +216,7 @@ def configure_physiology():
             )
 
         st.select_slider(
-            "Allure pour la natation",
+            "Allure pour la shit",
             options=[f"{m+1}min{s:02.0f}s/100m" for m in range(1, 2) for s in np.linspace(0, 55, 12)],
         )
 
@@ -213,51 +254,27 @@ def configure_physiology():
 
         st.pyplot(fig)
 
-        # if st.form_submit_button("Sauvegarder 3", on_click=update_data):
-        #    st.write("Sauvegarde faite")
-
 
 def simulate_race():
 
-    if st.session_state.slider == 0:
-        st.session_state.slider = 4
-
-    st.write(
-        f"""
-        Settings values
-        ---------------
-
-        - **Input**: {st.session_state.text}
-        - **Natation**: {st.session_state.natation}
-        - **Slider**: `{st.session_state.slider}`
-        - **Checkbox**: `{st.session_state.checkbox}`
-        - **Radio**: {st.session_state.radio}
-        - **Selectbox**: {st.session_state.selectbox}
-        - **Multiselect**: {", ".join(st.session_state.multiselect)}
-        """
-    )
-
-    # check_differences()
-    # trianer.Triathlon(epreuve=epreuve, longueur=longueur).show_weather_forecasts()
+    check_differences()
 
     epreuve = st.session_state["krace_name"]
     current_user = st.session_state["current_user"]
 
-    # st.write("Info", st.session_state, current_user, athletes_configs[current_user])
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Athlete", st.session_state["current_user"])
-        st.metric("Natation", st.session_state["natation"])
-        # st.metric("Natation, minutes par 100m", st.session_state["natation"], 2)
+        st.metric("Natation, secs pour 100m", str(st.session_state["swimming_sX100m"]))
     with col2:
-        st.metric("transition nat/cyc, minutes", st.session_state["transition1"])
-        st.metric("Cyclisme, km par heure", st.session_state["cyclisme"], 22 - 30)
+        st.metric("transition nat/cyc, minutes", str(st.session_state["transition_swi2cyc_s"]))
+        st.metric("Cyclisme, km par heure", str(st.session_state["cycling_kmXh"]), 22 - 30)
     with col3:
-        st.metric("transition cyc/course, minutes", st.session_state["transition2"])
-        st.metric("Course, minutes par km", st.session_state["course"], 5)
+        st.metric("transition cyc/course, minutes", str(st.session_state["transition_cyc2run_s"]))
+        st.metric("Course, minutes par km", str(st.session_state["running_sXkm"]), 5)
 
     athlete = trianer.Athlete(name=current_user, config=athletes_configs[current_user])
-    simulation = trianer.Triathlon(epreuve=epreuve, races_configs=races_configs, athlete=athlete)
+    simulation = trianer.Triathlon(epreuve=epreuve, races_configs=races_configs, athlete=athlete, info_box=info_box)
     folium_static(simulation.show_gpx_track())
 
     st.pyplot(simulation.show_race_details())
@@ -269,48 +286,29 @@ def simulate_race():
 
 def main():
 
-    # if persist("natation") not in st.session_state:
-    #    st.session_state[persist("natation")] = "2min00s"
-    #    st.session_state["natation"] = "2min00s"
-
-    # st.info([k for k in t.session_state.keys()])
-    # st.info([k for k in st.session_state.keys()])
-    # st.info(st.session_state["persist_PERSIST"])
-
     if "page" not in st.session_state:
-        st.info(st.session_state.keys())
-        # Initialize session state.
+
         st.session_state.update(
             {
-                # Default page.
                 "page": "home",
-                # Radio, selectbox and multiselect options.
-                "options": ["Hello", "Everyone", "Happy", "Streamlit-ing"],
-                # Default widget values.
-                "text": "",
-                "slider": 0,
-                "checkbox": False,
-                "radio": "Hello",
-                "selectbox": "Hello",
-                "multiselect": ["Hello", "Everyone"],
-                # or p in ["weight", "natation", "transition1", "cyclisme", "transition2", "course"]:
-                # if athletes_configs[current_user][p] != st.session_state[p]:
-                "natation": "2min00s",
-                persist("natation"): "2min00s",
-                "transition1": "2min00s",
-                "cyclisme": 28,
-                "transition2": "2min00s",
-                "course": "5min00s",
+                "weight_kg": athletes_configs[current_user]["weight_kg"],
+                "swimming_sX100m": athletes_configs[current_user]["swimming_sX100m"],
+                "transition_swi2cyc_s": athletes_configs[current_user]["transition_swi2cyc_s"],
+                "cycling_kmXh": athletes_configs[current_user]["cycling_kmXh"],
+                "transition_cyc2run_s": athletes_configs[current_user]["transition_cyc2run_s"],
+                "running_sXkm": athletes_configs[current_user]["running_sXkm"],
             }
         )
 
     if not "initialized" in st.session_state:
-        st.info("Init session state")
+
+        with info_box.empty():
+            info_box.info(f"⏳ Init session state")
+            time.sleep(1)
+            info_box.empty()
+
         st.session_state.current_user = current_user
         st.session_state.krace_name = "Elsassman (L)"
-
-        # for p in ["weight", "birthday", "natation", "transition1", "cyclisme", "transition2", "course"]:
-        #    st.session_state[p] = athletes_configs[current_user][p]
 
         st.session_state.initialized = True
 
@@ -318,7 +316,7 @@ def main():
     races_names = [r for r in races_configs.keys() if "Info" not in r]
 
     st.sidebar.markdown("""[website](https://trianer.guydegnol.net/)""")
-    st.sidebar.selectbox("Athlete", athletes_names, key="current_user", on_change=update_perf_data)
+    st.sidebar.selectbox("Athlete", athletes_names, key="current_user", on_change=update_user_data)
     st.sidebar.selectbox("Epreuve", races_names, key="krace_name")
 
     page = st.sidebar.radio("Menu", tuple(PAGES.keys()), format_func=str.capitalize)

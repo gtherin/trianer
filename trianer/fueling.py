@@ -17,7 +17,7 @@ def get_calweights(masse):
         return {"55 kg": 0, "70 kg": 0, "85 kg": 1}
 
 
-def get_kcalories(poids, discipline="all", speed=None):
+def get_kcalories(weight, discipline="all", speed=None):
     """Get calories per hour"""
 
     # Calories for 30 minutes
@@ -44,10 +44,10 @@ course	16	453	562	671
     for w in ["55 kg", "70 kg", "85 kg"]:
         calories[w] *= 2.0 * correction
 
-    if poids is None:
+    if weight is None:
         return calories
 
-    weights = get_calweights(poids)
+    weights = get_calweights(weight)
     calories["atl"] = 0
     for w in ["55 kg", "70 kg", "85 kg"]:
         calories["atl"] += weights[w] * calories[w]
@@ -107,7 +107,7 @@ def calculate_kcalories(df, triathlon, athlete) -> pd.DataFrame:
         del df["kcalories"]
 
     kcalories = pd.Series(
-        [get_kcalories(athlete.poids, discipline=d, speed=athlete.speeds[d]) for d in triathlon.disciplines],
+        [get_kcalories(athlete.weight, discipline=d, speed=athlete.speeds[d]) for d in triathlon.disciplines],
         index=[d for d in triathlon.disciplines],
     ).to_frame(name="kcalories")
     df = df.merge(kcalories, how="left", left_on=df["discipline"], right_index=True)
