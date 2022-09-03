@@ -345,59 +345,24 @@ def landing():
     return st.write("This is the landing page")
 
 
-import datetime
-
-st.write("# Cookie Manager")
-
-
-@st.cache(allow_output_mutation=True)
-def get_manager():
-    return stx.CookieManager()
-
-
 if __name__ == "__main__":
     # load_widget_state()
     # main()
 
-    cookie_manager = get_manager()
-
-    st.subheader("All Cookies:")
-    cookies = cookie_manager.get_all()
-    st.write(cookies)
+    router = init_router()
+    router.show_route_view()
 
     c1, c2, c3 = st.columns(3)
 
     with c1:
-        st.subheader("Get Cookie:")
-        cookie = st.text_input("Cookie", key="0")
-        clicked = st.button("Get")
-        if clicked:
-            value = cookie_manager.get(cookie=cookie)
-            st.write(value)
+        st.header("Current route")
+        current_route = router.get_url_route()
+        st.write(f"{current_route}")
     with c2:
-        st.subheader("Set Cookie:")
-        cookie = st.text_input("Cookie", key="1")
-        val = st.text_input("Value")
-        if st.button("Add"):
-            cookie_manager.set(cookie, val, expires_at=datetime.datetime(year=2023, month=2, day=2))
+        st.header("Set route")
+        new_route = st.text_input("route")
+        if st.button("Route now!"):
+            router.route(new_route)
     with c3:
-        st.subheader("Delete Cookie:")
-        cookie = st.text_input("Cookie", key="2")
-        if st.button("Delete"):
-            cookie_manager.delete(cookie)
-
-    chosen_id = stx.tab_bar(
-        data=[
-            stx.TabBarItemData(id=1, title="ToDo", description="Tasks to take care of"),
-            stx.TabBarItemData(id=2, title="Done", description="Tasks taken care of"),
-            stx.TabBarItemData(id=3, title="Overdue", description="Tasks missed out"),
-        ],
-        default=1,
-    )
-    st.info(f"{chosen_id=}")
-
-    image_url = "https://streamlit.io/images/brand/streamlit-logo-secondary-colormark-darktext.svg"
-    stx.bouncing_image(image_source=image_url, animate=True, animation_time=1500, height=200, width=600)
-
-    val = stx.stepper_bar(steps=["Ready", "Get Set", "Go"])
-    st.info(f"Phase #{val}")
+        st.header("Session state")
+        st.write(st.session_state)

@@ -2,6 +2,7 @@ import datetime
 import os
 import json
 import time
+import logging
 
 import numpy as np
 import pandas as pd
@@ -136,14 +137,24 @@ def haversine(lat1, lon1, lat2, lon2, to_radians=True, earth_radius=6371):
     return earth_radius * 2 * np.arcsin(np.sqrt(a))
 
 
-def get_data_from_file(filename):
-
+def get_requests(filename):
     import requests
+
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+
+    url_req = requests.get(filename)
+    url_req.encoding = "UTF-8"
+
+    return url_req
+
+
+def get_data_from_file(filename):
 
     ext = filename.split(".")[-1]
 
     if "http" in filename:
-        url_req = requests.get(filename)
+        url_req = get_requests(filename)
         xml = url_req.text.split("<trkpt")
     elif ext == "tcx":
         xml = open(filename, "r").read().split("<Trackpoint")
@@ -213,14 +224,13 @@ def get_filename(epreuve=None, longueur=None, discipline="all", options="", file
 
 
 def has_data(epreuve=None, longueur=None, discipline="all", options="", filename=None):
-    import requests
 
     filename = get_filename(
         epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename
     )
 
     if "http" in filename:
-        url_req = requests.get(filename)
+        url_req = get_requests(filename)
         if "404 Not Found" in url_req.text:
             print(f"{filename} : File does not exist")
             st.error(f"{filename} : Url does not exist")

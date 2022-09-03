@@ -3,12 +3,21 @@ import numpy as np
 import pandas as pd
 import scipy as sp
 import streamlit as st
+import logging
+
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.lines import Line2D
+
 
 from .athlete import Athlete
 
 from . import gpx
 from . import weather
 from . import fueling
+
+logging.getLogger("matplotlib.font_manager").disabled = True
+logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
 
 available_races = {
@@ -46,21 +55,21 @@ class Triathlon:
 
         if self.epreuve not in available_races.keys():
             raise ValueError(
-                f"""Liste des epreuves documentées: 
+                f"""Liste des epreuves documentées:
 
-- {list(available_races.keys())} ou 
-- {self.disciplines}
+        - {list(available_races.keys())} ou
+        - {self.disciplines}
 
-# Definir un athlete
-athlete = triaainer.Athlete(weight=80, natation="2min10s/100m", cyclisme="27.0km/h", course="5min30s/km", transitions="10min")
+        # Definir un athlete
+        athlete = triaainer.Athlete(weight=80, natation="2min10s/100m", cyclisme="27.0km/h", course="5min30s/km", transitions="10min")
 
-# Simule une course a pieds de 20km
-course = triaainer.Triathlon(epreuve="course", longueur="20", temperature=[20, 25], athlete=athlete)
+        # Simule une course a pieds de 20km
+        course = triaainer.Triathlon(epreuve="course", longueur="20", temperature=[20, 25], athlete=athlete)
 
-# Simule la realisation d'un Elsassman au format L
-elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athlete)
+        # Simule la realisation d'un Elsassman au format L
+        elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athlete)
 
-"""
+        """
             )
 
         self.start_time = gpx.get_default_datetime()
@@ -114,8 +123,11 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
 
         ref_dist = 0
         for d, discipline in enumerate(self.disciplines):
+
+            fuelings = self.distances[d] if hasattr(self, "distances") else 0
+
             if "x2" in self.get_option(d) and discipline != "natation":
-                self.dfuelings[d] += [0.5 * self.distances[d] + f for f in self.get_org_fueling(d)]
+                self.dfuelings[d] += [0.5 * +f for f in self.get_org_fueling(d)]
 
             if gpx.has_data(self.epreuve, self.longueur, self.get_discipline(d), options=self.get_option(d)):
                 df = gpx.get_data(
@@ -127,18 +139,18 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
                 )
             else:
                 df = (
-                    pd.DataFrame(np.linspace(0, self.distances[d], 10), columns=["distance"])
+                    pd.DataFrame(np.linspace(0, fuelings, 10), columns=["distance"])
                     .assign(altitude=0.0)
                     .assign(elevation=0.0)
                     .assign(discipline=discipline)
                 )
 
-            df["distance"] *= self.distances[d] / df.distance.iloc[-1]
+            df["distance"] *= fuelings / df.distance.iloc[-1]
             df["elevation"] *= self.get_elevation(d) / np.max([df.elevation.clip(0, 1000).sum(), 0.1])
             data.append(df.assign(sequence=d * 2))
 
             self.fuelings += [f for f in self.get_org_fueling(d)]
-            ref_dist += self.distances[d]
+            ref_dist += fuelings
 
         self.fuelings = sorted(list(set(self.fuelings)))
 
@@ -315,10 +327,6 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
 
         fuels = data[~data["drinks"].isna()]
 
-        import matplotlib.pyplot as plt
-        from matplotlib.colors import LinearSegmentedColormap
-        from matplotlib.lines import Line2D
-
         fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(15, 5), sharex=True, gridspec_kw={"height_ratios": [5, 2]})
         fig.subplots_adjust(hspace=0)
         fig.patch.set_facecolor("#cdcdcd")
@@ -417,10 +425,6 @@ elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athle
 
         gperf = triathlon.data
         fuels = triathlon.data[~triathlon.data["drinks"].isna()]
-
-        import matplotlib.pyplot as plt
-        from matplotlib.colors import LinearSegmentedColormap
-        from matplotlib.lines import Line2D
 
         fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(15, 6), sharex=True)
         fig.subplots_adjust(hspace=0)

@@ -3,6 +3,14 @@ import streamlit as st
 from . import fueling
 
 
+def get_pace(pace):
+    if type(pace) == str:
+        swimming_pace = pace.split(":")
+        return float(swimming_pace[0]) * 60 + float(swimming_pace[1]) / 60
+    else:
+        return float(pace.hour) * 60 + float(pace.minute) / 60
+
+
 class Athlete:
     def __init__(
         self,
@@ -18,16 +26,14 @@ class Athlete:
         self.weight = self.config["weight_kg"]
 
         # Extract natation_speed
-        swimming_pace = (
-            float(self.config["swimming_sX100m"].hour) * 60 + float(self.config["swimming_sX100m"].minute) / 60
-        )
+        swimming_pace = get_pace(self.config["swimming_sX100m"])
         self.swimming_speed = 3600 / (10 * swimming_pace)
 
         # Extract cycling_speed
         self.cycling_speed = float(self.config["cycling_kmXh"])
 
         # Extract running_speed
-        running_pace = float(self.config["running_sXkm"].hour) * 60 + float(self.config["running_sXkm"].minute) / 60
+        running_pace = get_pace(self.config["running_sXkm"])
         self.running_speed = 3600 / running_pace
 
         # Global speeds
@@ -38,14 +44,8 @@ class Athlete:
         }
         self.dspeeds_slope = {"natation": 0.0, "cyclisme": 2.6, "course": 0.1}
 
-        self.transition1 = (
-            float(self.config["transition_cyc2run_s"].hour) * 60
-            + float(self.config["transition_cyc2run_s"].minute) / 60
-        )
-        self.transition2 = (
-            float(self.config["transition_swi2cyc_s"].hour) * 60
-            + float(self.config["transition_swi2cyc_s"].minute) / 60
-        )
+        self.transition1 = get_pace(self.config["transition_cyc2run_s"])
+        self.transition2 = get_pace(self.config["transition_swi2cyc_s"])
 
         self.sudation = sudation
 

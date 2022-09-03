@@ -39,6 +39,16 @@ course	16	453	562	671
         """
     )
 
+    """
+    50: 544*0.7
+    75: 544
+    100: 544*1.3
+        
+    https://www.lepape-info.com/entrainement/les-systemes-energetiques-en-natation/#:~:text=En%20natation%2C%20comme%20dans%20les,a%C3%A9robie%20qui%20utilise%20l'oxyg%C3%A8ne
+    https://britishswimschool.com/seattle/the-burn-how-many-calories-do-you-burn-swimming/#:~:text=Because%20most%20people%20are%20unable,and%20750%20calories%20per%20hour.
+
+    """
+
     calories = pd.read_csv(calories, sep="	").rename(columns={"activité_30min": "discipline"})
     correction = 1.0 + 0.4 * (calories["discipline"] == "course").astype(float)
     for w in ["55 kg", "70 kg", "85 kg"]:
@@ -102,6 +112,21 @@ def calculate_hydration(df, triathlon, athlete) -> pd.DataFrame:
 
 
 def calculate_kcalories(df, triathlon, athlete) -> pd.DataFrame:
+    """
+
+    Contrairement aux sports terrestres, en natation, la puissance mécanique est utilisée pour surpasser
+    la résistance de l’eau et des vagues. Cette puissance dépend du cube de la vitesse de déplacement.
+    ette relation implique qu’une petite augmentation de vitesse, nécessite une très forte augmentation de la puissance mécanique.
+    Par exemple, pour augmenter sa vitesse de 2%, il faudra générer une augmentation de 8% de sa puissance.
+    Un autre aspect important de la relation entre l’énergie et la propulsion est le coût énergétique. Cela correspond à la somme totale d’énergie
+    dépensée par le corps du nageur sur une distance donnée. Différentes équations permettent d’estimer la production d’énergie de chaque système énergétique.
+    Sur de très hautes intensités, tous les systèmes contribuent à la production d’énergie (à des niveaux différents selon la durée de l’effort).
+    Sur des intensités sous-maximales, toute la puissance mécanique est générée par le métabolisme aérobie.
+    En résumé, la natation est un sport où la dépense d’énergie est forte.
+    Cela est principalement dû aux contraintes qui sont imposées par son environnement.
+
+    2min de mieux au km avec combinaison
+    """
 
     if "kcalories" in df.columns:
         del df["kcalories"]
