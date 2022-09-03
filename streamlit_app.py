@@ -62,29 +62,23 @@ def format_stdb(config):
 
 
 @st.cache(persist=False, allow_output_mutation=True, suppress_st_warning=True, show_spinner=True)
-def load_athletes_configs():
+def load_athlete_config():
 
-    # info_box.info("Load athletes from db")
-    time.sleep(1)
-
-    athletes_db = firestore.Client().collection("athletes")
-    athletes_stream = athletes_db.stream()
-    athletes_configs = {doc.id: format_db2st(doc.to_dict()) for doc in athletes_stream}
+    # athletes_db = firestore.Client().collection("athletes")
+    # athletes_stream = athletes_db.stream()
+    # athlete_config = {doc.id: format_db2st(doc.to_dict()) for doc in athletes_stream}
     # info_box.empty()
 
-    cookies = cookie_manager.get_all()
-    athletes_configs = cookies
+    athlete_config = cookie_manager.get_all()
 
     # value = cookie_manager.get(cookie=cookie)
-    st.write(athletes_configs)
+    st.write(athlete_config)
     # st.write(value)
     # cookie = st.text_input("Cookie", key="1")
     # val = st.text_input("Value")
     # cookie_manager.set(cookie, val, expires_at=datetime.datetime(year=2024, month=1, day=1))
 
-    st.write(cookies)
-
-    return athletes_configs
+    return athlete_config
 
 
 @st.cache(persist=False, allow_output_mutation=True, suppress_st_warning=True, show_spinner=True)
@@ -98,7 +92,7 @@ def load_races_configs():
     return races_configs
 
 
-athletes_configs = load_athletes_configs()
+athlete_config = load_athlete_config()
 races_configs = load_races_configs()
 
 
@@ -116,7 +110,7 @@ def check_differences():
         "transition_cyc2run_s",
         "running_sXkm",
     ]:
-        st.write(athletes_configs[p], st.session_state[p])
+        st.write(athlete_config[p], st.session_state[p])
 
 
 def configure_race():
@@ -143,7 +137,7 @@ def configure_performance():
 
     st.slider(
         "Allure pour la natation",
-        value=athletes_configs["swimming_sX100m"],
+        value=athlete_config["swimming_sX100m"],
         min_value=datetime.time(1, 0),
         max_value=datetime.time(5, 0),
         step=datetime.timedelta(minutes=5),
@@ -152,7 +146,7 @@ def configure_performance():
 
     st.slider(
         "Transition nat./cycl.",
-        value=athletes_configs["transition_swi2cyc_s"],
+        value=athlete_config["transition_swi2cyc_s"],
         min_value=datetime.time(1, 0),
         max_value=datetime.time(5, 0),
         step=datetime.timedelta(minutes=15),
@@ -169,7 +163,7 @@ def configure_performance():
 
     st.slider(
         "Transition nat./cycl.",
-        value=athletes_configs["transition_cyc2run_s"],
+        value=athlete_config["transition_cyc2run_s"],
         min_value=datetime.time(1, 0),
         max_value=datetime.time(5, 0),
         step=datetime.timedelta(minutes=15),
@@ -178,7 +172,7 @@ def configure_performance():
 
     st.slider(
         "Allure pour la course à pieds",
-        value=athletes_configs["running_sXkm"],
+        value=athlete_config["running_sXkm"],
         min_value=datetime.time(3, 0),
         max_value=datetime.time(10, 0),
         step=datetime.timedelta(minutes=5),
@@ -259,7 +253,7 @@ def simulate_race():
         st.metric("transition cyc/course, minutes", str(st.session_state["transition_cyc2run_s"]))
         st.metric("Course, minutes par km", str(st.session_state["running_sXkm"]), 5)
 
-    athlete = trianer.Athlete(name="John doe", config=athletes_configs)
+    athlete = trianer.Athlete(name="John doe", config=athlete_config)
     simulation = trianer.Triathlon(epreuve=epreuve, races_configs=races_configs, athlete=athlete, info_box=info_box)
     folium_static(simulation.show_gpx_track())
 
@@ -277,12 +271,12 @@ def main():
         st.session_state.update(
             {
                 "page": "home",
-                "weight_kg": athletes_configs["weight_kg"],
-                "swimming_sX100m": athletes_configs["swimming_sX100m"],
-                "transition_swi2cyc_s": athletes_configs["transition_swi2cyc_s"],
-                "cycling_kmXh": athletes_configs["cycling_kmXh"],
-                "transition_cyc2run_s": athletes_configs["transition_cyc2run_s"],
-                "running_sXkm": athletes_configs["running_sXkm"],
+                "weight_kg": athlete_config["weight_kg"],
+                "swimming_sX100m": athlete_config["swimming_sX100m"],
+                "transition_swi2cyc_s": athlete_config["transition_swi2cyc_s"],
+                "cycling_kmXh": athlete_config["cycling_kmXh"],
+                "transition_cyc2run_s": athlete_config["transition_cyc2run_s"],
+                "running_sXkm": athlete_config["running_sXkm"],
             }
         )
 
@@ -297,7 +291,6 @@ def main():
 
         st.session_state.initialized = True
 
-    athletes_names = athletes_configs.keys()
     races_names = [r for r in races_configs.keys() if "Info" not in r]
 
     st.sidebar.markdown("""[website](https://trianer.guydegnol.net/)""")
