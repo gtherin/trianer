@@ -15,6 +15,14 @@ from persist import persist, load_widget_state
 from google.cloud import firestore
 
 
+import datetime
+
+
+@st.cache(allow_output_mutation=True)
+def get_manager():
+    return stx.CookieManager()
+
+
 st.set_option("deprecation.showPyplotGlobalUse", False)
 
 
@@ -23,6 +31,8 @@ if os.path.exists("/home/guydegnol/projects/trianer/trianer_db_credentials.json"
 
 
 info_box = st.empty()
+
+cookie_manager = get_manager()
 
 
 def get_time_variables():
@@ -61,6 +71,17 @@ def load_athletes_configs():
     athletes_stream = athletes_db.stream()
     athletes_configs = {doc.id: format_db2st(doc.to_dict()) for doc in athletes_stream}
     # info_box.empty()
+
+    cookies = cookie_manager.get_all()
+
+    value = cookie_manager.get(cookie=cookie)
+    st.write(athletes_configs["guydegnol"])
+    st.write(value)
+    cookie = st.text_input("Cookie", key="1")
+    val = st.text_input("Value")
+    cookie_manager.set(cookie, val, expires_at=datetime.datetime(year=2024, month=1, day=1))
+
+    st.write(cookies)
 
     return athletes_configs
 
@@ -332,38 +353,9 @@ PAGES = {
 }
 
 
-@st.cache(allow_output_mutation=True, hash_funcs={"_thread.RLock": lambda _: None})
-def init_router():
-    return stx.Router({"/home": home, "/landing": landing})
-
-
-def home():
-    return st.write("This is a home page")
-
-
-def landing():
-    return st.write("This is the landing page")
-
-
-import datetime
-
-st.write("# Cookie Manager")
-
-
-@st.cache(allow_output_mutation=True)
-def get_manager():
-    return stx.CookieManager()
-
-
 if __name__ == "__main__":
-    # load_widget_state()
-    # main()
-
-    cookie_manager = get_manager()
-
-    st.subheader("All Cookies:")
-    cookies = cookie_manager.get_all()
-    st.write(cookies)
+    load_widget_state()
+    main()
 
     c1, c2, c3 = st.columns(3)
 
@@ -395,9 +387,6 @@ if __name__ == "__main__":
         default=1,
     )
     st.info(f"{chosen_id=}")
-
-    image_url = "https://streamlit.io/images/brand/streamlit-logo-secondary-colormark-darktext.svg"
-    stx.bouncing_image(image_source=image_url, animate=True, animation_time=1500, height=200, width=600)
 
     val = stx.stepper_bar(steps=["Ready", "Get Set", "Go"])
     st.info(f"Phase #{val}")
