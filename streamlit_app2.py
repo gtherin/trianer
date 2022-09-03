@@ -73,10 +73,9 @@ def load_athletes_configs():
     # info_box.empty()
 
     cookies = cookie_manager.get_all()
-    athletes_configs = cookies
 
     # value = cookie_manager.get(cookie=cookie)
-    st.write(athletes_configs)
+    st.write(athletes_configs["guydegnol"])
     # st.write(value)
     # cookie = st.text_input("Cookie", key="1")
     # val = st.text_input("Value")
@@ -98,11 +97,21 @@ def load_races_configs():
     return races_configs
 
 
+@st.cache(persist=False, allow_output_mutation=True, suppress_st_warning=True, show_spinner=True)
+def load_default_user():
+    # info_box.info("Call load_default_user")
+    time.sleep(1)
+    # info_box.empty()
+    return "guydegnol"
+
+
+current_user = load_default_user()
 athletes_configs = load_athletes_configs()
 races_configs = load_races_configs()
 
 
 def check_differences():
+    current_user = st.session_state.current_user
 
     do_submit = False
 
@@ -116,7 +125,19 @@ def check_differences():
         "transition_cyc2run_s",
         "running_sXkm",
     ]:
-        st.write(athletes_configs[p], st.session_state[p])
+        if athletes_configs[current_user][p] != st.session_state[p]:
+            st.write(athletes_configs[current_user][p], st.session_state[p])
+            changes[p] = {f"{athletes_configs[current_user][p]} => {st.session_state[p]}"}
+            do_submit = True
+            athletes_configs[current_user][p] = st.session_state[p]
+
+    if do_submit:
+        info_box.info(f"For {current_user}, update {changes}")
+        time.sleep(2)
+        firestore.Client().collection("athletes").document(current_user).set(
+            format_stdb(athletes_configs[current_user])
+        )
+        info_box.empty()
 
 
 def configure_race():
@@ -143,7 +164,7 @@ def configure_performance():
 
     st.slider(
         "Allure pour la natation",
-        value=athletes_configs["swimming_sX100m"],
+        value=athletes_configs[current_user]["swimming_sX100m"],
         min_value=datetime.time(1, 0),
         max_value=datetime.time(5, 0),
         step=datetime.timedelta(minutes=5),
@@ -152,7 +173,7 @@ def configure_performance():
 
     st.slider(
         "Transition nat./cycl.",
-        value=athletes_configs["transition_swi2cyc_s"],
+        value=athletes_configs[current_user]["transition_swi2cyc_s"],
         min_value=datetime.time(1, 0),
         max_value=datetime.time(5, 0),
         step=datetime.timedelta(minutes=15),
@@ -163,13 +184,13 @@ def configure_performance():
         "Vitesse à plat en cyclisme",
         min_value=20,
         max_value=45,
-        value=["cycling_kmXh"],
+        value=athletes_configs[current_user]["cycling_kmXh"],
         key=persist("cycling_kmXh"),
     )
 
     st.slider(
         "Transition nat./cycl.",
-        value=athletes_configs["transition_cyc2run_s"],
+        value=athletes_configs[current_user]["transition_cyc2run_s"],
         min_value=datetime.time(1, 0),
         max_value=datetime.time(5, 0),
         step=datetime.timedelta(minutes=15),
@@ -178,7 +199,7 @@ def configure_performance():
 
     st.slider(
         "Allure pour la course à pieds",
-        value=athletes_configs["running_sXkm"],
+        value=athletes_configs[current_user]["running_sXkm"],
         min_value=datetime.time(3, 0),
         max_value=datetime.time(10, 0),
         step=datetime.timedelta(minutes=5),
@@ -247,10 +268,11 @@ def simulate_race():
     check_differences()
 
     epreuve = st.session_state["krace_name"]
+    current_user = st.session_state["current_user"]
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Athlete", str(st.session_state["swimming_sX100m"]))
+        st.metric("Athlete", st.session_state["current_user"])
         st.metric("Natation, secs pour 100m", str(st.session_state["swimming_sX100m"]))
     with col2:
         st.metric("transition nat/cyc, minutes", str(st.session_state["transition_swi2cyc_s"]))
@@ -259,7 +281,7 @@ def simulate_race():
         st.metric("transition cyc/course, minutes", str(st.session_state["transition_cyc2run_s"]))
         st.metric("Course, minutes par km", str(st.session_state["running_sXkm"]), 5)
 
-    athlete = trianer.Athlete(name="John doe", config=athletes_configs)
+    athlete = trianer.Athlete(name=current_user, config=athletes_configs[current_user])
     simulation = trianer.Triathlon(epreuve=epreuve, races_configs=races_configs, athlete=athlete, info_box=info_box)
     folium_static(simulation.show_gpx_track())
 
@@ -277,12 +299,12 @@ def main():
         st.session_state.update(
             {
                 "page": "home",
-                "weight_kg": athletes_configs["weight_kg"],
-                "swimming_sX100m": athletes_configs["swimming_sX100m"],
-                "transition_swi2cyc_s": athletes_configs["transition_swi2cyc_s"],
-                "cycling_kmXh": athletes_configs["cycling_kmXh"],
-                "transition_cyc2run_s": athletes_configs["transition_cyc2run_s"],
-                "running_sXkm": athletes_configs["running_sXkm"],
+                "weight_kg": athletes_configs[current_user]["weight_kg"],
+                "swimming_sX100m": athletes_configs[current_user]["swimming_sX100m"],
+                "transition_swi2cyc_s": athletes_configs[current_user]["transition_swi2cyc_s"],
+                "cycling_kmXh": athletes_configs[current_user]["cycling_kmXh"],
+                "transition_cyc2run_s": athletes_configs[current_user]["transition_cyc2run_s"],
+                "running_sXkm": athletes_configs[current_user]["running_sXkm"],
             }
         )
 
@@ -293,6 +315,7 @@ def main():
             time.sleep(1)
             info_box.empty()
 
+        st.session_state.current_user = current_user
         st.session_state.krace_name = "Elsassman (L)"
 
         st.session_state.initialized = True
@@ -301,6 +324,7 @@ def main():
     races_names = [r for r in races_configs.keys() if "Info" not in r]
 
     st.sidebar.markdown("""[website](https://trianer.guydegnol.net/)""")
+    st.sidebar.selectbox("Athlete", athletes_names, key="current_user")
     st.sidebar.selectbox("Epreuve", races_names, key="krace_name")
 
     page = st.sidebar.radio("Menu", tuple(PAGES.keys()), format_func=str.capitalize)
