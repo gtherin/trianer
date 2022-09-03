@@ -74,12 +74,12 @@ def load_athletes_configs():
 
     cookies = cookie_manager.get_all()
 
-    value = cookie_manager.get(cookie=cookie)
+    # value = cookie_manager.get(cookie=cookie)
     st.write(athletes_configs["guydegnol"])
-    st.write(value)
-    cookie = st.text_input("Cookie", key="1")
-    val = st.text_input("Value")
-    cookie_manager.set(cookie, val, expires_at=datetime.datetime(year=2024, month=1, day=1))
+    # st.write(value)
+    # cookie = st.text_input("Cookie", key="1")
+    # val = st.text_input("Value")
+    # cookie_manager.set(cookie, val, expires_at=datetime.datetime(year=2024, month=1, day=1))
 
     st.write(cookies)
 
