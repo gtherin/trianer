@@ -199,61 +199,62 @@ def simulate_race():
 
     epreuve = st.session_state["krace_name"]
 
-    st.header("Parametres de l'athlete")
+    expander = st.expander("Parametres de l'athlete")
+    with expander:
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        swimming_sX100m = st.slider(
-            "Allure pour la natation",
-            value=get_athlete_param("swimming_sX100m"),
-            min_value=datetime.time(1, 0),
-            max_value=datetime.time(5, 0),
-            step=datetime.timedelta(minutes=5),
-            key=persist("swimming_sX100m"),
-            # on_change=set_athlete_param,
-        )
-        # set_athlete_param("swimming_sX100m", swimming_sX100m)
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            swimming_sX100m = st.slider(
+                "Allure pour la natation",
+                value=get_athlete_param("swimming_sX100m"),
+                min_value=datetime.time(1, 0),
+                max_value=datetime.time(5, 0),
+                step=datetime.timedelta(minutes=5),
+                key=persist("swimming_sX100m"),
+                # on_change=set_athlete_param,
+            )
+            # set_athlete_param("swimming_sX100m", swimming_sX100m)
 
-    with col2:
-        st.number_input(
-            "Vitesse à plat en cyclisme",
-            min_value=20,
-            max_value=45,
-            value=30,
-            key=persist("cycling_kmXh"),
-        )
+        with col2:
+            st.number_input(
+                "Vitesse à plat en cyclisme",
+                min_value=20,
+                max_value=45,
+                value=30,
+                key=persist("cycling_kmXh"),
+            )
 
-    with col3:
-        st.slider(
-            "Allure pour la course à pieds",
-            value=get_athlete_param("running_sXkm"),
-            min_value=datetime.time(3, 0),
-            max_value=datetime.time(10, 0),
-            step=datetime.timedelta(minutes=5),
-            key=persist("running_sXkm"),
-        )
+        with col3:
+            st.slider(
+                "Allure pour la course à pieds",
+                value=get_athlete_param("running_sXkm"),
+                min_value=datetime.time(3, 0),
+                max_value=datetime.time(10, 0),
+                step=datetime.timedelta(minutes=5),
+                key=persist("running_sXkm"),
+            )
 
-    col1, col2 = st.columns(2)
-    with col1:
-        transition_swi2cyc_s = st.slider(
-            "Transition nat./cycl.",
-            value=get_athlete_param("transition_swi2cyc_s"),
-            min_value=datetime.time(1, 0),
-            max_value=datetime.time(5, 0),
-            step=datetime.timedelta(minutes=15),
-            key=persist("transition_swi2cyc_s"),
-        )
-        # set_athlete_param("transition_swi2cyc_s", transition_swi2cyc_s)
+        col1, col2 = st.columns(2)
+        with col1:
+            transition_swi2cyc_s = st.slider(
+                "Transition nat./cycl.",
+                value=get_athlete_param("transition_swi2cyc_s"),
+                min_value=datetime.time(1, 0),
+                max_value=datetime.time(5, 0),
+                step=datetime.timedelta(minutes=15),
+                key=persist("transition_swi2cyc_s"),
+            )
+            # set_athlete_param("transition_swi2cyc_s", transition_swi2cyc_s)
 
-    with col2:
-        st.slider(
-            "Transition nat./cycl.",
-            value=get_athlete_param("transition_cyc2run_s"),
-            min_value=datetime.time(1, 0),
-            max_value=datetime.time(5, 0),
-            step=datetime.timedelta(minutes=15),
-            key=persist("transition_cyc2run_s"),
-        )
+        with col2:
+            st.slider(
+                "Transition nat./cycl.",
+                value=get_athlete_param("transition_cyc2run_s"),
+                min_value=datetime.time(1, 0),
+                max_value=datetime.time(5, 0),
+                step=datetime.timedelta(minutes=15),
+                key=persist("transition_cyc2run_s"),
+            )
 
     # configure_performance()
 
@@ -349,16 +350,3 @@ if __name__ == "__main__":
         cookie = st.text_input("Cookie", key="2")
         if st.button("Delete"):
             cookie_manager.delete(cookie)
-
-    chosen_id = stx.tab_bar(
-        data=[
-            stx.TabBarItemData(id=1, title="ToDo", description="Tasks to take care of"),
-            stx.TabBarItemData(id=2, title="Done", description="Tasks taken care of"),
-            stx.TabBarItemData(id=3, title="Overdue", description="Tasks missed out"),
-        ],
-        default=1,
-    )
-    st.info(f"{chosen_id=}")
-
-    val = stx.stepper_bar(steps=["Ready", "Get Set", "Go"])
-    st.info(f"Phase #{val}")
