@@ -11,10 +11,12 @@ pandas-datareader
 #contextily
 #descartes
 meteostat
+uncertainties
 
 seaborn
 plotly
 matplotlib
+
 
 #ipykernel
 #jupyterlab

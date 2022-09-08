@@ -21,22 +21,103 @@ def get_kcalories(weight, discipline="all", speed=None):
     """Get calories per hour"""
 
     # Calories for 30 minutes
+    # source https://www.health.harvard.edu/diet-and-weight-loss/calories-burned-in-30-minutes-for-people-of-three-different-weights
     calories = StringIO(
         """activité_30min	speed	55 kg	70 kg	85 kg
 natation		300	360	420
-
 cyclisme	19	210	252	290
 cyclisme	23.5	300	360	420
 cyclisme	27.5	360	432	504
 cyclisme	35	495	594	693
-
 course	5.5	107	133	159
 course	6.5	135	175	189
 course	8	240	288	336
 course	9.5	300	360	420
 course	12	375	450	525
 course	16	453	562	671
-        """
+
+swimming		300	360	420
+
+cycling	19	210	252	290
+cycling	23.5	300	360	420
+cycling	27.5	360	432	504
+cycling	35	495	594	693
+VTT		255	306	357
+Vélo elliptique	0	270	324	378
+
+walking	5.5	107	133	159
+walking	6.5	135	175	189
+hiking	0	170	216	252
+golfing (sans porter les clubs)	0	105	126	147
+golfing (en portant les clubs)	0	165	198	231
+
+running	5.5	107	133	159
+running	6.5	135	175	189
+running	8	240	288	336
+running	9.5	300	360	420
+running	12	375	450	525
+running	16	453	562	671
+
+weight_lifting_general		90	108	126
+weight_lifting_vigorus	0	180	216	252
+
+Aquagym		120	144	168
+Hatha_yoga		120	144	168
+
+Cardio_modéré		135	162	189
+Aérobic_à_faible_impact		165	198	231
+Cardio_de_haute_intensité		240	306	336
+Bowling	0	90	108	125
+Frisbee	0	85	105	125
+Volleyball		90	108	126
+Équitation		57	70	84
+
+Kayak	0	150	180	210
+rafting	0	150	180	210
+Skateboard	0	150	180	210
+
+dancing	0	165	198	231
+Ski alpin	0	180	216	252
+Baignade	0	180	216	252
+Ski nautique	0	180	216	252
+Catch	0	180	216	252
+Machine_pour_monter_des_marches	0	180	216	252
+Basket-fauteuil	0	195	234	273
+
+Rower		210	252	294
+ice skating	0	210	252	294
+Racquetball	0	210	252	294
+Plongée	0	210	252	294
+tennis	0	210	252	294
+
+Patin à roulettes	0	311	386	461
+Football européen	0	210	252	294
+climbing	0	227	282	336
+Ski de fond	0	198	246	293
+Corde à sauter (intensif)	0	340	421	503
+Corde à sauter (intensité moyenne)	0	226	281	335
+handball	0	360	432	504
+
+basket	0	240	288	336
+football	0	240	288	336
+hockey	0	240	288	336
+Beach-volley	0	240	288	336
+Marche en raquettes	0	240	288	336
+
+boxe	0	270	324	378
+judo	0	300	360	420
+karaté	0	300	360	420
+racquetball	0	300	360	420
+
+sleeping		19	22	26
+reading		34	40	47
+queuing		28	35	41
+cooking		57	70	84
+playing with kids		114	141	168
+car wash		135	162	189
+painting		142	176	210
+moving_furniture		170	211	252
+moving_boxes		210	252	294"""
     )
 
     """
@@ -50,6 +131,14 @@ course	16	453	562	671
     """
 
     calories = pd.read_csv(calories, sep="	").rename(columns={"activité_30min": "discipline"})
+
+    for w in ["speed", "55 kg", "70 kg", "85 kg"]:
+        calories[w] = calories[w].astype("float")
+
+    calories["MET 55 kg"] = calories["55 kg"] / 107
+    calories["MET 70 kg"] = calories["70 kg"] / 133
+    calories["MET 85 kg"] = calories["85 kg"] / 159
+
     correction = 1.0 + 0.4 * (calories["discipline"] == "course").astype(float)
     for w in ["55 kg", "70 kg", "85 kg"]:
         calories[w] *= 2.0 * correction

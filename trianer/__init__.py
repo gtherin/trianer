@@ -5,3 +5,6 @@ from .fueling import *
 from .weather import *
 from .athlete import Athlete
 from .triathlon import *
+
+from .diver import *
+from . import divers
