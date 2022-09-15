@@ -18,25 +18,28 @@ def get_calweights(masse):
 
 
 def get_kcalories(weight, discipline="all", speed=None):
+
+    en2fr = {
+        "swimming": "natation",
+        "cycling": "cyclisme",
+        "running": "course",
+        "walking": "marche",
+        "rower": "rameur",
+        "climbing": "escalade",
+        "hiking": "randonnée",
+        "golfing": "golf",
+        "jumping_rope": "corde_a_sauter",
+    }
+
     """Get calories per hour"""
 
     # Calories for 30 minutes
     # source https://www.health.harvard.edu/diet-and-weight-loss/calories-burned-in-30-minutes-for-people-of-three-different-weights
+    # https://www.urmc.rochester.edu/encyclopedia/content.aspx?ContentTypeID=41&ContentID=CalorieBurnCalc&CalorieBurnCalc_Parameters=80
     calories = StringIO(
         """activité_30min	speed	55 kg	70 kg	85 kg
-natation		300	360	420
-cyclisme	19	210	252	290
-cyclisme	23.5	300	360	420
-cyclisme	27.5	360	432	504
-cyclisme	35	495	594	693
-course	5.5	107	133	159
-course	6.5	135	175	189
-course	8	240	288	336
-course	9.5	300	360	420
-course	12	375	450	525
-course	16	453	562	671
-
-swimming		300	360	420
+swimming	1	180	216	252
+swimming	3	300	360	420
 
 cycling	19	210	252	290
 cycling	23.5	300	360	420
@@ -48,8 +51,8 @@ Vélo elliptique	0	270	324	378
 walking	5.5	107	133	159
 walking	6.5	135	175	189
 hiking	0	170	216	252
-golfing (sans porter les clubs)	0	105	126	147
-golfing (en portant les clubs)	0	165	198	231
+golfing	1	105	126	147
+golfing	3	165	198	231
 
 running	5.5	107	133	159
 running	6.5	135	175	189
@@ -58,79 +61,68 @@ running	9.5	300	360	420
 running	12	375	450	525
 running	16	453	562	671
 
-weight_lifting_general		90	108	126
-weight_lifting_vigorus	0	180	216	252
+weight_lifting	1	90	108	126
+weight_lifting	3	180	216	252
 
-Aquagym		120	144	168
-Hatha_yoga		120	144	168
+yoga		120	144	168
 
-Cardio_modéré		135	162	189
+cardio	1	135	162	189
+cardio	3	240	306	336
+
 Aérobic_à_faible_impact		165	198	231
-Cardio_de_haute_intensité		240	306	336
 Bowling	0	90	108	125
 Frisbee	0	85	105	125
 Volleyball		90	108	126
 Équitation		57	70	84
 
-Kayak	0	150	180	210
-rafting	0	150	180	210
-Skateboard	0	150	180	210
+kayaking	0	150	180	210
 
 dancing	0	165	198	231
-Ski alpin	0	180	216	252
-Baignade	0	180	216	252
-Ski nautique	0	180	216	252
-Catch	0	180	216	252
-Machine_pour_monter_des_marches	0	180	216	252
-Basket-fauteuil	0	195	234	273
+skiing	0	180	216	252
+catch	0	180	216	252
+stepper	0	180	216	252
+basket-fauteuil	0	195	234	273
 
-Rower		210	252	294
-ice skating	0	210	252	294
-Racquetball	0	210	252	294
-Plongée	0	210	252	294
-tennis	0	210	252	294
-
-Patin à roulettes	0	311	386	461
-Football européen	0	210	252	294
+skating	1	210	252	294
+skating	2	311	386	461
 climbing	0	227	282	336
-Ski de fond	0	198	246	293
-Corde à sauter (intensif)	0	340	421	503
-Corde à sauter (intensité moyenne)	0	226	281	335
+Ski_de_fond	0	198	246	293
+jumping_rope	3	340	421	503
+jumping_rope	2	226	281	335
 handball	0	360	432	504
 
 basket	0	240	288	336
-football	0	240	288	336
-hockey	0	240	288	336
-Beach-volley	0	240	288	336
-Marche en raquettes	0	240	288	336
+football	0	210	252	294
 
-boxe	0	270	324	378
 judo	0	300	360	420
-karaté	0	300	360	420
-racquetball	0	300	360	420
 
 sleeping		19	22	26
 reading		34	40	47
 queuing		28	35	41
 cooking		57	70	84
-playing with kids		114	141	168
-car wash		135	162	189
+playing_with_kids		114	141	168
+car_wash		135	162	189
 painting		142	176	210
 moving_furniture		170	211	252
 moving_boxes		210	252	294"""
     )
 
-    """
-    50: 544*0.7
-    75: 544
-    100: 544*1.3
-        
-    https://www.lepape-info.com/entrainement/les-systemes-energetiques-en-natation/#:~:text=En%20natation%2C%20comme%20dans%20les,a%C3%A9robie%20qui%20utilise%20l'oxyg%C3%A8ne
-    https://britishswimschool.com/seattle/the-burn-how-many-calories-do-you-burn-swimming/#:~:text=Because%20most%20people%20are%20unable,and%20750%20calories%20per%20hour.
-
-    """
+    more_sports = {
+        "handball": ["dodgeball"],
+        "judo": ["boxing", "karaté"],
+        "football": ["tennis", "rower", "racquetball", "squash", "diving"],
+        "kayaking": ["rafting", "Skateboard"],
+        "yoga": ["aquagym", "tai_chi"],
+        "basket": ["rugby", "hockey", "beach-volley", "Marche_en_raquettes"],
+    }
 
     calories = pd.read_csv(calories, sep="	").rename(columns={"activité_30min": "discipline"})
+
+    for r, ss in more_sports.items():
+        for s in ss:
+            calories = pd.concat(
+                [calories, calories.query(f"discipline=='{r}'").assign(discipline=s)], axis=0
+            ).reset_index(drop=True)
 
     for w in ["speed", "55 kg", "70 kg", "85 kg"]:
         calories[w] = calories[w].astype("float")
@@ -139,9 +131,11 @@ moving_boxes		210	252	294"""
     calories["MET 70 kg"] = calories["70 kg"] / 133
     calories["MET 85 kg"] = calories["85 kg"] / 159
 
-    correction = 1.0 + 0.4 * (calories["discipline"] == "course").astype(float)
+    correction = 1.0  # + 0.4 * (calories["discipline"] == "course").astype(float)
+    calories["X kg"] = 0.0
     for w in ["55 kg", "70 kg", "85 kg"]:
         calories[w] *= 2.0 * correction
+        calories["X kg"] += 0.33 * calories[w]
 
     if weight is None:
         return calories
@@ -163,6 +157,43 @@ moving_boxes		210	252	294"""
     # print(discipline, speed, calories["atl"].iloc[x])
 
     return calories["atl"].iloc[x]
+
+
+"""
+
+    https://www.ericfavre.com/lifestyle/tableau-depenses-des-calories/#:~:text=Par%20exemple%2C%20pour%20un%20homme,1%2C8%20%3D%203006%20kcal.
+    https://www.lepape-info.com/entrainement/les-systemes-energetiques-en-natation/#:~:text=En%20natation%2C%20comme%20dans%20les,a%C3%A9robie%20qui%20utilise%20l'oxyg%C3%A8ne
+    https://britishswimschool.com/seattle/the-burn-how-many-calories-do-you-burn-swimming/#:~:text=Because%20most%20people%20are%20unable,and%20750%20calories%20per%20hour.
+
+# Do it in a navigator
+https://www.strava.com/oauth/authorize?client_id=93746&redirect_uri=http://localhost&response_type=code&approval_prompt=force&scope=activity:read_all
+=> GET: code=3f5b0c1958bc3b5271771322048289377bf5580d
+
+# Use new received code
+https://www.strava.com/oauth/token?client_id=93746&client_secret=310f65abdda89164047e3881c3f3ec674f968665&code=3f5b0c1958bc3b5271771322048289377bf5580d&grant_type=authorization_code
+=> POST: access_token=8e7ba78aef1a1f5f867a14c9d577be274c3b1ef3
+
+https://www.strava.com/api/v3/athlete/activities?access_token=8e7ba78aef1a1f5f867a14c9d577be274c3b1ef3
+
+
+
+https://www.strava.com/oauth/token?client_id=93746&client_secret=310f65abdda89164047e3881c3f3ec674f968665&code=8e7ba78aef1a1f5f867a14c9d577be274c3b1ef3&grant_type=refresh_token
+
+
+https://www.strava.com/oauth/authorize?client_id=93746&redirect_uri=http://developers.strava.com&response_type=code&approval_prompt=force&scope=profile:read_all,activity:read_all
+
+https://www.strava.com/oauth/authorize?client_id=93746&redirect_uri=http://localhost&response_type=code&approval_prompt=force&scope=read_all
+
+
+=>
+http://localhost/?state=&code=04eaa98832882031a3808f68fe0f906e5cac1b41&scope=read,read_all
+http://localhost/?state=&code=ee79113371c136533bfe6d80347dcb4665996817&scope=read_all,activity:read_all,profile:read_all
+=>
+
+https://www.strava.com/api/v3/athlete/activities?client_id=93746&access_token=9f4a54258fffb124953127fe1bf8680abeaf8e9d
+
+
+    """
 
 
 def calculate_hydration(df, triathlon, athlete) -> pd.DataFrame:

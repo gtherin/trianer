@@ -16,6 +16,10 @@ uncertainties
 seaborn
 plotly
 matplotlib
+sklearn
+xgboost
+
+flaml
 
 
 #ipykernel
