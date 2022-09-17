@@ -5,8 +5,9 @@ import scipy as sp
 from scipy import ndimage
 
 import uncertainties as unc
-from uncertainties.umath import log
-from scipy.optimize import minimize_scalar, minimize
+
+# from uncertainties.umath import log
+from scipy.optimize import minimize
 
 # gravity acceleration
 g = 9.80665  # m/s2
@@ -57,12 +58,12 @@ def get_trajectory(time_descent, time_ascent, max_depth) -> pd.Series:
     return pd.Series(y3, index=x3)
 
 
-def get_volume_tissues(weight_body, weight_ballast, volume_suit, volume_gas, speed_d, speed_a, depth_eq_d, depth_eq_a):
+def get_volume_tissues(mass_body, mass_ballast, volume_suit, volume_gas, speed_d, speed_a, depth_eq_d, depth_eq_a):
     """Calculation of the volume occupied by tissue of the freediver body from
     the descent and ascent critical depth, the depths where the diver stop to swim and start to glide.
 
-    weight_body    = mass of the body
-    weight_ballast : mass of the ballast
+    mass_body    = mass of the body
+    mass_ballast : mass of the ballast
     volume_suit   = volume of the suit
     volume_gas   = volume_lungs : volume of the compressible (gaseous part)  part of the body at p_0 pressure
     speed_d   = descent speed
@@ -72,41 +73,25 @@ def get_volume_tissues(weight_body, weight_ballast, volume_suit, volume_gas, spe
 
     return tissues volume +- error
     """
+
+    speed2 = speed_a ** 2 + speed_d ** 2
+    pressure_eq_d = pressure_0 + depth_eq_d * g * r_water
+    pressure_eq_a = pressure_0 + depth_eq_a * g * r_water
+    press_speed2_d = pressure_eq_d * speed_d ** 2
+    press_speed2_a = pressure_eq_a * speed_a ** 2
+    ptot = pressure_eq_a * pressure_eq_d * r_neo * speed2
+
+    def get_func(depth):
+        return pressure_0 * r_neo * (r_water - r_nfoam) + depth * g * r_water * (r_water - r_neo) * r_nfoam
+
     Vt = (
-        weight_ballast
-        - (weight_ballast * r_water) / r_ballast
+        mass_ballast * (1 - r_water / r_ballast)
         - (
-            -(
-                weight_body
-                * (pressure_0 + depth_eq_a * g * r_water)
-                * (pressure_0 + depth_eq_d * g * r_water)
-                * r_neo
-                * (speed_a ** 2 + speed_d ** 2)
-            )
-            + pressure_0
-            * r_water
-            * r_neo
-            * (
-                (pressure_0 + depth_eq_a * g * r_water) * speed_a ** 2
-                + (pressure_0 + depth_eq_d * g * r_water) * speed_d ** 2
-            )
-            * volume_gas
-            + (
-                (pressure_0 + depth_eq_a * g * r_water)
-                * (pressure_0 * r_neo * (r_water - r_nfoam) + depth_eq_d * g * r_water * (r_water - r_neo) * r_nfoam)
-                * speed_a ** 2
-                + (pressure_0 + depth_eq_d * g * r_water)
-                * (pressure_0 * r_neo * (r_water - r_nfoam) + depth_eq_a * g * r_water * (r_water - r_neo) * r_nfoam)
-                * speed_d ** 2
-            )
-            * volume_suit
+            -mass_body * ptot
+            + pressure_0 * r_water * r_neo * (press_speed2_a + press_speed2_d) * volume_gas
+            + (press_speed2_a * get_func(depth_eq_d) + press_speed2_d * get_func(depth_eq_a)) * volume_suit
         )
-        / (
-            (pressure_0 + depth_eq_a * g * r_water)
-            * (pressure_0 + depth_eq_d * g * r_water)
-            * r_neo
-            * (speed_a ** 2 + speed_d ** 2)
-        )
+        / ptot
     ) / r_water
     return Vt
 
@@ -128,33 +113,33 @@ def get_drag_coefficient(volume_suit, volume_gas, speed_d, speed_a, depth_eq_d, 
     mass_toid = r_neo * (volume_gas + volume_suit) - r_nfoam * volume_suit
     volume_toid = mass_toid / r_neo
 
-    pressure_eq_a = pressure_0 + depth_eq_a * g * r_water
     pressure_eq_d = pressure_0 + depth_eq_d * g * r_water
+    pressure_eq_a = pressure_0 + depth_eq_a * g * r_water
 
     deltax_eq_a = pressure_eq_a / g / r_water
     deltax_eq_d = pressure_eq_d / g / r_water
 
-    C = -(depth_eq_a - depth_eq_d) * pressure_0 * volume_toid / (deltax_eq_a * deltax_eq_d * speed2)
-    return C
+    return (depth_eq_d - depth_eq_a) * pressure_0 * volume_toid / (deltax_eq_a * deltax_eq_d * speed2)
 
 
 def get_total_work(
+    surname,
     depth_max,
     mass_body,
     mass_ballast,
     volume_incompress,
     volume_suit,
     volume_gas,
-    speed_d,
-    speed_a,
+    speed_descent,
+    speed_ascent,
     drag_coefficient,
 ):
     """Calculation of the mechanical work spent for the descent
 
     depth_max   = depth_max
-    weight_body    = mass of the body
-    weight_ballast : mass of the ballast
-    volume_incompress   = get_volume_tissues(weight_body, weight_ballast, volume_suit, volume_gas, speed_d, speed_a, depth_eq_d, depth_eq_a) : volume of the incompressible (liquid and solid part) part of the body
+    mass_body    = mass of the body
+    mass_ballast : mass of the ballast
+    volume_incompress   = get_volume_tissues(mass_body, mass_ballast, volume_suit, volume_gas, speed_descent, speed_a, depth_eq_d, depth_eq_a) : volume of the incompressible (liquid and solid part) part of the body
     volume_suit   = volume of the suit
     volume_gas   = volume_lungs : volume of the compressible (gaseous part)  part of the body at p_0 pressure
     speed_d   = descet speed : descent speed
@@ -166,193 +151,204 @@ def get_total_work(
     force_archimede1 = g * rho * (mass_ballast / rhob + (rhonf * volume_suit) / rhon + volume_incompress)
     force_archimede2 = g * rho * (volume_gas + (1 - rhonf / rhon) * volume_suit)
 
-    force_drag_d = drag_coefficient * speed_d ** 2
-    force_drag_a = drag_coefficient * speed_a ** 2
+    if force_weight <= 0:
+        print(f"{surname} force_weight {force_weight} is negative")
 
-    force_d = force_drag_d - force_weight + force_archimede1
-    force_a = force_drag_a + force_weight - force_archimede1
+    if force_archimede1 <= 0:
+        print(f"{surname} force_archimede1 {force_archimede1} is negative")
 
-    work = depth_max * force_a + pressure_0 * (
-        +force_a
-        - force_d
-        - 2 * force_archimede2
-        - force_archimede2 * log(1 + (depth_max * g * rho) / pressure_0)
-        + force_archimede2 * log(force_archimede2 / force_a)
-        + force_archimede2 * log(-force_archimede2 / force_d)
-    ) / (g * rho)
+    if force_archimede2 <= 0:
+        print(f"{surname} force_archimede2 {force_archimede2} is negative")
+
+    force_drag_descent = drag_coefficient * speed_descent ** 2
+    force_drag_ascent = drag_coefficient * speed_ascent ** 2
+
+    if force_drag_descent <= 0:
+        print(f"{surname} force_drag_descent {force_drag_descent} is negative")
+
+    if force_drag_ascent <= 0:
+        print(f"{surname} force_drag_ascent {force_drag_ascent} is negative")
+
+    force_descent = force_drag_descent - force_weight + force_archimede1
+    force_ascent = force_drag_ascent + force_weight - force_archimede1
+
+    pressure_depth_max = pressure_0 + depth_max * g * rho
+
+    log_func = np.log if type(force_archimede2) == pd.Series else unc.umath.log
+
+    if force_descent >= 0:
+        print(
+            f"{surname} force_descent should be negative",
+            force_descent,
+            "=",
+            force_drag_descent,
+            "-",
+            force_weight,
+            "+",
+            force_archimede1,
+            "; archimede2=",
+            force_archimede2,
+        )
+        force_descent *= -1
+
+    if force_ascent <= 0:
+        print(
+            f"{surname} force_ascent",
+            force_archimede2,
+            force_ascent,
+            force_drag_ascent,
+            force_weight,
+            force_archimede1,
+        )
+
+    work_core = force_ascent - force_descent - 2 * force_archimede2
+    work_core += -force_archimede2 * log_func(pressure_depth_max / pressure_0)
+    work_core += force_archimede2 * log_func(force_archimede2 / force_ascent)
+    work_core += force_archimede2 * log_func(-force_archimede2 / force_descent)
+
+    work = depth_max * force_ascent + pressure_0 * work_core / (g * rho)
+
     return work
 
 
 class Diver:
     def __init__(self, data: dict) -> None:
-        """
-        m : mass of the body
-        M : mass of the body + ballast + suit
-        mb : mass of the ballast
-        ms : mass of the suit
-        Vt : volume of the incompressible (liquid and solid part) part of the body
-        Vg : volume of the compressible (gaseous part)  part of the body at p_0 pressure
-        Vb : volume of the ballast
-        Vs : volume of the suit
-        Vsi : volume of the suit incompressible
-        Vsg : volume of the suit gaseous
-        vD : descent speed
-        vA : ascension speed
-        CC : hydrodynamic drag constant
-
-        """
-
         self.data = data
         for c in ["surname", "depth_max", "speed_descent", "speed_ascent"]:
             setattr(self, c, data[c])
+        for c in ["mass_body", "mass_ballast", "volume_suit", "volume_lungs"]:
+            setattr(self, c, data[c])
 
-    def get_drag_force(self) -> None:
-
-        Vs_U = self.data["volume_suit"]
-        Vg_U = self.data["volume_lungs"]
-        depth_gliding_descent = unc.ufloat(
+        self.depth_gliding_descent = unc.ufloat(
             self.data["depth_gliding_descent"], self.data["depth_gliding_descent_error"]
         )
-        depth_gliding_ascent = unc.ufloat(self.data["depth_gliding_ascent"], self.data["depth_gliding_ascent_error"])
-
-        # Drag constant estimation
-        C_U = get_drag_coefficient(
-            Vs_U, Vg_U, self.speed_descent, self.speed_ascent, depth_gliding_descent, depth_gliding_ascent
+        self.depth_gliding_ascent = unc.ufloat(
+            self.data["depth_gliding_ascent"], self.data["depth_gliding_ascent_error"]
         )
-        self.data["drag constant"] = C_U.n
-        self.data["error drag constant"] = C_U.s
-
-        return C_U
-
-    def minimize(self, method=None) -> None:
-
-        weight_body = self.data["weight_body"]
-        weight_ballast = self.data["weight_ballast"]
-        volume_suit = self.data["volume_suit"]
-        volume_lungs = self.data["volume_lungs"]
-        depth_gliding_descent = unc.ufloat(
-            self.data["depth_gliding_descent"], self.data["depth_gliding_descent_error"]
-        )
-        depth_gliding_ascent = unc.ufloat(self.data["depth_gliding_ascent"], self.data["depth_gliding_ascent_error"])
 
         # Tissue volume estimation
-        volume_tissues = get_volume_tissues(
-            weight_body,
-            weight_ballast,
-            volume_suit,
-            volume_lungs,
+        self.volume_tissues = get_volume_tissues(
+            self.mass_body,
+            self.mass_ballast,
+            self.volume_suit,
+            self.volume_lungs,
             self.speed_descent,
             self.speed_ascent,
-            depth_gliding_descent,
-            depth_gliding_ascent,
+            self.depth_gliding_descent,
+            self.depth_gliding_ascent,
         )
-        self.data["tissues volume"] = volume_tissues.n
-        self.data["error tissues volume"] = volume_tissues.s
+
+        print(self.volume_lungs)
+        print(self.volume_suit)
+        print(self.volume_tissues.n)
+        print(self.mass_body / r_water)
 
         # Drag constant estimation
-        drag_coefficient = get_drag_coefficient(
-            volume_suit,
-            volume_lungs,
+        self.drag_coefficient = get_drag_coefficient(
+            self.volume_suit,
+            self.volume_lungs,
             self.speed_descent,
             self.speed_ascent,
-            depth_gliding_descent,
-            depth_gliding_ascent,
+            self.depth_gliding_descent,
+            self.depth_gliding_ascent,
         )
+
+    def minimize(self, method=None, verbose=True) -> None:
 
         # Descent work estimation
         total_work = get_total_work(
+            self.surname,
             self.depth_max,
-            weight_body,
-            0.0,
-            volume_tissues,
-            volume_suit,
-            volume_lungs,
+            self.mass_body,
+            self.mass_ballast,
+            self.volume_tissues,
+            self.volume_suit,
+            self.volume_lungs,
             self.speed_descent,
             self.speed_ascent,
-            drag_coefficient,
+            self.drag_coefficient,
         )
-        self.data["descent work"] = total_work.n
-        self.data["error descent work"] = total_work.s
 
         # Function to minimize with respect to the user characteristics
         # mb and Tsmm variables to minimize
         # The different versions are used to estimate the uncertainty
         def f(param):
             mb, Tsmm = param
-            WDA = get_total_work(
+            return get_total_work(
+                self.surname,
                 self.depth_max,
-                weight_body,
+                self.mass_body,
                 mb,
-                volume_tissues.n,
+                self.volume_tissues.n,
                 Tsmm / 1000 * 2,
-                volume_lungs,
+                self.volume_lungs,
                 self.speed_descent,
                 self.speed_ascent,
-                drag_coefficient.n,
+                self.drag_coefficient.n,
             )
-            return WDA
 
         def fplusVt(param):
             mb, Tsmm = param
-            WDA = get_total_work(
+            return get_total_work(
+                self.surname,
                 self.depth_max,
-                weight_body,
+                self.mass_body,
                 mb,
-                volume_tissues.n + volume_tissues.s,
+                self.volume_tissues.n + self.volume_tissues.s,
                 Tsmm / 1000 * 2,
-                volume_lungs,
+                self.volume_lungs,
                 self.speed_descent,
                 self.speed_ascent,
-                drag_coefficient.n,
+                self.drag_coefficient.n,
             )
-            return WDA
 
         def fminusVt(param):
             mb, Tsmm = param
-            WDA = get_total_work(
+            return get_total_work(
+                self.surname,
                 self.depth_max,
-                weight_body,
+                self.mass_body,
                 mb,
-                volume_tissues.n - volume_tissues.s,
+                self.volume_tissues.n - self.volume_tissues.s,
                 Tsmm / 1000 * 2,
-                volume_lungs,
+                self.volume_lungs,
                 self.speed_descent,
                 self.speed_ascent,
-                drag_coefficient.n,
+                self.drag_coefficient.n,
             )
-            return WDA
 
         def fplusC(param):
             mb, Tsmm = param
-            WDA = get_total_work(
+            return get_total_work(
+                self.surname,
                 self.depth_max,
-                weight_body,
+                self.mass_body,
                 mb,
-                volume_tissues.n,
+                self.volume_tissues.n,
                 Tsmm / 1000 * 2,
-                volume_lungs,
+                self.volume_lungs,
                 self.speed_descent,
                 self.speed_ascent,
-                drag_coefficient.n + drag_coefficient.s,
+                self.drag_coefficient.n + self.drag_coefficient.s,
             )
-            return WDA
 
         def fminusC(param):
             mb, Tsmm = param
-            WDA = get_total_work(
+            return get_total_work(
+                self.surname,
                 self.depth_max,
-                weight_body,
+                self.mass_body,
                 mb,
-                volume_tissues.n,
+                self.volume_tissues.n,
                 Tsmm / 1000 * 2,
-                volume_lungs,
+                self.volume_lungs,
                 self.speed_descent,
                 self.speed_ascent,
-                drag_coefficient.n - drag_coefficient.s,
+                self.drag_coefficient.n - self.drag_coefficient.s,
             )
-            return WDA
 
         # Minimize with bounds
+        # Parameters are mass_ballast, thickness_suit
         initial_guess = [1, 1.5]
         bounds = ((0, 5), (0, 10))
         # Working minimization L-BFGS-B, TNC, SLSQP
@@ -361,73 +357,110 @@ class Diver:
         resminusVt = minimize(fminusVt, initial_guess, bounds=bounds, method=method)
         resplusC = minimize(fplusC, initial_guess, bounds=bounds, method=method)
         resminusC = minimize(fminusC, initial_guess, bounds=bounds, method=method)
-        mb_best = res.x[0]
-        Tsmm_best = res.x[1]
+
+        mass_ballast_best = res.x[0]
         mb_plusVt = resplusVt.x[0]
-        Tsmm_plusVt = resplusVt.x[1]
         mb_minusVt = resminusVt.x[0]
-        Tsmm_minusVt = resminusVt.x[1]
         mb_plusC = resplusC.x[0]
-        Tsmm_plusC = resplusC.x[1]
         mb_minusC = resminusC.x[0]
+
+        mass_ballast_mean = (mb_plusVt + mb_minusVt + mb_plusC + mb_minusC) / 4
+        mass_ballast_err = np.sqrt((mass_ballast_mean - mb_plusVt) ** 2 + (mass_ballast_mean - mb_plusC) ** 2)
+        mass_ballast_proposal = unc.ufloat(mass_ballast_mean, mass_ballast_err)
+
+        Tsmm_best = res.x[1]
+        Tsmm_plusVt = resplusVt.x[1]
+        Tsmm_minusVt = resminusVt.x[1]
+        Tsmm_plusC = resplusC.x[1]
         Tsmm_minusC = resminusC.x[1]
 
-        mb_mean = (mb_plusVt + mb_minusVt + mb_plusC + mb_minusC) / 4
-        mb_err = np.sqrt((mb_mean - mb_plusVt) ** 2 + (mb_mean - mb_plusC) ** 2)
         Tsmm_mean = (Tsmm_plusVt + Tsmm_minusVt + Tsmm_plusC + Tsmm_minusC) / 4
         Tsmm_err = np.sqrt((Tsmm_mean - Tsmm_plusVt) ** 2 + (Tsmm_mean - Tsmm_plusC) ** 2)
-
-        mb_EXP = unc.ufloat(mb_mean, mb_err)
-        Tsmm_EXP = unc.ufloat(Tsmm_mean, Tsmm_err)
+        thickness_suit_proposal = unc.ufloat(Tsmm_mean, Tsmm_err)
 
         # Performance gain
-        gain = (
-            get_total_work(
-                self.depth_max,
-                weight_body,
-                mb_EXP,
-                volume_tissues.n,
-                Tsmm_EXP / 1000 * 2,
-                volume_lungs,
-                self.speed_descent,
-                self.speed_ascent,
-                drag_coefficient.n,
-            )
-            - get_total_work(
-                self.depth_max,
-                weight_body,
-                weight_ballast,
-                volume_tissues.n,
-                volume_suit,
-                volume_lungs,
-                self.speed_descent,
-                self.speed_ascent,
-                drag_coefficient.n,
-            )
-        ) / get_total_work(
+        work_proposal = get_total_work(
+            self.surname,
             self.depth_max,
-            weight_body,
-            weight_ballast,
-            volume_tissues.n,
-            volume_suit,
-            volume_lungs,
+            self.mass_body,
+            mass_ballast_proposal,
+            self.volume_tissues.n,
+            thickness_suit_proposal / 1000 * 2,
+            self.volume_lungs,
             self.speed_descent,
             self.speed_ascent,
-            drag_coefficient.n,
+            self.drag_coefficient.n,
         )
 
-        print("Best ballast weight (Kg) \t\t= ", mb_best)
-        print("Average optimal ballast weight (Kg) \t= ", mb_EXP)
-        print("Best suite thickness (mm) \t\t= ", Tsmm_best)
-        print("Average optimal suite thickness (mm) \t= ", Tsmm_EXP)
-        print("")
-        print("Performance gain =", gain * 100, "%")
+        gain = work_proposal / total_work.n - 1
+
+        if verbose:
+            print(f"Best ballast weight \t\t= {mass_ballast_best} kg")
+            print(f"Average optimal ballast weight \t= {mass_ballast_proposal} kg")
+            print(f"Best suite thickness \t\t= {Tsmm_best} mm")
+            print(f"Average optimal suite thickness \t= {thickness_suit_proposal} mm\n")
+            print(f"Performance gain = {gain * 100} %")
+
+        return {
+            "surname": self.surname,
+            "work": total_work.n,
+            "mass_ballast_best": mass_ballast_best,
+            "mass_ballast_proposal": mass_ballast_proposal,
+            "thickness_suit_best": Tsmm_best,
+            "thickness_suit_proposal": thickness_suit_proposal,
+            "gain": gain * 100,
+        }
+
+    def get_total_work(self, variable="mass_ballast"):
+
+        volume_lungs = [self.volume_lungs]
+        mass_ballast = [self.mass_ballast]
+        depth_max = [self.depth_max]
+        speed_factors = [1.0]
+        volume_tissues = [self.volume_tissues.n]
+
+        mass_total = self.mass_body + self.mass_ballast + rhonf * self.volume_suit
+
+        if variable == "mass_ballast":
+            mass_ballast = (index := np.linspace(0, 5, 20))
+        elif variable == "depth_max":
+            depth_max = (index := np.linspace(0.8, 1.2, 10) * self.depth_max)
+        elif variable == "speed_factor":
+            speed_factors = (index := np.linspace(0.8, 1.2, 10))
+        elif variable == "Rt":
+            volume_tissues = (mass_total / r_water) * (index := np.linspace(0.8, 1.2, 10))
+        else:
+            volume_lungs = (index := np.linspace(0, 10, 20))
+
+        total_work = [
+            get_total_work(
+                self.surname,
+                dm,
+                self.mass_body,
+                mb,
+                vt,
+                self.volume_suit,
+                l,
+                self.speed_descent * sf,
+                self.speed_ascent * sf,
+                self.drag_coefficient,
+            ).n
+            for l in volume_lungs
+            for mb in mass_ballast
+            for dm in depth_max
+            for sf in speed_factors
+            for vt in volume_tissues
+        ]
+
+        return pd.Series(total_work, index=index)
 
     def show(self):
         import matplotlib.pyplot as plt
         from matplotlib.patches import Circle
         from matplotlib.patheffects import withStroke
         from matplotlib.ticker import AutoMinorLocator, MultipleLocator
+
+        print(self.data)
 
         royal_blue = [0, 20 / 256, 82 / 256]
 

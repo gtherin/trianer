@@ -8,3 +8,4 @@ from .triathlon import *
 
 from .diver import *
 from . import divers
+from .vetruve import *

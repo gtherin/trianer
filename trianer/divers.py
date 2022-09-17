@@ -1,9 +1,7 @@
-from lib2to3.pgen2.pgen import DFAState
-from locale import D_FMT
 import numpy as np
 import pandas as pd
 
-from .diver import Diver
+from .diver import *
 
 
 r_nfoam = 170  # kg/m3
@@ -25,10 +23,10 @@ def get_data(surname=None, raw=False):
         "depth_gliding_ascent",
         "depth_gliding_ascent_error",
         "volume_lungs",
-        "weight_body",
-        "weight_ballast",
+        "mass_body",
+        "mass_ballast",
         "thickness_suit",
-        "weight_suit",
+        "mass_suit",
         "model_suit",
         "rights",
     ]
@@ -44,10 +42,10 @@ def get_data(surname=None, raw=False):
             "depth_gliding_ascent",
             "depth_gliding_ascent_error",
             "volume_lungs",
-            "weight_body",
-            "weight_ballast",
+            "mass_body",
+            "mass_ballast",
             "thickness_suit",
-            "weight_suit",
+            "mass_suit",
         ]
     ]
 
@@ -66,8 +64,8 @@ def get_data(surname=None, raw=False):
                         "depth_gliding_ascent": 7.5,  # in m
                         "depth_gliding_ascent_error": 2.5,  # in m
                         "volume_lungs": 9,  # in l
-                        "weight_body": 78,  # in kg
-                        "weight_ballast": 1,  # in kg
+                        "mass_body": 78,  # in kg
+                        "mass_ballast": 1,  # in kg
                         "thickness_suit": 1.5,  # in mm
                     },
                     {  # Is it the same person as Stephane T ?
@@ -80,14 +78,15 @@ def get_data(surname=None, raw=False):
                         "depth_gliding_ascent": 10,  # in m
                         "depth_gliding_ascent_error": 2.5,  # in m
                         "volume_lungs": 8,  # in l
-                        "weight_body": 71,  # in kg
-                        "weight_ballast": 1.5,  # in kg
+                        "mass_body": 71,  # in kg
+                        "mass_ballast": 1.5,  # in kg
                         "thickness_suit": 3,  # in mm
                     },
                 ]
             ),
         ]
     )
+    df.index = range(len(df))
 
     if not raw:
         df["volume_lungs"] = df["volume_lungs"].clip(0, 10.0)
@@ -101,10 +100,44 @@ def get_data(surname=None, raw=False):
         df["speed_ascent"] = df["depth_max"] / df["time_ascent"]
         df["volume_lungs"] = df["volume_lungs"] / 1000.0
 
+        # Remove problematic data
+        df = df[~df.surname.isin(["Lauper", "Carbone", "Sodde", "Underwater Photography & Media"])]
+
     if surname is None:
         return df
+    elif type(surname) == int:
+        return Diver(df.iloc[surname].to_dict())
 
-    return Diver(dict(df.query(f"surname == '{surname}'").iloc[0]))
+    return Diver(df.query(f"surname == '{surname}'").iloc[0].to_dict())
+
+
+def minimize():
+    df = get_data()
+
+    df["volume_tissues"] = get_volume_tissues(
+        df.mass_body,
+        df.mass_ballast,
+        df.volume_suit,
+        df.volume_lungs,
+        df.speed_descent,
+        df.speed_ascent,
+        df["depth_gliding_descent"],
+        df["depth_gliding_ascent"],
+    )
+    df["drag_coefficient"] = get_drag_coefficient(
+        df.volume_suit,
+        df.volume_lungs,
+        df.speed_descent,
+        df.speed_ascent,
+        df["depth_gliding_descent"],
+        df["depth_gliding_ascent"],
+    )
+
+    minimization = [Diver(df.loc[i].to_dict()).minimize(verbose=False) for i in df.index]
+    minimization = pd.DataFrame(minimization)
+
+    df = df.merge(minimization, on="surname")
+    return df
 
 
 def show_foam_density():
@@ -112,14 +145,14 @@ def show_foam_density():
     df = get_data(raw=True)
 
     ts = r_nfoam * df["thickness_suit"] / 1000.0
-    df["weight_suit_exp"] = ts
+    df["mass_suit_exp"] = ts
 
     # df["thickness_suit_estimation"] = r_nfoam * df["thickness_suit"] / 1000.0
-    r_nfoam_corr = (df["weight_suit"].replace([0.0], [np.nan]) / ts).mean()
+    r_nfoam_corr = (df["mass_suit"].replace([0.0], [np.nan]) / ts).mean()
     print(f"Neoprene foam density is underestimated by a factor of {r_nfoam_corr:.2f}")
     print(f"{r_nfoam} kg/m3 => {r_nfoam_corr*r_nfoam:.0f} kg/m3. Calculation is done with {r_nfoam} kg/m3")
 
-    df = df.sort_values("weight_suit_exp")
+    df = df.sort_values("mass_suit_exp")
 
     import matplotlib.pyplot as plt
 
@@ -133,6 +166,6 @@ def show_foam_density():
         lw=6,
         label=f"Using {r_nfoam_corr*r_nfoam:.0f} kg/m3 instead of {r_nfoam} kg/m3",
     )
-    ax.scatter(df["weight_suit"], df["weight_suit_exp"], s=60, label=f"Comparison with given data")
+    ax.scatter(df["mass_suit"], df["mass_suit_exp"], s=60, label=f"Comparison with given data")
 
     fig.legend(loc=4, fontsize=16)
