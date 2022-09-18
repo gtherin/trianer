@@ -36,9 +36,10 @@ def get_kcalories(weight, discipline="all", speed=None):
     # Calories for 30 minutes
     # source https://www.health.harvard.edu/diet-and-weight-loss/calories-burned-in-30-minutes-for-people-of-three-different-weights
     # https://www.urmc.rochester.edu/encyclopedia/content.aspx?ContentTypeID=41&ContentID=CalorieBurnCalc&CalorieBurnCalc_Parameters=80
+    # swimming	1	180	216	252
+
     calories = StringIO(
         """activité_30min	speed	55 kg	70 kg	85 kg
-swimming	1	180	216	252
 swimming	3	300	360	420
 
 cycling	19	210	252	290
@@ -131,7 +132,7 @@ moving_boxes		210	252	294"""
     calories["MET 70 kg"] = calories["70 kg"] / 133
     calories["MET 85 kg"] = calories["85 kg"] / 159
 
-    correction = 1.0  # + 0.4 * (calories["discipline"] == "course").astype(float)
+    correction = 1.0  # + 0.4 * (calories["discipline"] == "running").astype(float)
     calories["X kg"] = 0.0
     for w in ["55 kg", "70 kg", "85 kg"]:
         calories[w] *= 2.0 * correction
@@ -146,7 +147,6 @@ moving_boxes		210	252	294"""
         calories["atl"] += weights[w] * calories[w]
 
     calories = calories[["discipline", "speed", "atl"]]
-
     if discipline != "all":
         calories = calories.query(f"discipline=='{discipline}'")
 
@@ -216,17 +216,17 @@ def calculate_hydration(df, triathlon, athlete) -> pd.DataFrame:
         hydr *= 0.8
     hydr = df.merge(hydr, how="left", left_on=df["temperature"].round(), right_index=True)
 
-    df.loc[df["discipline"] == "natation", "hydration"] = -900 * df.loc[df["discipline"] == "natation", "duration"]
-    df.loc[df["discipline"] == "cyclisme", "hydration"] = (
-        df.loc[df["discipline"] == "cyclisme", "duration"] * hydr.loc[hydr["discipline"] == "cyclisme", "hydration"]
+    df.loc[df["discipline"] == "swimming", "hydration"] = -900 * df.loc[df["discipline"] == "swimming", "duration"]
+    df.loc[df["discipline"] == "cycling", "hydration"] = (
+        df.loc[df["discipline"] == "cycling", "duration"] * hydr.loc[hydr["discipline"] == "cycling", "hydration"]
     )
-    df.loc[df["discipline"] == "course", "hydration"] = (
-        df.loc[df["discipline"] == "course", "duration"] * hydr.loc[hydr["discipline"] == "course", "hydration"]
+    df.loc[df["discipline"] == "running", "hydration"] = (
+        df.loc[df["discipline"] == "running", "duration"] * hydr.loc[hydr["discipline"] == "running", "hydration"]
     )
 
     df["ihydration"] = 0.0
-    df.loc[df["discipline"] == "cyclisme", "ihydration"] = 700 * df.loc[df["discipline"] == "cyclisme", "duration"]
-    df.loc[df["discipline"] == "course", "ihydration"] = 700 * df.loc[df["discipline"] == "course", "duration"]
+    df.loc[df["discipline"] == "cycling", "ihydration"] = 700 * df.loc[df["discipline"] == "cycling", "duration"]
+    df.loc[df["discipline"] == "running", "ihydration"] = 700 * df.loc[df["discipline"] == "running", "duration"]
 
     return df
 
@@ -251,9 +251,11 @@ def calculate_kcalories(df, triathlon, athlete) -> pd.DataFrame:
     if "kcalories" in df.columns:
         del df["kcalories"]
 
+    print(triathlon.race.disciplines)
+
     kcalories = pd.Series(
-        [get_kcalories(athlete.weight, discipline=d, speed=athlete.speeds[d]) for d in triathlon.disciplines],
-        index=[d for d in triathlon.disciplines],
+        [get_kcalories(athlete.weight, discipline=d, speed=athlete.speeds[d]) for d in triathlon.race.disciplines],
+        index=[d for d in triathlon.race.disciplines],
     ).to_frame(name="kcalories")
     df = df.merge(kcalories, how="left", left_on=df["discipline"], right_index=True)
     df["kcalories"] = -df["kcalories"] * df["duration"]
@@ -270,9 +272,9 @@ def calculate_fuelings(df, triathlon, athlete) -> pd.DataFrame:
     fuelings = []
 
     fuels = {
-        "natation": [0],
-        "cyclisme": triathlon.get_org_fueling("cyclisme")[1:],
-        "course": triathlon.get_org_fueling("course")[1:],
+        "swimming": [0],
+        "cycling": triathlon.get_org_fueling("cycling")[1:],
+        "running": triathlon.get_org_fueling("running")[1:],
     }
 
     tot_distance, tot_duration = 0, 0
@@ -289,20 +291,20 @@ def calculate_fuelings(df, triathlon, athlete) -> pd.DataFrame:
             add_fuelings(d, "Isotonic+pate de fruits + compote", 300, 200)
         if df["discipline"][d] in ["transition 2"]:
             add_fuelings(d, "Isotonic+pate de fruits + gel", 300, 200)
-        if df["discipline"][d] in ["natation"]:
+        if df["discipline"][d] in ["swimming"]:
             if len(fuels[df["discipline"][d]]) > 0 and df["distance"][d] >= fuels[df["discipline"][d]][0]:
                 add_fuelings(d, "transition", 100, 0)
                 fuels[df["discipline"][d]].pop(0)
-        if df["discipline"][d] in ["cyclisme"]:
+        if df["discipline"][d] in ["cycling"]:
             if len(fuels[df["discipline"][d]]) > 0 and df["distance"][d] >= fuels[df["discipline"][d]][0]:
                 add_fuelings(d, "org: remplir eau", 300, 100)
                 fuels[df["discipline"][d]].pop(0)
 
-        if df["discipline"][d] in ["course"]:
+        if df["discipline"][d] in ["running"]:
             if len(fuels[df["discipline"][d]]) > 0 and df["distance"][d] >= fuels[df["discipline"][d]][0]:
                 add_fuelings(d, "org: eau + fruit", 300, 100)
                 fuels[df["discipline"][d]].pop(0)
-        if df["discipline"][d] in ["cyclisme"]:
+        if df["discipline"][d] in ["cycling"]:
             if tot_duration - fuelings[-1][5] > 0.5:
                 add_fuelings(d, "30 min", 300, 100)
 
@@ -331,7 +333,7 @@ def show_kcalories():
 
     ax = axes[0]
     ax.set_facecolor("#cdcdcd")
-    kcalories.query("discipline == 'course'").set_index("speed").plot(ax=ax)
+    kcalories.query("discipline == 'running'").set_index("speed").plot(ax=ax)
 
     ax.grid()
     ax.legend(loc=1, prop={"size": 16})
@@ -339,7 +341,7 @@ def show_kcalories():
     ax = axes[1]
     fig.patch.set_facecolor("#cdcdcd")
     ax.set_facecolor("#cdcdcd")
-    kcalories.query("discipline == 'cyclisme'").set_index("speed").plot(ax=ax)
+    kcalories.query("discipline == 'cycling'").set_index("speed").plot(ax=ax)
 
     ax.grid()
     ax.legend(loc=1, prop={"size": 16})

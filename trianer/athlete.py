@@ -38,11 +38,11 @@ class Athlete:
 
         # Global speeds
         self.speeds = {
-            "natation": self.swimming_speed,
-            "cyclisme": self.cycling_speed,
-            "course": self.running_speed,
+            "swimming": self.swimming_speed,
+            "cycling": self.cycling_speed,
+            "running": self.running_speed,
         }
-        self.dspeeds_slope = {"natation": 0.0, "cyclisme": 2.6, "course": 0.1}
+        self.dspeeds_slope = {"swimming": 0.0, "cycling": 2.6, "running": 0.1}
 
         self.transition1 = get_pace(self.config["transition_cyc2run_s"])
         self.transition2 = get_pace(self.config["transition_swi2cyc_s"])

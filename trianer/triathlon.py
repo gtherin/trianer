@@ -2,7 +2,6 @@ import datetime
 import numpy as np
 import pandas as pd
 import scipy as sp
-import streamlit as st
 import logging
 
 import matplotlib.pyplot as plt
@@ -11,6 +10,7 @@ from matplotlib.lines import Line2D
 
 
 from .athlete import Athlete
+from .races import Race
 
 from . import gpx
 from . import weather
@@ -20,51 +20,33 @@ logging.getLogger("matplotlib.font_manager").disabled = True
 logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
 
-available_races = {
-    "Elsassman": {},
-    "Deauville": {},
-    "Paris": {},
-    "Bois-le-Roi": {},
-}
+def get_empty_box():
+    import streamlit as st
+
+    return st.empty()
 
 
 class Triathlon:
-    def get_option(self, d):
-        if not hasattr(self, "options"):
-            return ""
-        return self.options[d]
-
-    def get_elevation(self, d):
-        if not hasattr(self, "elevation"):
-            return 0.0
-        return self.elevations[d]
-
     def __init__(
         self, epreuve, longueur=None, athlete=None, temperature=None, races_configs=None, info_box=None
     ) -> None:
 
-        self.disciplines = ["natation", "cyclisme", "course"]
+        self.race = Race(epreuve, longueur)
 
-        if "(" in epreuve:
-            self.epreuve = epreuve.split(" (")[0]
-            self.longueur = epreuve[epreuve.find("(") + 1 : epreuve.find(")")]
-        else:
-            self.epreuve, self.longueur = epreuve, longueur
+        self.info_box = get_empty_box() if info_box is None else info_box
 
-        self.info_box = st.empty() if info_box is None else info_box
-
-        if self.epreuve not in available_races.keys():
+        if self.race.epreuve not in Race.get_available_races().keys():
             raise ValueError(
                 f"""Liste des epreuves documentées:
 
-        - {list(available_races.keys())} ou
+        - {list(Race.get_available_races().keys())} ou
         - {self.disciplines}
 
         # Definir un athlete
-        athlete = triaainer.Athlete(weight=80, natation="2min10s/100m", cyclisme="27.0km/h", course="5min30s/km", transitions="10min")
+        athlete = triaainer.Athlete(weight=80, swimming="2min10s/100m", cycling="27.0km/h", running="5min30s/km", transitions="10min")
 
         # Simule une course a pieds de 20km
-        course = triaainer.Triathlon(epreuve="course", longueur="20", temperature=[20, 25], athlete=athlete)
+        course = triaainer.Triathlon(epreuve="running", longueur="20", temperature=[20, 25], athlete=athlete)
 
         # Simule la realisation d'un Elsassman au format L
         elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athlete)
@@ -72,44 +54,7 @@ class Triathlon:
         """
             )
 
-        self.start_time = gpx.get_default_datetime()
-
-        if self.longueur == "L":
-            self.distances = [1.9, 90, 21.195]
-        elif self.longueur == "M":
-            self.distances = [1.5, 40, 10]
-        elif self.longueur == "S":
-            self.distances = [0.65, 20, 5]
-
-        # Should come with the epreuve
-        if self.epreuve in ["natation", "cyclisme", "course"]:
-            self.distances = [float(self.longueur)]
-            self.disciplines = [self.epreuve]
-
-        elif self.epreuve == "Elsassman" and self.longueur == "L":
-            self.start_time = datetime.datetime.strptime("2022-07-10 08:00", "%Y-%m-%d %H:%M")
-            self.distances = [1.9, 80.3, 20]
-            self.elevations = [0, 1366, 306]
-            self.options = ["x2", "", "Mx2"]
-            self.dfuelings = [[0], [0, 39], [0, 3.25, 6.75]]
-
-        elif self.epreuve == "Deauville" and self.longueur == "L":
-            self.start_time = datetime.datetime.strptime("2022-07-10 08:00", "%Y-%m-%d %H:%M")
-            self.options = ["x2", "", "Mx2"]
-            self.dfuelings = [[0], [0, 43], [0, 3, 7]]
-
-        elif self.epreuve == "Elsassman" and self.longueur == "M":
-            self.start_time = datetime.datetime.strptime("2022-07-10 11:15", "%Y-%m-%d %H:%M")
-            self.distances = [1.5, 39.6, 10]
-            self.elevations = [0, 338, 153]
-            self.options = ["x2", "", ""]
-            self.dfuelings = [[0], [0, 20.5], [0, 3.25, 6.75]]
-        elif self.epreuve == "Elsassman" and self.longueur == "S":
-            self.start_time = datetime.datetime.strptime("2022-07-09 10:30", "%Y-%m-%d %H:%M")
-            self.distances = [0.65, 23.9, 5.2]
-            self.elevations = [0, 9, 0]
-
-        # Load adjusted data
+        self.start_time = self.race.get_start_time()
         self.gpx = self.get_adjusted_data()
 
         if athlete is not None:
@@ -119,24 +64,18 @@ class Triathlon:
         data = []
         self.fuelings = [0]
 
-        info_box = st.empty()
+        info_box = get_empty_box()
 
         ref_dist = 0
-        for d, discipline in enumerate(self.disciplines):
+        for d, discipline in enumerate(self.race.disciplines):
 
-            fuelings = self.distances[d] if hasattr(self, "distances") else 0
+            fuelings = self.race.distances[d] if hasattr(self.race, "distances") else 0
 
-            if "x2" in self.get_option(d) and discipline != "natation":
+            if "x2" in self.race.get_option(d) and discipline != "swimming":
                 self.dfuelings[d] += [0.5 * +f for f in self.get_org_fueling(d)]
 
-            if gpx.has_data(self.epreuve, self.longueur, self.get_discipline(d), options=self.get_option(d)):
-                df = gpx.get_data(
-                    self.epreuve,
-                    self.longueur,
-                    self.get_discipline(d),
-                    options=self.get_option(d),
-                    info_box=self.info_box,
-                )
+            if self.race.has_data(d):
+                df = self.race.get_data(d, self.info_box)
             else:
                 df = (
                     pd.DataFrame(np.linspace(0, fuelings, 10), columns=["distance"])
@@ -146,7 +85,7 @@ class Triathlon:
                 )
 
             df["distance"] *= fuelings / df.distance.iloc[-1]
-            df["elevation"] *= self.get_elevation(d) / np.max([df.elevation.clip(0, 1000).sum(), 0.1])
+            df["elevation"] *= self.race.get_elevation(d) / np.max([df.elevation.clip(0, 1000).sum(), 0.1])
             data.append(df.assign(sequence=d * 2))
 
             self.fuelings += [f for f in self.get_org_fueling(d)]
@@ -172,25 +111,19 @@ class Triathlon:
         if index is not None and index in data.columns:
             data = data.set_index(index)
 
-        if self.get_discipline(discipline) != "natation":
+        if self.get_discipline(discipline) != "swimming":
             d = data.distance.clip(0, 1000).diff()
             cutoff = d.mean() * 3
             data = data[d < cutoff]
 
         return data
 
-    def get_disciplines(self):
-        return ["natation", "cyclisme", "course"]
-
-    def get_discipline(self, d):
-        return self.get_disciplines()[d] if type(d) == int else d
-
     def get_org_fueling(self, d):
         if not hasattr(self, "dfuelings"):
-            self.dfuelings = [[0]] * len(self.disciplines)
+            self.dfuelings = [[0]] * len(self.race.disciplines)
         if type(d) == int:
             return self.dfuelings[d]
-        for idd, idiscipline in enumerate(self.get_disciplines()):
+        for idd, idiscipline in enumerate(self.race.get_disciplines()):
             if idiscipline == d and len(self.dfuelings) > idd:
                 return self.dfuelings[idd]
         return [0]
@@ -217,12 +150,12 @@ class Triathlon:
             if c in self.gpx.columns:
                 del self.gpx[c]
 
-        for d, discipline in enumerate(self.disciplines):
+        for d, discipline in enumerate(self.race.disciplines):
             df = self.gpx.query(f"discipline=='{discipline}'").copy()
             df = athlete.calculate_speed(df, discipline)
             df["duration"] = (df["distance"].diff().clip(0, 1000) / df["speed"]).fillna(0)
 
-            if d < len(self.disciplines) - 1:
+            if d < len(self.race.disciplines) - 1:
                 transition = df.iloc[-1].to_dict()
                 transition.update(
                     {
@@ -242,8 +175,6 @@ class Triathlon:
         data.index = range(len(data))
 
         data["dtime"] = self.start_time + pd.to_timedelta(data["duration"].cumsum(), unit="h")
-
-        print()
 
         # Set temperature
         data = weather.merge_temperature_forecasts(
@@ -551,13 +482,13 @@ class Triathlon:
                 del ff[c]
 
         def highlight(s):
-            if s.discipline == "cyclisme":
+            if s.discipline == "cycling":
                 return ["background-color: rgba(196, 77, 86, 0.2);"] * len(s)
             elif "transition" in s.discipline:
                 return ["background-color: rgba(204, 204, 204, 0.5);"] * len(s)
-            elif s.discipline == "course":
+            elif s.discipline == "running":
                 return ["background-color: rgba(0, 255, 0, 0.3);"] * len(s)
-            elif s.discipline == "natation":
+            elif s.discipline == "swimming":
                 return ["background-color: rgba(0, 0, 255, 0.2);"] * len(s)
             else:
                 return ["background-color: white"] * len(s)
