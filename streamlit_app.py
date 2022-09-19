@@ -4,14 +4,10 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import datetime
 import trianer
-import time
 import extra_streamlit_components as stx
 
 from streamlit_folium import folium_static
 import os
-import streamlit as st
-
-from google.cloud import firestore
 
 
 st.set_option("deprecation.showPyplotGlobalUse", False)
@@ -34,10 +30,6 @@ def update_cookie(key):
 
 trianer.set_var_on_change_function(update_cookie)
 trianer.set_var_cookies(all_cookies)
-
-
-if os.path.exists("/home/guydegnol/projects/trianer/trianer_db_credentials.json"):
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/guydegnol/projects/trianer/trianer_db_credentials.json"
 
 
 info_box = st.empty()
@@ -69,64 +61,44 @@ def configure_race():
 
 
 def configure_physiology():
-    if 1:  # with st.form("athlete_form"):
+    st.select_slider(
+        "Allure pour la shit",
+        options=[f"{m+1}min{s:02.0f}s/100m" for m in range(1, 2) for s in np.linspace(0, 55, 12)],
+    )
 
-        st.select_slider(
-            "Allure pour la shit",
-            options=[f"{m+1}min{s:02.0f}s/100m" for m in range(1, 2) for s in np.linspace(0, 55, 12)],
-        )
+    st.subheader("Calories")
+    st.pyplot(trianer.show_kcalories())
 
-        st.subheader("Calories")
-        st.pyplot(trianer.show_kcalories())
+    fig, ax = plt.subplots(figsize=(15, 4))
+    for w in [80 * 0.9, 80, 80 * 1.1]:
+        kcalories = trianer.get_kcalories(w, discipline="swimming").set_index("speed")["atl"]
+        kcalories.plot(ax=ax)
+    st.pyplot(fig)
 
-        st.metric(label="Temperature", value="70 °F", delta="1.2 °F")
-        st.write("My favorite color is", hydra)
+    fig, ax = plt.subplots(figsize=(15, 4))
+    for w in [80 * 0.9, 80, 80 * 1.1]:
+        kcalories = trianer.get_kcalories(w, discipline="running").set_index("speed")["atl"]
+        kcalories.plot(ax=ax)
+    st.pyplot(fig)
 
-        fig, ax = plt.subplots(figsize=(15, 4))
-        for w in [80 * 0.9, 80, 80 * 1.1]:
-            kcalories = trianer.get_kcalories(w, discipline="swimming").set_index("speed")["atl"]
-            kcalories.plot(ax=ax)
-        st.pyplot(fig)
+    st.subheader("Hydratation")
 
-        fig, ax = plt.subplots(figsize=(15, 4))
-        for w in [80 * 0.9, 80, 80 * 1.1]:
-            kcalories = trianer.get_kcalories(w, discipline="running").set_index("speed")["atl"]
-            kcalories.plot(ax=ax)
-        st.pyplot(fig)
+    # 1000/1100 kcal pour les hommes et 800/900 kcal par repas
 
-        st.subheader("Hydratation")
+    fig, ax = plt.subplots(figsize=(15, 4))
 
-        # 1000/1100 kcal pour les hommes et 800/900 kcal par repas
+    temp = np.arange(0, 40)
+    hydr = pd.Series(-np.clip(temp * 100 - 600, 400, 2500), index=temp).to_frame(name="hydration")
+    hydr *= 1.5
+    sudation = 5
+    hydr.plot(ax=ax)
 
-        fig, ax = plt.subplots(figsize=(15, 4))
-
-        temp = np.arange(0, 40)
-        hydr = pd.Series(-np.clip(temp * 100 - 600, 400, 2500), index=temp).to_frame(name="hydration")
-        hydr *= 1.5
-        sudation = 5
-        hydr.plot(ax=ax)
-
-        st.pyplot(fig)
-
-
-def simulate_race():
-
-    epreuve = st.session_state["krace_name"]
-
-    athlete = trianer.Athlete(name="John doe", config=config)
-    simulation = trianer.Triathlon(epreuve=epreuve, races_configs=races_configs, athlete=athlete, info_box=info_box)
-    folium_static(simulation.show_gpx_track())
-
-    st.pyplot(simulation.show_race_details())
-    # st.pyplot(simulation.show_race_details(xaxis = "itime"))
-    st.pyplot(simulation.show_nutrition())
-    # st.dataframe(simulation.show_roadmap(), width=300)
-    st.markdown(simulation.show_roadmap().to_html(), unsafe_allow_html=True)
+    st.pyplot(fig)
 
 
 def main():
 
-    with st.expander("Parametres de l'athlete", expanded=True):
+    with st.expander("Athlete's performances", expanded=True):
 
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -144,7 +116,11 @@ def main():
 
         with col2:
             transition_cyc2run_s = trianer.get_var_slider("transition_cyc2run_s")
+
+    with st.expander("Athlete's details", expanded=True):
         weight_kg = trianer.get_var_number("weight_kg")
+        # height_cm = trianer.get_var_number("height_cm")
+        # year_of_birth = trianer.get_var_date("year_of_birth")
         # st.date_input("Anniversaire", key="birthday")
 
     epreuve = "Elsassman (L)"
@@ -161,28 +137,30 @@ def main():
         ),
     )
 
-    st.write(
-        dict(
-            swimming_sX100m=swimming_sX100m,
-            cycling_kmXh=cycling_kmXh,
-            running_sXkm=running_sXkm,
-            transition_swi2cyc_s=transition_swi2cyc_s,
-            transition_cyc2run_s=transition_cyc2run_s,
-            weight_kg=weight_kg,
-        )
-    )
-
     simulation = trianer.Triathlon(epreuve=epreuve, races_configs=races_configs, athlete=athlete, info_box=info_box)
-    folium_static(simulation.show_gpx_track())
+    with st.expander("Show race gpx track", expanded=False):
+        folium_static(simulation.show_gpx_track())
 
-    st.pyplot(simulation.show_race_details())
-    # st.pyplot(simulation.show_race_details(xaxis = "itime"))
-    st.pyplot(simulation.show_nutrition())
-    # st.dataframe(simulation.show_roadmap(), width=300)
-    st.markdown(simulation.show_roadmap().to_html(), unsafe_allow_html=True)
+    with st.expander("Show race details", expanded=True):
+        xaxis = st.radio("x axis", ["Total distance", "Total time", "Time of day"], horizontal=True)
+        st.pyplot(simulation.show_race_details(xaxis=xaxis))
+        st.pyplot(simulation.show_nutrition(xaxis=xaxis))
+    with st.expander("F&B", expanded=True):
+        # st.dataframe(simulation.show_roadmap(), width=300)
+        st.markdown(simulation.show_roadmap().to_html(), unsafe_allow_html=True)
 
-    with st.expander("Cookies management", expanded=True):
+    with st.expander("Cookies management", expanded=False):
         st.write(all_cookies)
+        st.write(
+            dict(
+                swimming_sX100m=swimming_sX100m,
+                cycling_kmXh=cycling_kmXh,
+                running_sXkm=running_sXkm,
+                transition_swi2cyc_s=transition_swi2cyc_s,
+                transition_cyc2run_s=transition_cyc2run_s,
+                weight_kg=weight_kg,
+            )
+        )
         cookie = st.text_input("Cookie", key="2")
         if st.button("Delete"):
             cookie_manager.delete(cookie)

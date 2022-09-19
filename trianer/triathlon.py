@@ -9,7 +9,6 @@ from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.lines import Line2D
 
 
-from .athlete import Athlete
 from .races import Race
 
 from . import gpx
@@ -107,11 +106,11 @@ class Triathlon:
         if discipline is None:
             data = self.gpx
         else:
-            data = self.gpx.query(f"discipline=='{self.get_discipline(discipline)}'")
+            data = self.gpx.query(f"discipline=='{self.race.get_discipline(discipline)}'")
         if index is not None and index in data.columns:
             data = data.set_index(index)
 
-        if self.get_discipline(discipline) != "swimming":
+        if self.race.get_discipline(discipline) != "swimming":
             d = data.distance.clip(0, 1000).diff()
             cutoff = d.mean() * 3
             data = data[d < cutoff]
@@ -250,7 +249,12 @@ class Triathlon:
 
     def show_race_details(triathlon, xaxis="fdistance"):
 
-        # xaxis = "itime"
+        # xaxis = st.radio("x axis", ["Total distance", "Expected time of day", "Expected time"], horizontal=True)
+        if "Expected time" in xaxis:
+            xaxis = "itime"
+        else:
+            xaxis = "fdistance"
+
         data = triathlon.data
         data["itime"] = data.dtime.dt.time
         if xaxis in data.columns:
@@ -262,7 +266,7 @@ class Triathlon:
         fig.subplots_adjust(hspace=0)
         fig.patch.set_facecolor("#cdcdcd")
         axes[0].set_title(
-            f"Parcours fait par {triathlon.athlete.name} pour {triathlon.epreuve} ({triathlon.longueur})",
+            f"Parcours fait par {triathlon.athlete.name} pour {triathlon.race.epreuve} ({triathlon.race.longueur})",
             loc="center",
             fontdict={
                 "family": "serif",
@@ -271,6 +275,15 @@ class Triathlon:
                 "size": 16,
             },
         )
+
+
+        if xaxis == "itime":
+
+            import matplotlib
+            import time
+
+            # formatter = matplotlib.ticker.FuncFormatter(lambda ms, x: time.strftime("%M:%S", time.gmtime(ms // 1000)))
+            # axes[0].xaxis.set_major_formatter(formatter)
 
         def plot_ravitos(ax, x, variable):
 
@@ -297,7 +310,7 @@ class Triathlon:
                 ddata = triathlon.get_gpx(d, index=xaxis)
                 ddata[variable].plot(
                     color=triathlon.get_color(d),
-                    label=f"{triathlon.get_discipline(d)} elevation={ddata['elevation'].clip(0, 1000).sum():0.0f} m",
+                    label=f"{triathlon.race.get_discipline(d)} elevation={ddata['elevation'].clip(0, 1000).sum():0.0f} m",
                     ax=ax,
                 )
 
@@ -308,7 +321,7 @@ class Triathlon:
         patches = []
         for d in range(3):
             ddata = triathlon.get_gpx(d, index=xaxis)
-            label = triathlon.get_discipline(d)
+            label = triathlon.race.get_discipline(d)
             if ddata["elevation"].clip(0, 1000).sum() > 3:
                 label += f" (D+={ddata['elevation'].clip(0, 1000).sum():0.0f} m)"
 
@@ -344,7 +357,7 @@ class Triathlon:
 
         # plot_ravitos(ax, xaxis, "temperature")
 
-    def show_nutrition(triathlon):
+    def show_nutrition(triathlon, xaxis="fdistance"):
 
         """
         Des glucides : pour l’énergie
@@ -354,6 +367,12 @@ class Triathlon:
         2% perte 20% perf
         4% dangereux"""
 
+        # xaxis = st.radio("x axis", ["Total distance", "Expected time of day", "Expected time"], horizontal=True)
+        if "Expected time" in xaxis:
+            xaxis = "itime"
+        else:
+            xaxis = "fdistance"
+
         gperf = triathlon.data
         fuels = triathlon.data[~triathlon.data["drinks"].isna()]
 
@@ -361,7 +380,7 @@ class Triathlon:
         fig.subplots_adjust(hspace=0)
         fig.patch.set_facecolor("#cdcdcd")
         axes[0].set_title(
-            f"Nutrition fait par {triathlon.athlete.name} pour {triathlon.epreuve} ({triathlon.longueur})",
+            f"Nutrition fait par {triathlon.athlete.name} pour {triathlon.race.epreuve} ({triathlon.race.longueur})",
             loc="center",
             fontdict={
                 "family": "serif",

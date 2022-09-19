@@ -1,8 +1,3 @@
-import streamlit as st
-
-from . import fueling
-
-
 def get_pace(pace):
     if type(pace) == str:
         swimming_pace = pace.split(":")
@@ -54,4 +49,6 @@ class Athlete:
         return df
 
     def get_nat_pace(self, empirical) -> float:
+        import streamlit as st
+
         return st.metric("Natation, minutes par 100m", self.natation_speed, empirical)

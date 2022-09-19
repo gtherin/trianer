@@ -251,8 +251,6 @@ def calculate_kcalories(df, triathlon, athlete) -> pd.DataFrame:
     if "kcalories" in df.columns:
         del df["kcalories"]
 
-    print(triathlon.race.disciplines)
-
     kcalories = pd.Series(
         [get_kcalories(athlete.weight, discipline=d, speed=athlete.speeds[d]) for d in triathlon.race.disciplines],
         index=[d for d in triathlon.race.disciplines],

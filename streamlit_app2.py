@@ -9,7 +9,6 @@ import extra_streamlit_components as stx
 
 from streamlit_folium import folium_static
 import os
-import streamlit as st
 from persist import persist, load_widget_state
 
 from google.cloud import firestore

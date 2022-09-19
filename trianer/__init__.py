@@ -7,3 +7,4 @@ from .athlete import Athlete
 from .triathlon import *
 from .vetruve import *
 from .variables import *
+from .races import Race

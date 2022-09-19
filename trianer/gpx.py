@@ -6,8 +6,6 @@ import logging
 
 import numpy as np
 import pandas as pd
-import scipy as sp
-import streamlit as st
 
 
 def get_default_datetime():
@@ -225,6 +223,8 @@ def get_filename(epreuve=None, longueur=None, discipline="all", options="", file
 
 def has_data(epreuve=None, longueur=None, discipline="all", options="", filename=None):
 
+    import streamlit as st
+
     filename = get_filename(
         epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename
     )
@@ -243,6 +243,8 @@ def has_data(epreuve=None, longueur=None, discipline="all", options="", filename
 
 
 def get_data(epreuve=None, longueur=None, discipline="all", options="", filename=None, info_box=None):
+
+    import streamlit as st
 
     filename = get_filename(
         epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename
