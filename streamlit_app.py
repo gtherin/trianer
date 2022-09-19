@@ -117,13 +117,20 @@ def main():
         with col2:
             transition_cyc2run_s = trianer.get_var_slider("transition_cyc2run_s")
 
-    with st.expander("Athlete's details", expanded=True):
+    with st.expander("Race details", expanded=False):
+        xaxis = st.radio("", ["Existing race", "Personalized"], horizontal=True)
+        epreuve = "Elsassman (L)"
+        if xaxis == "Existing race":
+            available_races = [r for r in races_configs.keys() if "Info" not in r]
+            st.selectbox("", available_races, index=0)
+        else:
+            st.write("Easy man")
+
+    with st.expander("Athlete's details", expanded=False):
         weight_kg = trianer.get_var_number("weight_kg")
         # height_cm = trianer.get_var_number("height_cm")
         # year_of_birth = trianer.get_var_date("year_of_birth")
         # st.date_input("Anniversaire", key="birthday")
-
-    epreuve = "Elsassman (L)"
 
     athlete = trianer.Athlete(
         name="John Doe",

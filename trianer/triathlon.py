@@ -7,6 +7,8 @@ import logging
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.lines import Line2D
+import matplotlib
+import time
 
 
 from .races import Race
@@ -17,6 +19,7 @@ from . import fueling
 
 logging.getLogger("matplotlib.font_manager").disabled = True
 logging.getLogger("matplotlib").setLevel(logging.ERROR)
+pd.plotting.register_matplotlib_converters()
 
 
 def get_empty_box():
@@ -102,13 +105,9 @@ class Triathlon:
     def get_temperature(self):
         return weather.get_forecasts(coordonates=self.get_mean_coordonates()[:2])
 
-    def get_gpx(self, discipline=None, index=None):
-        if discipline is None:
-            data = self.gpx
-        else:
-            data = self.gpx.query(f"discipline=='{self.race.get_discipline(discipline)}'")
-        if index is not None and index in data.columns:
-            data = data.set_index(index)
+    def get_gpx(self, data, discipline=None):
+        if discipline is not None:
+            data = data.query(f"discipline=='{self.race.get_discipline(discipline)}'")
 
         if self.race.get_discipline(discipline) != "swimming":
             d = data.distance.clip(0, 1000).diff()
@@ -151,7 +150,9 @@ class Triathlon:
 
         for d, discipline in enumerate(self.race.disciplines):
             df = self.gpx.query(f"discipline=='{discipline}'").copy()
+            # Speed km/h
             df = athlete.calculate_speed(df, discipline)
+            # Duration between 2 points in hour
             df["duration"] = (df["distance"].diff().clip(0, 1000) / df["speed"]).fillna(0)
 
             if d < len(self.race.disciplines) - 1:
@@ -163,7 +164,7 @@ class Triathlon:
                         "hydration": 0.0,
                         "discipline": f"transition {d+1}",
                         "sequence": 2 * d + 1,
-                        "duration": athlete.transition1 / 60.0,
+                        "duration": 0,  # athlete.transition1 / 60.0,
                     }
                 )
                 df = pd.concat([df, pd.DataFrame.from_records([transition])], ignore_index=True)
@@ -206,7 +207,7 @@ class Triathlon:
         marker_cluster = MarkerCluster().add_to(trimap)
         for d in range(3):
 
-            gpx = triathlon.get_gpx(d)
+            gpx = triathlon.get_gpx(triathlon.gpx, d)
             gpx = gpx.dropna(subset=["latitude", "longitude"])
             if "latitude" not in gpx.columns or np.isnan(gpx["latitude"].mean()) or gpx.empty:
                 continue
@@ -247,16 +248,18 @@ class Triathlon:
             ).add_to(marker_cluster)
         return trimap
 
-    def show_race_details(triathlon, xaxis="fdistance"):
+    def show_race_details(triathlon, xaxis="fdistance", fields="altitude,temperature"):
 
+        data = triathlon.data
         # xaxis = st.radio("x axis", ["Total distance", "Expected time of day", "Expected time"], horizontal=True)
-        if "Expected time" in xaxis:
-            xaxis = "itime"
+        if "ime" in xaxis and "ay" in xaxis:
+            xaxis = "dtime"
+        elif "Time" in xaxis:
+            data["etime"] = data["duration"].cumsum()
+            xaxis = "etime"
         else:
             xaxis = "fdistance"
 
-        data = triathlon.data
-        data["itime"] = data.dtime.dt.time
         if xaxis in data.columns:
             data = data.set_index(xaxis)
 
@@ -266,87 +269,42 @@ class Triathlon:
         fig.subplots_adjust(hspace=0)
         fig.patch.set_facecolor("#cdcdcd")
         axes[0].set_title(
-            f"Parcours fait par {triathlon.athlete.name} pour {triathlon.race.epreuve} ({triathlon.race.longueur})",
+            f"{triathlon.race.epreuve} ({triathlon.race.longueur})",
             loc="center",
-            fontdict={
-                "family": "serif",
-                "color": "darkred",
-                "weight": "normal",
-                "size": 16,
-            },
+            fontdict={"family": "serif", "color": "darkred", "weight": "normal", "size": 16},
         )
-
-
-        if xaxis == "itime":
-
-            import matplotlib
-            import time
-
-            # formatter = matplotlib.ticker.FuncFormatter(lambda ms, x: time.strftime("%M:%S", time.gmtime(ms // 1000)))
-            # axes[0].xaxis.set_major_formatter(formatter)
-
-        def plot_ravitos(ax, x, variable):
-
-            pd.plotting.register_matplotlib_converters()
-            for i, ravito in fuels.iterrows():
-                color = "purple" if "org" in ravito["fooding"] else "darkcyan"
-                lw = 4 if "org" in ravito["fooding"] else 4
-
-                ax.vlines(
-                    i,
-                    ymin=ax.get_ylim()[0],
-                    ymax=ravito[variable] + 2,
-                    alpha=0.5,
-                    lw=lw,
-                    color=color,
-                )
-
-            ax.grid()
-            return fig
-
-        def plot(ax, variable):
-            ax.set_facecolor("#cdcdcd")
-            for d in range(3):
-                ddata = triathlon.get_gpx(d, index=xaxis)
-                ddata[variable].plot(
-                    color=triathlon.get_color(d),
-                    label=f"{triathlon.race.get_discipline(d)} elevation={ddata['elevation'].clip(0, 1000).sum():0.0f} m",
-                    ax=ax,
-                )
 
         ax = axes[0]
 
-        plot(ax, "altitude")
+        triathlon.plot_core(data, ax, "altitude", xaxis)
 
-        patches = []
-        for d in range(3):
-            ddata = triathlon.get_gpx(d, index=xaxis)
-            label = triathlon.race.get_discipline(d)
-            if ddata["elevation"].clip(0, 1000).sum() > 3:
-                label += f" (D+={ddata['elevation'].clip(0, 1000).sum():0.0f} m)"
+        if 1:
+            patches = []
+            for d in range(3):
+                ddata = triathlon.get_gpx(data, d)
+                label = triathlon.race.get_discipline(d)
+                duration = ddata["duration"].sum()
+                duration = ", t=%.0fmin." % (duration * 60)
+                label += duration
+                if ddata["elevation"].clip(0, 1000).sum() > 3:
+                    label += f", D+={ddata['elevation'].clip(0, 1000).sum():0.0f}m"
 
-            patches.append(
-                Line2D(
-                    [0],
-                    [0],
-                    color=triathlon.get_color(d),
-                    lw=4,
-                    label=label,
-                )
+                patches.append(Line2D([0], [0], color=triathlon.get_color(d), lw=4, label=label))
+            patches.append(Line2D([0], [0], color="yellow", label=f"temperature, max={data['temperature'].max()}°C"))
+            ax.legend(handles=patches, loc=1, prop={"size": 16})
+
+        if xaxis == "fdistance":
+            # TODO: Fix it with other axis
+            cm = LinearSegmentedColormap.from_list("Custom", ["#cdcdcd", "#f08205DD"], N=30)
+            print(ax.get_xlim(), ax.get_ylim())
+
+            ax.pcolorfast(
+                ax.get_xlim(),
+                ax.get_ylim(),
+                data["slope"].clip(3, 60).apply(lambda x: int(2 * round(float(x) / 2))).values[np.newaxis],
+                cmap=cm,
             )
-
-        patches.append(Line2D([0], [0], color="yellow", label=f"Temperature ({data['temperature'].max()} °C)"))
-        ax.legend(handles=patches, loc=1, prop={"size": 16})
-
-        cm = LinearSegmentedColormap.from_list("Custom", ["#cdcdcd", "#f08205DD"], N=30)
-
-        ax.pcolorfast(
-            ax.get_xlim(),
-            ax.get_ylim(),
-            data["slope"].clip(3, 60).apply(lambda x: int(2 * round(float(x) / 2))).values[np.newaxis],
-            cmap=cm,
-        )
-        plot_ravitos(ax, xaxis, "altitude")
+        Triathlon.plot_ravitos(fuels, ax, xaxis, "altitude")
 
         ax = axes[1]
 
@@ -354,8 +312,45 @@ class Triathlon:
         data["temperature"].plot(color="yellow", ax=ax)
         ax.fill_between(data.index, data["temperature"] - 1, data["temperature"] + 2, color="yellow", alpha=0.2)
         ax.grid()
+        if xaxis == "etime":
+            formatter = matplotlib.ticker.FuncFormatter(lambda ms, x: time.strftime("%H:%M", time.gmtime(ms * 3600)))
+            ax.xaxis.set_major_formatter(formatter)
+        if xaxis == "dtime":
+            formatter = matplotlib.ticker.FuncFormatter(
+                lambda ms, x: time.strftime("%H:%M", time.gmtime((ms % 1) * 24 * 3600))
+            )
+            ax.xaxis.set_major_formatter(formatter)
 
-        # plot_ravitos(ax, xaxis, "temperature")
+    @staticmethod
+    def plot_ravitos(fuels, ax, x, variable):
+
+        ymin = fuels.altitude.iloc[0] - 10
+
+        for i, ravito in fuels.iterrows():
+            color = "purple" if "org" in ravito["fooding"] else "darkcyan"
+            lw = 4 if "org" in ravito["fooding"] else 4
+
+            ax.vlines(
+                i,
+                ymin=ymin,  # ax.get_ylim()[0],
+                ymax=ravito[variable] + 2,
+                alpha=0.5,
+                lw=lw,
+                color=color,
+            )
+
+        ax.grid()
+        # return fig
+
+    def plot_core(self, data, ax, variable, xaxis):
+        ax.set_facecolor("#cdcdcd")
+        for d in range(3):
+            ddata = self.get_gpx(data, d)
+            ddata[variable].plot(
+                color=self.get_color(d),
+                label=f"{self.race.get_discipline(d)} elevation={ddata['elevation'].clip(0, 1000).sum():0.0f} m",
+                ax=ax,
+            )
 
     def show_nutrition(triathlon, xaxis="fdistance"):
 
@@ -380,14 +375,9 @@ class Triathlon:
         fig.subplots_adjust(hspace=0)
         fig.patch.set_facecolor("#cdcdcd")
         axes[0].set_title(
-            f"Nutrition fait par {triathlon.athlete.name} pour {triathlon.race.epreuve} ({triathlon.race.longueur})",
+            f"Nutrition for {triathlon.race.epreuve} ({triathlon.race.longueur})",
             loc="center",
-            fontdict={
-                "family": "serif",
-                "color": "darkred",
-                "weight": "normal",
-                "size": 16,
-            },
+            fontdict={"family": "serif", "color": "darkred", "weight": "normal", "size": 16},
         )
 
         ax = axes[0]
