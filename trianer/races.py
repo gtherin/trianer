@@ -9,27 +9,59 @@ if os.path.exists("/home/guydegnol/projects/trianer/trianer_db_credentials.json"
 from . import gpx
 
 
+"""
+
+Through a unique systematic approach scientific perspective, the main goal of my job was to extract values from data analyses, to create added value (as research manager). 
+The main goal of my job was to extract values from data analyses, to create added value (as research manager). 
+Make sure that these systems have the right impact in production.
+Leading projects making sure they reach their purpose by adding value to the company.
+
+
+Why are you interested in designing for subscription growth at Strava? *
+
+Strava has built the biggest sport's community in the world by offering well designed products.
+Designing new products are the key to garantee a future subscription growth.
+
+In particular, strava's athletes database built over the years, can play a key role to build new products to improve the custormer experience.
+I'll be glad to help strava developing new products and services, and make them available to athletes around the world.
+"""
+
+
 class Race:
-    def __init__(self, epreuve, longueur=None) -> None:
+    def __init__(self, epreuve=None, longueur=None, cycling_dplus=0, running_dplus=0, disciplines=None) -> None:
+        """ """
 
         self.disciplines = self.get_disciplines()
-        if "(" in epreuve:
+        if epreuve is not None and "(" in epreuve:
             self.epreuve = epreuve.split(" (")[0]
             self.longueur = epreuve[epreuve.find("(") + 1 : epreuve.find(")")]
         else:
             self.epreuve, self.longueur = epreuve, longueur
 
-        if self.longueur == "L":
-            self.distances = [1.9, 90, 21.195]
-        elif self.longueur == "M":
-            self.distances = [1.5, 40, 10]
-        elif self.longueur == "S":
-            self.distances = [0.65, 20, 5]
+        self.elevations = [0, cycling_dplus, running_dplus]
 
         # Should come with the epreuve
-        if self.epreuve in ["swimming", "cycling", "running"]:
+        if disciplines is not None:
+            self.distances = longueur
+            self.disciplines = disciplines
+            self.elevations = []
+            for d in disciplines:
+                if d == "cycling":
+                    self.elevations.append(cycling_dplus)
+                elif d == "running":
+                    self.elevations.append(running_dplus)
+                else:
+                    self.elevations.append(0)
+
+        elif self.epreuve in ["swimming", "cycling", "running"]:
             self.distances = [float(self.longueur)]
             self.disciplines = [self.epreuve]
+            if self.epreuve == "cycling":
+                self.elevations = [cycling_dplus]
+            elif self.epreuve == "running":
+                self.elevations = [running_dplus]
+            else:
+                self.elevations = [0]
 
         elif self.epreuve == "Elsassman" and self.longueur == "L":
             self.start_time = datetime.datetime.strptime("2022-07-10 08:00", "%Y-%m-%d %H:%M")
@@ -53,6 +85,21 @@ class Race:
             self.start_time = datetime.datetime.strptime("2022-07-09 10:30", "%Y-%m-%d %H:%M")
             self.distances = [0.65, 23.9, 5.2]
             self.elevations = [0, 9, 0]
+
+        elif self.longueur == "L":
+            self.distances = [1.9, 90, 21.195]
+        elif self.longueur == "M":
+            self.distances = [1.5, 40, 10]
+        elif self.longueur == "S":
+            self.distances = [0.65, 20, 5]
+
+    def get_info(self):
+        info = ""
+        for d in range(len(self.disciplines)):
+            info += f"{self.disciplines[d]}: {self.distances[d]}km "
+            if self.elevations[d] != 0:
+                info += f" (D+={self.elevations[d]}m) "
+        return info
 
     def get_start_time(self):
         return gpx.get_default_datetime()

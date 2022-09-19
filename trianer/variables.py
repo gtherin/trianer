@@ -28,6 +28,20 @@ class Variable:
         return self.get_format_value(var)
 
     def get_input(self, input_cls):
+        import streamlit as st
+
+        kwargs = dict(key=self.key, help=self.help, on_change=lambda: Variable.update_cookie(self.key))
+        if input_cls in [st.radio]:
+            kwargs.update(dict(horizontal=True))
+
+        if input_cls in [st.selectbox, st.radio]:
+            return input_cls(
+                self.key if self.label is None else self.label,
+                self.srange,
+                index=self.srange.index(self.get_init_value()),
+                **kwargs
+            )
+
         smin_value, smax_value, sstep = self.get_range_values()
 
         return input_cls(
@@ -36,9 +50,7 @@ class Variable:
             min_value=smin_value,
             max_value=smax_value,
             step=sstep,
-            key=self.key,
-            help=self.help,
-            on_change=lambda: Variable.update_cookie(self.key),
+            **kwargs
         )
 
     def get_range_values(self):
@@ -95,6 +107,37 @@ variables = {
             default=datetime.time(2, 0),
             # orange="r:0.8:1.2:10",  # in relative value, should multiply by current maxdepth
         ),
+        dict(
+            key="cycling_dplus",
+            srange="i:0:5000:10",
+            help="Cycling D+",
+            default=0,
+        ),
+        dict(
+            key="running_dplus",
+            srange="i:0:10000:5",
+            help="Running D+",
+            default=0,
+        ),
+        dict(
+            key="temperature",
+            srange="i:0:40:1",
+            help="temperature",
+            default=22,
+        ),
+        dict(
+            key="longueur",
+            srange=["S", "M", "L", "Half-Ironman", "Ironman"],
+            help="Format of the selected race",
+            default="L",
+        ),
+        dict(
+            key="race_menu",
+            srange=["Existing race", "Existing format", "Personalized"],
+            help="Format of the selected race",
+            default="Existing race",
+        ),
+        dict(key="race_default", srange="s", help="Format of the selected race", default="Bois-le-Roi (L)", label=""),
     ]
 }
 
@@ -109,6 +152,24 @@ def get_var_number(key):
     import streamlit as st
 
     return variables[key].get_input(st.number_input)
+
+
+def get_var_selectbox(key):
+    import streamlit as st
+
+    return variables[key].get_input(st.selectbox)
+
+
+def get_var_radio(key):
+    import streamlit as st
+
+    return variables[key].get_input(st.radio)
+
+
+def get_value(key):
+    import streamlit as st
+
+    return variables[key].get_init_value()
 
 
 def set_var_on_change_function(update_cookie):

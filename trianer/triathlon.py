@@ -29,30 +29,34 @@ def get_empty_box():
 
 
 class Triathlon:
-    def __init__(
-        self, epreuve, longueur=None, athlete=None, temperature=None, races_configs=None, info_box=None
-    ) -> None:
+    def __init__(self, race=None, athlete=None, temperature=None, info_box=None) -> None:
 
-        self.race = Race(epreuve, longueur)
+        self.race = race
+        # Race(
+        #    epreuve, longueur, cycling_dplus=cycling_dplus, running_dplus=running_dplus, disciplines=disciplines
+        # )
 
         self.info_box = get_empty_box() if info_box is None else info_box
 
-        if self.race.epreuve not in Race.get_available_races().keys():
+        if self.race.epreuve is not None and self.race.epreuve not in Race.get_available_races().keys():
             raise ValueError(
                 f"""Liste des epreuves documentées:
 
         - {list(Race.get_available_races().keys())} ou
-        - {self.disciplines}
+        - {self.race.disciplines}
 
         # Definir un athlete
         athlete = triaainer.Athlete(weight=80, swimming="2min10s/100m", cycling="27.0km/h", running="5min30s/km", transitions="10min")
 
+        # Definir une course
+        race = triaainer.Race(epreuve="running", longueur="20")
+
         # Simule une course a pieds de 20km
-        course = triaainer.Triathlon(epreuve="running", longueur="20", temperature=[20, 25], athlete=athlete)
+        course = triaainer.Triathlon(race=race, athlete=athlete, temperature=[20, 25])
 
         # Simule la realisation d'un Elsassman au format L
-        elsassman = triaainer.Triathlon(epreuve="Elsassman", longueur="L", athlete=athlete)
-
+        race = triaainer.Race(epreuve="Elsassman", longueur="L")
+        elsassman = triaainer.Triathlon(race=race, athlete=athlete)
         """
             )
 
@@ -66,7 +70,7 @@ class Triathlon:
         data = []
         self.fuelings = [0]
 
-        info_box = get_empty_box()
+        get_empty_box()
 
         ref_dist = 0
         for d, discipline in enumerate(self.race.disciplines):
@@ -81,8 +85,8 @@ class Triathlon:
             else:
                 df = (
                     pd.DataFrame(np.linspace(0, fuelings, 10), columns=["distance"])
-                    .assign(altitude=0.0)
-                    .assign(elevation=0.0)
+                    .assign(altitude=self.race.get_elevation(d))
+                    .assign(elevation=self.race.get_elevation(d))
                     .assign(discipline=discipline)
                 )
 
