@@ -25,7 +25,11 @@ all_cookies = cookie_manager.get_all()
 def update_cookie(key):
     val = st.session_state[key]
     fval = str(val) if type(val) == datetime.time else val
-    cookie_manager.set(key, fval, expires_at=datetime.datetime(year=2023, month=2, day=2))
+    try:
+        cookie_manager.set(key, fval, expires_at=datetime.datetime(year=2023, month=2, day=2))
+    except Exception as e:
+        st.error(f"{key} {fval}")
+        st.error(e)
 
 
 trianer.set_var_on_change_function(update_cookie)
@@ -79,6 +83,18 @@ def configure_physiology():
     st.pyplot(fig)
 
 
+def get_perso_race():
+    race_perso = ""
+
+    pdisciplines = trianer.get_value("disciplines")
+    for d in pdisciplines:
+        race_perso += f",{d}:" + str(trianer.get_value(f"{d}_lengh"))
+        if d in ["cycling", "running"]:
+            dplus = trianer.get_value(f"p{d}_dplus")
+            race_perso += f":{dplus}"
+    return race_perso
+
+
 def main():
 
     with st.expander("Athlete's performances", expanded=True):
@@ -102,79 +118,79 @@ def main():
 
     race_menu = trianer.get_value("race_menu")
     if race_menu == "Existing race":
-        v = trianer.get_value("race_default")
-        race_title = f"Race details ({v})"
+        race_title = trianer.Race(trianer.get_value("race_default")).get_info()
     elif race_menu == "Existing format":
-        v = trianer.get_value("longueur")
-        cd = trianer.get_value("cycling_dplus")
-        rd = trianer.get_value("running_dplus")
-        race_title = f"Triathlon ({v} {cd}, {rd})"
+        race_title = trianer.Race(trianer.get_value("race_format")).get_info()
     else:
-        race_title = f"Race personal"
+        race_title = trianer.Race(get_perso_race()).get_info()
 
-    with st.expander(race_title, expanded=False):
+    with st.expander(race_title, expanded=True):
         race_menu = trianer.get_var_radio("race_menu")
         available_races = [r for r in list(races_configs.keys()) if "Info" not in r]
         trianer.variables["race_default"].srange = available_races
-        race_default = trianer.get_var_selectbox("race_default")
         if race_menu == "Existing race":
             temperature = None
-            # race_default = trianer.get_var_selectbox("race_default")
+            race_default = trianer.get_var_selectbox("race_default")
         elif race_menu == "Existing format":
-            available_races = ["S", "M", "L", "Half-Ironman", "Ironman"]
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3 = st.columns(3)
             with col1:
-                longueur = trianer.get_var_selectbox("longueur")
+                race_format = trianer.get_var_selectbox("race_format")
             with col2:
                 cycling_dplus = trianer.get_var_number("cycling_dplus")
             with col3:
                 running_dplus = trianer.get_var_number("running_dplus")
-            with col4:
-                temperature = trianer.get_var_number("temperature")
-            # race_default = trianer.variables["race_default"].get_init_value()
         else:
             st.warning("Shoud be implemented soon")
             if st.file_uploader("") is None:
                 st.write("Or use sample dataset to try the application")
                 # sample = st.checkbox("Download sample data from GitHub")
 
-            disciplines = st.multiselect(
-                "What are your favorite colors", ["swimming", "cycling", "running"], ["swimming", "running"]
-            )
+            disciplines = trianer.get_var_multiselect("disciplines")
             c, noc = 0, int(np.sum([1 if d == "swimming" else 2 for d in disciplines]))
-            st.write(noc)
             cols = st.columns(noc)
             dlongueur = []
 
-            cycling_dplus = trianer.get_value("cycling_dplus")
-            running_dplus = trianer.get_value("running_dplus")
-            temperature = trianer.get_var_number("temperature")
+            race_perso = ""
 
             for d in disciplines:
                 with cols[c]:
                     if "swimming" == d:
-                        swimming_lengh = st.number_input("swimming_lengh", 0.0, 4.0, step=0.1, value=1.5)
+                        swimming_lengh = trianer.get_var_number("swimming_lengh")
                         dlongueur.append(swimming_lengh)
                     if "cycling" == d:
-                        cycling_lengh = st.number_input("cycling_lengh", 0, 200, step=1, value=40)
+                        cycling_lengh = trianer.get_var_number("cycling_lengh")
                         dlongueur.append(cycling_lengh)
                     if "running" == d:
-                        running_lengh = st.number_input("running_lengh", 0, 200, step=1, value=10)
+                        running_lengh = trianer.get_var_number("running_lengh")
                         dlongueur.append(running_lengh)
+                race_perso += f",{d}:{dlongueur[-1]}"
                 c += 1
                 with cols[c]:
                     if "cycling" == d:
-                        cycling_dplus = trianer.get_var_number("cycling_dplus")
+                        pcycling_dplus = trianer.get_var_number(f"p{d}_dplus")
+                        race_perso += f":{pcycling_dplus}"
                         c += 1
                     if "running" == d:
-                        running_dplus = trianer.get_var_number("running_dplus")
+                        prunning_dplus = trianer.get_var_number(f"p{d}_dplus")
+                        race_perso += f":{prunning_dplus}"
                         c += 1
 
-    with st.expander("Athlete's details", expanded=False):
-        weight_kg = trianer.get_var_number("weight_kg")
-        # height_cm = trianer.get_var_number("height_cm")
-        # year_of_birth = trianer.get_var_date("year_of_birth")
-        # st.date_input("Anniversaire", key="birthday")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            atemp = st.radio("Temperature", ["Manual", "From date"])
+        with col2:
+            temperature = trianer.get_var_number("temperature", disabled=(atemp != "Manual"))
+        with col3:
+            dtemperature = trianer.get_var_date("dtemperature", disabled=(atemp == "Manual"))
+
+    with st.expander("Athlete's details", expanded=True):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            weight_kg = trianer.get_var_number("weight_kg")
+        with col2:
+            year_of_birth = trianer.get_var_number("year_of_birth")
+        with col3:
+            height_cm = trianer.get_var_number("height_cm")
 
     athlete = trianer.Athlete(
         name="John Doe",
@@ -190,16 +206,16 @@ def main():
 
     if race_menu == "Existing race":
         race = trianer.Race(epreuve=race_default)
-        # simulation = trianer.Triathlon(race=race, athlete=athlete, info_box=info_box)
     elif race_menu == "Existing format":
-        race = trianer.Race(longueur=longueur, cycling_dplus=cycling_dplus, running_dplus=running_dplus)
+        race = trianer.Race(epreuve=race_format, cycling_dplus=cycling_dplus, running_dplus=running_dplus)
     else:
-        race = trianer.Race(
-            longueur=dlongueur, disciplines=disciplines, cycling_dplus=cycling_dplus, running_dplus=running_dplus
-        )
+        race = trianer.Race(epreuve=race_perso)
+        # race = trianer.Race(longueur=dlongueur, disciplines=disciplines, cycling_dplus=cycling_dplus, running_dplus=running_dplus)
 
     st.write(race.get_info())
-    simulation = trianer.Triathlon(race=race, temperature=temperature, athlete=athlete, info_box=info_box)
+    ttemperature = temperature if atemp == "Manual" else 34
+
+    simulation = trianer.Triathlon(race=race, temperature=ttemperature, athlete=athlete, info_box=info_box)
 
     if race_menu == "Existing race":
         with st.expander("Show race gpx track", expanded=False):
@@ -210,11 +226,7 @@ def main():
         st.pyplot(simulation.show_race_details(xaxis=xaxis))
         st.pyplot(simulation.show_nutrition(xaxis=xaxis))
     with st.expander("F&B", expanded=True):
-        # st.dataframe(simulation.show_roadmap(), width=300)
         st.markdown(simulation.show_roadmap().to_html(), unsafe_allow_html=True)
-        # st.container(simulation.show_roadmap().to_html())
-        # st.markdown(simulation.show_roadmap())
-        # st.dataframe(simulation.show_roadmap())
 
     with st.expander("Cookies management", expanded=False):
         st.write(all_cookies)

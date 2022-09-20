@@ -38,7 +38,7 @@ class Triathlon:
 
         self.info_box = get_empty_box() if info_box is None else info_box
 
-        if self.race.epreuve is not None and self.race.epreuve not in Race.get_available_races().keys():
+        if 0:  # self.race.epreuve is not None and self.race.epreuve not in Race.get_available_races().keys():
             raise ValueError(
                 f"""Liste des epreuves documentées:
 
@@ -273,7 +273,7 @@ class Triathlon:
         fig.subplots_adjust(hspace=0)
         fig.patch.set_facecolor("#cdcdcd")
         axes[0].set_title(
-            f"{triathlon.race.epreuve} ({triathlon.race.longueur})",
+            triathlon.race.get_info(),
             loc="center",
             fontdict={"family": "serif", "color": "darkred", "weight": "normal", "size": 16},
         )
@@ -379,7 +379,7 @@ class Triathlon:
         fig.subplots_adjust(hspace=0)
         fig.patch.set_facecolor("#cdcdcd")
         axes[0].set_title(
-            f"Nutrition for {triathlon.race.epreuve} ({triathlon.race.longueur})",
+            f"Nutrition for {triathlon.race.get_info()}",
             loc="center",
             fontdict={"family": "serif", "color": "darkred", "weight": "normal", "size": 16},
         )

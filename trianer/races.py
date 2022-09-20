@@ -28,10 +28,31 @@ I'll be glad to help strava developing new products and services, and make them 
 
 
 class Race:
+    def init_from_string(self, epreuve) -> None:
+        self.epreuve = epreuve
+        self.longueur = None
+        self.title = "Personalized"
+
+        self.disciplines = []
+        self.distances = []
+        self.elevations = []
+
+        epreuves = epreuve[1:].split(",")
+        for e in epreuves:
+            d = e.split(":")
+            self.disciplines.append(d[0])
+            self.distances.append(float(d[1]))
+            self.elevations.append(float(d[2]) if len(d) > 2 else 0.0)
+
     def __init__(self, epreuve=None, longueur=None, cycling_dplus=0, running_dplus=0, disciplines=None) -> None:
         """ """
 
+        if epreuve[0] == ",":
+            self.init_from_string(epreuve)
+            return
+
         self.disciplines = self.get_disciplines()
+        self.title = epreuve
         if epreuve is not None and "(" in epreuve:
             self.epreuve = epreuve.split(" (")[0]
             self.longueur = epreuve[epreuve.find("(") + 1 : epreuve.find(")")]
@@ -74,6 +95,7 @@ class Race:
             self.start_time = datetime.datetime.strptime("2022-07-10 08:00", "%Y-%m-%d %H:%M")
             self.options = ["x2", "", "Mx2"]
             self.dfuelings = [[0], [0, 43], [0, 3, 7]]
+            self.distances = [1.9, 90, 21.195]
 
         elif self.epreuve == "Elsassman" and self.longueur == "M":
             self.start_time = datetime.datetime.strptime("2022-07-10 11:15", "%Y-%m-%d %H:%M")
@@ -86,19 +108,32 @@ class Race:
             self.distances = [0.65, 23.9, 5.2]
             self.elevations = [0, 9, 0]
 
-        elif self.longueur == "L":
+        elif self.epreuve == "Marathon":
+            self.distances = [42.195]
+            self.disciplines = ["running"]
+            self.elevations = [running_dplus]
+        elif self.epreuve == "Half-Marathon":
+            self.distances = [21.195]
+            self.disciplines = ["running"]
+            self.elevations = [running_dplus]
+
+        elif self.epreuve == "Ironman":
+            self.distances = [3.8, 180, 42.195]
+        elif self.epreuve == "Half-Ironman":
             self.distances = [1.9, 90, 21.195]
+        elif self.longueur == "L":
+            self.distances = [1.9, 80.0, 20.0]
         elif self.longueur == "M":
             self.distances = [1.5, 40, 10]
         elif self.longueur == "S":
             self.distances = [0.65, 20, 5]
 
     def get_info(self):
-        info = ""
+        info = f"{self.title} "
         for d in range(len(self.disciplines)):
             info += f"{self.disciplines[d]}: {self.distances[d]}km "
             if self.elevations[d] != 0:
-                info += f" (D+={self.elevations[d]}m) "
+                info += f" (D+={self.elevations[d]:.0f}m) "
         return info
 
     def get_start_time(self):
