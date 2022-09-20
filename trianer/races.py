@@ -93,9 +93,10 @@ class Race:
 
         elif self.epreuve == "Deauville" and self.longueur == "L":
             self.start_time = datetime.datetime.strptime("2022-07-10 08:00", "%Y-%m-%d %H:%M")
+            self.distances = [1.9, 90, 21.195]
+            self.elevations = [0, 1165, 90]
             self.options = ["x2", "", "Mx2"]
             self.dfuelings = [[0], [0, 43], [0, 3, 7]]
-            self.distances = [1.9, 90, 21.195]
 
         elif self.epreuve == "Elsassman" and self.longueur == "M":
             self.start_time = datetime.datetime.strptime("2022-07-10 11:15", "%Y-%m-%d %H:%M")

@@ -64,8 +64,6 @@ def format_stdb(config):
 def load_athletes_configs():
 
     # info_box.info("Load athletes from db")
-    time.sleep(1)
-
     athletes_db = firestore.Client().collection("athletes")
     athletes_stream = athletes_db.stream()
     athletes_configs = {doc.id: format_db2st(doc.to_dict()) for doc in athletes_stream}
@@ -88,7 +86,6 @@ def load_athletes_configs():
 @st.cache(persist=False, allow_output_mutation=True, suppress_st_warning=True, show_spinner=True)
 def load_races_configs():
     # info_box.info("Load races from db")
-    time.sleep(1)
     races_db = firestore.Client().collection("races")
     races_stream = races_db.stream()
     races_configs = {doc.id: doc.to_dict() for doc in races_stream}
@@ -98,9 +95,6 @@ def load_races_configs():
 
 @st.cache(persist=False, allow_output_mutation=True, suppress_st_warning=True, show_spinner=True)
 def load_default_user():
-    # info_box.info("Call load_default_user")
-    time.sleep(1)
-    # info_box.empty()
     return "guydegnol"
 
 
@@ -132,7 +126,6 @@ def check_differences():
 
     if do_submit:
         info_box.info(f"For {current_user}, update {changes}")
-        time.sleep(2)
         firestore.Client().collection("athletes").document(current_user).set(
             format_stdb(athletes_configs[current_user])
         )
@@ -311,7 +304,6 @@ def main():
 
         with info_box.empty():
             info_box.info(f"⏳ Init session state")
-            time.sleep(1)
             info_box.empty()
 
         st.session_state.current_user = current_user

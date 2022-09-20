@@ -26,7 +26,7 @@ def update_cookie(key):
     val = st.session_state[key]
     fval = str(val) if type(val) == datetime.time else val
     try:
-        cookie_manager.set(key, fval, expires_at=datetime.datetime(year=2023, month=2, day=2))
+        cookie_manager.set("trianer_" + key, fval, expires_at=datetime.datetime(year=2023, month=2, day=2))
     except Exception as e:
         st.error(f"{key} {fval}")
         st.error(e)
@@ -140,10 +140,8 @@ def main():
             with col3:
                 running_dplus = trianer.get_var_number("running_dplus")
         else:
-            st.warning("Shoud be implemented soon")
-            if st.file_uploader("") is None:
-                st.write("Or use sample dataset to try the application")
-                # sample = st.checkbox("Download sample data from GitHub")
+            # if st.file_uploader("") is None:
+            #    st.write("Or use sample dataset to try the application")
 
             disciplines = trianer.get_var_multiselect("disciplines")
             c, noc = 0, int(np.sum([1 if d == "swimming" else 2 for d in disciplines]))
@@ -177,19 +175,24 @@ def main():
 
         col1, col2, col3 = st.columns(3)
         with col1:
-            atemp = st.radio("Temperature", ["Manual", "From date"])
+            is_manual_temp = race_menu != "Existing race"
+            atemp = st.radio("Temperature", ["Manual", "From date"], index=0, disabled=is_manual_temp)
+            is_manual_temp |= atemp == "Manual"
         with col2:
-            temperature = trianer.get_var_number("temperature", disabled=(atemp != "Manual"))
+            temperature = trianer.get_var_number("temperature", disabled=not is_manual_temp)
         with col3:
-            dtemperature = trianer.get_var_date("dtemperature", disabled=(atemp == "Manual"))
+            dtemperature = trianer.get_var_date("dtemperature", disabled=is_manual_temp)
 
     with st.expander("Athlete's details", expanded=True):
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
+
         with col1:
-            weight_kg = trianer.get_var_number("weight_kg")
+            sex = trianer.get_var_radio("sex")
         with col2:
-            year_of_birth = trianer.get_var_number("year_of_birth")
+            weight_kg = trianer.get_var_number("weight_kg")
         with col3:
+            year_of_birth = trianer.get_var_number("year_of_birth")
+        with col4:
             height_cm = trianer.get_var_number("height_cm")
 
     athlete = trianer.Athlete(
@@ -212,9 +215,7 @@ def main():
         race = trianer.Race(epreuve=race_perso)
         # race = trianer.Race(longueur=dlongueur, disciplines=disciplines, cycling_dplus=cycling_dplus, running_dplus=running_dplus)
 
-    st.write(race.get_info())
-    ttemperature = temperature if atemp == "Manual" else 34
-
+    ttemperature = temperature if is_manual_temp else None
     simulation = trianer.Triathlon(race=race, temperature=ttemperature, athlete=athlete, info_box=info_box)
 
     if race_menu == "Existing race":
@@ -243,9 +244,6 @@ def main():
         cookie = st.text_input("Cookie", key="2")
         if st.button("Delete"):
             cookie_manager.delete(cookie)
-
-    # st.sidebar.markdown("""[website](https://trianer.guydegnol.net/)""")
-    # st.sidebar.selectbox("Epreuve", races_names, key="krace_name")
 
 
 if __name__ == "__main__":

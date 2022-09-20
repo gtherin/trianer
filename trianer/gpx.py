@@ -258,8 +258,6 @@ def get_data(epreuve=None, longueur=None, discipline="all", options="", filename
         info_box = st.empty()
 
     info_box.info(f"⏳ Read {filename}")
-    time.sleep(2)
-    info_box.empty()
 
     data = get_data_from_file(filename)
 
@@ -284,6 +282,7 @@ def get_data(epreuve=None, longueur=None, discipline="all", options="", filename
     # data["elevation"] = data["elevation"].where(data["distance"].diff() > 2.0, other=0)
 
     data["discipline"] = discipline
+    info_box.empty()
 
     return data
 

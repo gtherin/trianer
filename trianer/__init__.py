@@ -6,5 +6,6 @@ from .weather import *
 from .athlete import Athlete
 from .triathlon import *
 from .vetruve import *
+from .variable import *
 from .variables import *
 from .races import *
