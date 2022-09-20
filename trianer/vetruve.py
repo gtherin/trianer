@@ -1,10 +1,8 @@
 import numpy as np
-import pandas as pd
 from PIL import Image
 import random as rd
 import matplotlib.pyplot as plt
 
-from wordcloud import WordCloud
 
 # , STOPWORDS
 
@@ -36,6 +34,7 @@ def wordcloud_calories_per_sport():
     Show activities depending on the calories spent
 
     """
+    from wordcloud import WordCloud
 
     data = get_kcalories(None)
 

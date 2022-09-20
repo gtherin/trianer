@@ -34,4 +34,4 @@ folium
 streamlit-folium
 
 google-cloud-firestore
-worldcloud
+#worldcloud
