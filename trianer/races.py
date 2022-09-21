@@ -44,8 +44,13 @@ class Race:
             self.distances.append(float(d[1]))
             self.elevations.append(float(d[2]) if len(d) > 2 else 0.0)
 
-    def __init__(self, epreuve=None, longueur=None, cycling_dplus=0, running_dplus=0, disciplines=None) -> None:
+    def __init__(
+        self, epreuve=None, longueur=None, cycling_dplus=0, running_dplus=0, disciplines=None, race_format=None
+    ) -> None:
         """ """
+
+        if race_format is not None:
+            epreuve = race_format
 
         if epreuve[0] == ",":
             self.init_from_string(epreuve)

@@ -1,9 +1,10 @@
-streamlit
+# Not all packages can be installed on server
+streamlit>=1.12.2
 extra-streamlit-components
 hydralit_components
 
 pandas
-pandas-datareader
+#pandas-datareader
 meteostat
 #uncertainties
 

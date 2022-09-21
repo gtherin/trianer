@@ -99,6 +99,10 @@ def get_perso_race():
     return race_perso
 
 
+def get_pars(pars):
+    return {k: tsti.get_value(k) for k in pars}
+
+
 def main():
 
     # specify the primary menu definition
@@ -139,7 +143,6 @@ def main():
 
     # with tab2:
     if menu_id == "race":
-        st.header("Race details")
         race_menu = tsti.get_value("race_menu")
         if race_menu == "Existing race":
             race_title = trianer.Race(tsti.get_value("race_default")).get_info()
@@ -148,7 +151,11 @@ def main():
         else:
             race_title = trianer.Race(get_perso_race()).get_info()
 
-        with st.expander(race_title, expanded=True):
+        st.header(f"Race details")
+        st.subheader(f"{race_title}")
+
+        # with st.expander(race_title, expanded=True):
+        if 1:  # with st.container():
             race_menu = tsti.get_var_radio("race_menu")
             available_races = [r for r in list(races_configs.keys()) if "Info" not in r]
             trianer.variables["race_default"].srange = available_races
@@ -217,9 +224,8 @@ def main():
     if menu_id == "simulation":
         st.header("Race simulation")
 
-        config = {
-            k: tsti.get_value(k)
-            for k in [
+        pars = get_pars(
+            [
                 "swimming_sX100m",
                 "cycling_kmXh",
                 "running_sXkm",
@@ -227,15 +233,16 @@ def main():
                 "transition_cyc2run_s",
                 "weight_kg",
             ]
-        }
+        )
 
-        athlete = trianer.Athlete(name="John Doe", config=config)
+        athlete = trianer.Athlete(name="John Doe", config=pars)
 
         race_menu = tsti.get_value("race_menu")
         if race_menu == "Existing race":
             race = trianer.Race(epreuve=race_default)
         elif race_menu == "Existing format":
-            race = trianer.Race(epreuve=race_format, cycling_dplus=cycling_dplus, running_dplus=running_dplus)
+            pars = get_pars(["race_format", "cycling_dplus", "running_dplus"])
+            race = trianer.Race(**pars)
         else:
             race_perso = get_perso_race()
             race = trianer.Race(epreuve=race_perso)
