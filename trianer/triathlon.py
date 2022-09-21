@@ -140,6 +140,7 @@ class Triathlon:
 
             if d < len(self.race.disciplines) - 1:
                 transition = df.iloc[-1].to_dict()
+
                 transition.update(
                     {
                         "slope": 0.0,
@@ -147,7 +148,7 @@ class Triathlon:
                         "hydration": 0.0,
                         "discipline": f"transition {d+1}",
                         "sequence": 2 * d + 1,
-                        "duration": 0,  # athlete.transition1 / 60.0,
+                        "duration": athlete.transitions[d] / 3600.0,
                     }
                 )
                 df = pd.concat([df, pd.DataFrame.from_records([transition])], ignore_index=True)
@@ -277,7 +278,6 @@ class Triathlon:
         if xaxis == "fdistance":
             # TODO: Fix it with other axis
             cm = LinearSegmentedColormap.from_list("Custom", ["#cdcdcd", "#f08205DD"], N=30)
-            print(ax.get_xlim(), ax.get_ylim())
 
             ax.pcolorfast(
                 ax.get_xlim(),
@@ -481,7 +481,7 @@ class Triathlon:
             elif s.discipline == "swimming":
                 return ["background-color: rgba(0, 0, 255, 0.2);"] * len(s)
             elif s.discipline == "The end":
-                return ["background-color: rgba(0, 6, 57, 112);color: red;"] * len(s)
+                return ["background-color: rgba(0, 6, 57, 112);color: red; font-weight: bolder"] * len(s)
             else:
                 return ["background-color: white"] * len(s)
 
@@ -501,7 +501,7 @@ class Triathlon:
                     "Temperature",
                 ]
             ]
-            .style.hide_index()
+            .style.hide(axis="index")
             .apply(highlight, axis=1)
             .set_table_styles(
                 [
@@ -517,7 +517,7 @@ class Triathlon:
                     "Bilan kcalorique": "{0:.0f} kcal",
                     "Boisson": "{0:.0f} ml",
                     "Alimentation": "{0:.0f} kcal",
-                    "Minutes depuis depart": "{0:.0f} min",
+                    "Depuis depart": "{0:.0f} min",
                 }
             )
             .bar(color=["Red", "Green"], subset=["Depuis depart"], align="left")

@@ -9,4 +9,4 @@ from .vetruve import *
 from .variable import *
 from .variables import variables
 from .race import Race
-from .races import races
+from .races import available_races

@@ -27,8 +27,8 @@ class Athlete:
         self.speeds = {"swimming": self.swimming_speed, "cycling": self.cycling_speed, "running": self.running_speed}
         self.dspeeds_slope = {"swimming": 0.0, "cycling": 2.6, "running": 0.1}
 
-        self.transition1 = Athlete.get_pace(self.config["transition_cyc2run_s"])
-        self.transition2 = Athlete.get_pace(self.config["transition_swi2cyc_s"])
+        self.transitions = [Athlete.get_pace(self.config[k]) for k in ["transition_swi2cyc_s", "transition_cyc2run_s"]]
+        print(self.transitions)
 
         self.sudation = sudation
 

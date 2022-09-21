@@ -7,7 +7,7 @@ if os.path.exists("/home/guydegnol/projects/trianer/trianer_db_credentials.json"
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/guydegnol/projects/trianer/trianer_db_credentials.json"
 
 from . import gpx
-from .races import races
+from .races import available_races
 
 
 """
@@ -34,13 +34,13 @@ class Race:
         # Init epreuve and longueur
         self.init_basic(name, cycling_dplus, running_dplus)
 
-        if name in races:
+        if name in available_races.keys():
             self.init_from_race(name)
         else:
             self.init_from_string(name)
 
         self.init_elevations()
-        self.init_fuelings()
+        self.init_fuelings(name)
 
     def init_from_string(self, name) -> None:
         self.name = name
@@ -75,18 +75,21 @@ class Race:
 
     def init_from_race(self, name) -> None:
         self.disciplines = ["swimming", "cycling", "running"]
-        race = races[name]
-        for k in ["start_time", "distances", "elevations", "options", "dfuelings"]:
-            if k in race:
-                setattr(self, k, race[k])
+        for k in ["start_time", "distances", "elevations", "options"]:
+            if k in available_races[name]:
+                setattr(self, k, available_races[name][k])
 
-    def init_fuelings(self) -> None:
-        if not hasattr(self, "dfuelings"):
-            self.dfuelings = [[0]] * len(self.disciplines)
+    def init_fuelings(self, name) -> None:
+        if "dfuelings" not in available_races[name]:
+            self.dfuelings = [[0.0] for _ in self.disciplines]
         else:
-            for d, discipline in enumerate(self.disciplines):
-                if "x2" in self.options[d] and discipline != "swimming":
-                    self.dfuelings[d] += [0.5 * self.distances[d] + f for f in self.dfuelings[d]]
+            immutable_fuelings = available_races[name]["dfuelings"].copy()
+            self.dfuelings = [
+                immutable_fuelings[d] + [0.5 * self.distances[d] + f for f in immutable_fuelings[d]]
+                if "x2" in self.options[d]
+                else immutable_fuelings[d]
+                for d, _ in enumerate(self.disciplines)
+            ]
 
     def init_basic(self, epreuve, cycling_dplus, running_dplus) -> None:
         if epreuve is not None and "(" in epreuve:

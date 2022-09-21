@@ -1,6 +1,6 @@
 import datetime
 from .variable import Variable
-
+from .races import available_races
 
 variables = [
     # Performances
@@ -115,7 +115,13 @@ variables = [
         default="Existing format",
     ),
     dict(key="athlete_switch", label="Athlete's performances", help=None, srange="b", default=True),
-    dict(key="race_default", srange="s", help="Format of the selected race", default="Bois-le-Roi (L)", label=""),
+    dict(
+        key="race_default",
+        srange=[r for r, c in available_races.items() if "type" not in c],
+        help="Format of the selected race",
+        default="Bois-le-Roi (L)",
+        label="",
+    ),
     dict(
         key="sex",
         label="Sex",

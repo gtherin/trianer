@@ -38,7 +38,6 @@ def update_cookie(key):
 
 trianer.set_var_on_change_function(update_cookie)
 trianer.set_var_cookies(all_cookies)
-trianer.variables["race_default"].srange = [r for r, c in trianer.races.items() if "type" not in c]
 
 
 info_box = st.empty()

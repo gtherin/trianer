@@ -270,19 +270,26 @@ def calculate_fuelings(df, race, athlete) -> pd.DataFrame:
     fuelings = []
     fuels = {discipline: race.dfuelings[d] for d, discipline in enumerate(race.get_disciplines())}
 
+    print(race.dfuelings)
     print(fuels)
 
-    tot_distance, tot_duration = 0, 0
+    tot_distance, tot_duration, pdiscipline, pindex = 0, 0, race.disciplines[0], df.index[0]
     for d in df.index:
+
+        if pdiscipline != df["discipline"][d]:
+            add_fuelings(pindex, f"End of {pdiscipline}", 0, 0)
+
+        pindex, pdiscipline = d, df["discipline"][d]
+
         tot_duration += df["duration"][d]
         tot_distance += df["ddistance"][d]
 
-        def add_fuelings(d, source, drinks, food, pop=False):
+        def add_fuelings(i, source, drinks, food, pop=False):
             fuelings.append(
-                [d, df["sequence"][d], df["discipline"][d], tot_distance, source, tot_duration, drinks, food]
+                [i, df["sequence"][i], df["discipline"][i], tot_distance, source, tot_duration, drinks, food]
             )
             if pop:
-                fuels[df["discipline"][d]].pop(0)
+                fuels[df["discipline"][i]].pop(0)
 
         if df["discipline"][d] in ["transition 1"]:
             add_fuelings(d, "Isotonic+pate de fruits + compote", 300, 200)
@@ -308,9 +315,10 @@ def calculate_fuelings(df, race, athlete) -> pd.DataFrame:
     )
 
     # Get rid of double fuelings during transitions
-    fuelings = fuelings.groupby("fdistance", as_index=False).first().sort_values("fdistance").set_index("index")
+    fuelings = fuelings.groupby("index", as_index=False).first().sort_values("index")
+    fuelings = fuelings.groupby("cduration", as_index=False).first().sort_values("index")
 
-    df = df.merge(fuelings[["fooding", "drinks", "food"]], how="left", left_index=True, right_index=True)
+    df = df.join(fuelings.set_index("index")[["fooding", "drinks", "food"]])
 
     df["kcalories"] += df["food"].fillna(0.0)
     df["ihydration"] = df["ihydration"].fillna(0.0) + df["hydration"].fillna(0.0)
