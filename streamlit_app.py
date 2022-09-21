@@ -1,19 +1,20 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import streamlit as st
 import datetime
+import os
+
+import streamlit as st
+import hydralit_components as hc
+import extra_streamlit_components as stx
+from streamlit_folium import folium_static
 
 import trianer
 import trianer.st_inputs as tsti
 
-import extra_streamlit_components as stx
-
-from streamlit_folium import folium_static
-import os
-
 
 st.set_option("deprecation.showPyplotGlobalUse", False)
+st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
@@ -100,27 +101,25 @@ def get_perso_race():
 
 def main():
 
-    tab1, tab2, tab3, tab4 = st.tabs(["Athlete performances", "Race details", "Athlete details", "Race Simulation"])
+    # specify the primary menu definition
+    menu_data = [
+        {"id": "perf", "icon": "🏊🚴🏃", "label": "Performances"},
+        {"id": "race", "icon": "🌍", "label": "Race details"},
+        {"id": "athlete", "icon": "💗", "label": "Athlete details"},
+        {"id": "simulation", "icon": "🏆", "label": "Race simulation"},
+    ]
 
-    with tab1:
-        st.header("A cat")
-        st.image("https://static.streamlit.io/examples/cat.jpg", width=200)
+    over_theme = {"txc_inactive": "#FFFFFF"}
+    menu_id = hc.nav_bar(
+        menu_definition=menu_data,
+        override_theme=over_theme,
+        hide_streamlit_markers=False,
+        sticky_nav=True,
+        sticky_mode="pinned",
+    )
 
-    with tab2:
-        st.header("A dog")
-        st.image("https://static.streamlit.io/examples/dog.jpg", width=200)
-
-    with tab3:
-        st.header("An owl")
-        st.image("https://static.streamlit.io/examples/owl.jpg", width=200)
-
-    with tab4:
-        st.header("An owl")
-        st.image("https://static.streamlit.io/examples/owl.jpg", width=200)
-
-    # athlete_switch = tsti.get_var_expander("athlete_switch")
-    with st.expander("Athlete's performances", expanded=True):
-
+    if menu_id == "perf":
+        st.header("Athlete's performances")
         col1, col2, col3 = st.columns(3)
         with col1:
             swimming_sX100m = tsti.get_var_slider("swimming_sX100m")
@@ -138,117 +137,123 @@ def main():
         with col2:
             transition_cyc2run_s = tsti.get_var_slider("transition_cyc2run_s")
 
-    race_menu = tsti.get_value("race_menu")
-    if race_menu == "Existing race":
-        race_title = trianer.Race(tsti.get_value("race_default")).get_info()
-    elif race_menu == "Existing format":
-        race_title = trianer.Race(tsti.get_value("race_format")).get_info()
-    else:
-        race_title = trianer.Race(get_perso_race()).get_info()
-
-    with st.expander(race_title, expanded=True):
-        race_menu = tsti.get_var_radio("race_menu")
-        available_races = [r for r in list(races_configs.keys()) if "Info" not in r]
-        trianer.variables["race_default"].srange = available_races
+    # with tab2:
+    if menu_id == "race":
+        st.header("Race details")
+        race_menu = tsti.get_value("race_menu")
         if race_menu == "Existing race":
-            temperature = None
-            race_default = tsti.get_var_selectbox("race_default")
+            race_title = trianer.Race(tsti.get_value("race_default")).get_info()
         elif race_menu == "Existing format":
+            race_title = trianer.Race(tsti.get_value("race_format")).get_info()
+        else:
+            race_title = trianer.Race(get_perso_race()).get_info()
+
+        with st.expander(race_title, expanded=True):
+            race_menu = tsti.get_var_radio("race_menu")
+            available_races = [r for r in list(races_configs.keys()) if "Info" not in r]
+            trianer.variables["race_default"].srange = available_races
+            if race_menu == "Existing race":
+                temperature = None
+                race_default = tsti.get_var_selectbox("race_default")
+            elif race_menu == "Existing format":
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    race_format = tsti.get_var_selectbox("race_format")
+                with col2:
+                    cycling_dplus = tsti.get_var_number("cycling_dplus")
+                with col3:
+                    running_dplus = tsti.get_var_number("running_dplus")
+            else:
+                # if st.file_uploader("") is None:
+                #    st.write("Or use sample dataset to try the application")
+
+                disciplines = tsti.get_var_multiselect("disciplines")
+                c, noc = 0, int(np.sum([1 if d == "swimming" else 2 for d in disciplines]))
+                cols = st.columns(noc)
+                for d in disciplines:
+                    with cols[c]:
+                        tsti.get_var_number(f"{d}_lengh")
+                    c += 1
+                    with cols[c]:
+                        if d in ["cycling", "running"]:
+                            tsti.get_var_number(f"p{d}_dplus")
+                            c += 1
+
+                race_perso = get_perso_race()
+
             col1, col2, col3 = st.columns(3)
             with col1:
-                race_format = tsti.get_var_selectbox("race_format")
+                is_manual_temp = race_menu != "Existing race"
+                atemp = st.radio("Temperature", ["Manual", "From date"], index=0, disabled=is_manual_temp)
+                is_manual_temp |= atemp == "Manual"
             with col2:
-                cycling_dplus = tsti.get_var_number("cycling_dplus")
+                temperature = tsti.get_var_number("temperature", disabled=not is_manual_temp)
             with col3:
-                running_dplus = tsti.get_var_number("running_dplus")
+                dtemperature = tsti.get_var_date("dtemperature", disabled=is_manual_temp)
+
+    # with tab3:
+    if menu_id == "athlete":
+        st.header("Athlete's details")
+
+        with st.expander("Athlete's details", expanded=True):
+            col1, col2, col3, col4 = st.columns(4)
+
+            with col1:
+                sex = tsti.get_var_radio("sex")
+            with col2:
+                # weight_kg = tsti.get_var_number("weight_kg")
+                weight_kg = st.number_input("weight_kg", value=80)
+            with col3:
+                year_of_birth = tsti.get_var_number("year_of_birth")
+            with col4:
+                height_cm = tsti.get_var_number("height_cm")
+
+        with st.expander("Cookies management", expanded=False):
+            st.write(all_cookies)
+            cookie = st.text_input("Cookie", key="2")
+            if st.button("Delete"):
+                cookie_manager.delete(cookie)
+
+    if menu_id == "simulation":
+        st.header("Race simulation")
+
+        config = {
+            k: tsti.get_value(k)
+            for k in [
+                "swimming_sX100m",
+                "cycling_kmXh",
+                "running_sXkm",
+                "transition_swi2cyc_s",
+                "transition_cyc2run_s",
+                "weight_kg",
+            ]
+        }
+
+        athlete = trianer.Athlete(name="John Doe", config=config)
+
+        race_menu = tsti.get_value("race_menu")
+        if race_menu == "Existing race":
+            race = trianer.Race(epreuve=race_default)
+        elif race_menu == "Existing format":
+            race = trianer.Race(epreuve=race_format, cycling_dplus=cycling_dplus, running_dplus=running_dplus)
         else:
-            # if st.file_uploader("") is None:
-            #    st.write("Or use sample dataset to try the application")
-
-            disciplines = tsti.get_var_multiselect("disciplines")
-            c, noc = 0, int(np.sum([1 if d == "swimming" else 2 for d in disciplines]))
-            cols = st.columns(noc)
-            for d in disciplines:
-                with cols[c]:
-                    tsti.get_var_number(f"{d}_lengh")
-                c += 1
-                with cols[c]:
-                    if d in ["cycling", "running"]:
-                        tsti.get_var_number(f"p{d}_dplus")
-                        c += 1
-
             race_perso = get_perso_race()
+            race = trianer.Race(epreuve=race_perso)
 
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            is_manual_temp = race_menu != "Existing race"
-            atemp = st.radio("Temperature", ["Manual", "From date"], index=0, disabled=is_manual_temp)
-            is_manual_temp |= atemp == "Manual"
-        with col2:
-            temperature = tsti.get_var_number("temperature", disabled=not is_manual_temp)
-        with col3:
-            dtemperature = tsti.get_var_date("dtemperature", disabled=is_manual_temp)
+        temperature = tsti.get_value("temperature")
+        ttemperature = temperature  # if is_manual_temp else None
+        simulation = trianer.Triathlon(race=race, temperature=ttemperature, athlete=athlete, info_box=info_box)
 
-    with st.expander("Athlete's details", expanded=True):
-        col1, col2, col3, col4 = st.columns(4)
+        if race_menu == "Existing race":
+            with st.expander("Show race gpx track", expanded=False):
+                folium_static(simulation.show_gpx_track())
 
-        with col1:
-            sex = tsti.get_var_radio("sex")
-        with col2:
-            weight_kg = tsti.get_var_number("weight_kg")
-        with col3:
-            year_of_birth = tsti.get_var_number("year_of_birth")
-        with col4:
-            height_cm = tsti.get_var_number("height_cm")
-
-    athlete = trianer.Athlete(
-        name="John Doe",
-        config=dict(
-            swimming_sX100m=swimming_sX100m,
-            cycling_kmXh=cycling_kmXh,
-            running_sXkm=running_sXkm,
-            transition_swi2cyc_s=transition_swi2cyc_s,
-            transition_cyc2run_s=transition_cyc2run_s,
-            weight_kg=weight_kg,
-        ),
-    )
-
-    if race_menu == "Existing race":
-        race = trianer.Race(epreuve=race_default)
-    elif race_menu == "Existing format":
-        race = trianer.Race(epreuve=race_format, cycling_dplus=cycling_dplus, running_dplus=running_dplus)
-    else:
-        race = trianer.Race(epreuve=race_perso)
-
-    ttemperature = temperature if is_manual_temp else None
-    simulation = trianer.Triathlon(race=race, temperature=ttemperature, athlete=athlete, info_box=info_box)
-
-    if race_menu == "Existing race":
-        with st.expander("Show race gpx track", expanded=False):
-            folium_static(simulation.show_gpx_track())
-
-    with st.expander("Show race details", expanded=True):
-        xaxis = st.radio("x axis", ["Total distance", "Total time", "Time of day"], horizontal=True)
-        st.pyplot(simulation.show_race_details(xaxis=xaxis))
-        st.pyplot(simulation.show_nutrition(xaxis=xaxis))
-    with st.expander("F&B", expanded=True):
-        st.markdown(simulation.show_roadmap().to_html(), unsafe_allow_html=True)
-
-    with st.expander("Cookies management", expanded=False):
-        st.write(all_cookies)
-        st.write(
-            dict(
-                swimming_sX100m=swimming_sX100m,
-                cycling_kmXh=cycling_kmXh,
-                running_sXkm=running_sXkm,
-                transition_swi2cyc_s=transition_swi2cyc_s,
-                transition_cyc2run_s=transition_cyc2run_s,
-                weight_kg=weight_kg,
-            )
-        )
-        cookie = st.text_input("Cookie", key="2")
-        if st.button("Delete"):
-            cookie_manager.delete(cookie)
+        with st.expander("Show race details", expanded=True):
+            xaxis = st.radio("x axis", ["Total distance", "Total time", "Time of day"], horizontal=True)
+            st.pyplot(simulation.show_race_details(xaxis=xaxis))
+            st.pyplot(simulation.show_nutrition(xaxis=xaxis))
+        with st.expander("F&B", expanded=True):
+            st.markdown(simulation.show_roadmap().to_html(), unsafe_allow_html=True)
 
 
 if __name__ == "__main__":

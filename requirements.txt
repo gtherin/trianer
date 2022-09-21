@@ -1,5 +1,6 @@
 streamlit>=1.12.2
 extra-streamlit-components
+hydralit_components
 
 pandas
 pandas-datareader
