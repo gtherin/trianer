@@ -32,27 +32,28 @@ class Race:
     def __init__(self, name=None, cycling_dplus=0, running_dplus=0) -> None:
 
         # Init epreuve and longueur
-        self.init_epreuve_and_longueur(name, cycling_dplus, running_dplus)
+        self.init_basic(name, cycling_dplus, running_dplus)
 
-        self.disciplines = ["swimming", "cycling", "running"]
-        self.distances = []
-        self.elevations = []
-        self.options = ["", "", ""]
-        self.start_time = gpx.get_default_datetime()
+        import streamlit as st
 
-        if name[0] == ",":
-            self.init_from_string(name)
-        elif name in races:
+        st.write(races.keys())
+
+        if name in races:
             self.init_from_race(name)
-
-        self.init_elevations()
+        else:
+            self.init_from_string(name)
 
     def init_from_string(self, name) -> None:
+        import streamlit as st
+
         self.name = name
         self.longueur = None
         self.title = "Personalized"
 
-        disciplines = name[1:].split(",")
+        st.write(name)
+        st.write(self.disciplines)
+
+        disciplines = name.split(",")
         for e in disciplines:
             d = e.split(":")
             self.disciplines.append(d[0])
@@ -62,29 +63,43 @@ class Race:
     @staticmethod
     def init_from_cookies(cookies_source):
         race_perso = ""
-
-        pdisciplines = cookies_source("disciplines")
-        for d in pdisciplines:
+        disciplines = cookies_source("disciplines")
+        for d in disciplines:
             race_perso += f",{d}:" + str(cookies_source(f"{d}_lengh"))
             if d in ["cycling", "running"]:
                 dplus = cookies_source(f"p{d}_dplus")
                 race_perso += f":{dplus}"
-        return Race(race_perso)
+        return Race(race_perso[1:])
+
+    def get_key(self):
+        race_perso = ""
+        for d, di in enumerate(self.disciplines):
+            race_perso += f",{di}:{self.distances[d]}"
+            if self.elevations[d] != 0:
+                race_perso += f":{self.elevations[d]:.0f}"
+        return race_perso[1:]
 
     def init_from_race(self, name) -> None:
+        self.disciplines = ["swimming", "cycling", "running"]
         race = races[name]
         for k in ["start_time", "distances", "elevations", "options", "dfuelings"]:
             if k in race:
                 setattr(self, k, race[k])
 
-    def init_epreuve_and_longueur(self, epreuve, cycling_dplus, running_dplus) -> None:
+        self.init_elevations()
+
+    def init_basic(self, epreuve, cycling_dplus, running_dplus) -> None:
         if epreuve is not None and "(" in epreuve:
             self.epreuve = epreuve.split(" (")[0]
             self.longueur = epreuve[epreuve.find("(") + 1 : epreuve.find(")")]
         else:
             self.epreuve, self.longueur = epreuve, None
         self.title = epreuve
+
+        self.disciplines, self.distances, self.elevations = [], [], []
         self.ielevations = {"swimming": 0, "cycling": cycling_dplus, "running": running_dplus}
+        self.options = ["", "", ""]
+        self.start_time = gpx.get_default_datetime()
 
     def init_elevations(self) -> None:
         if not self.elevations:
@@ -97,14 +112,6 @@ class Race:
             if self.elevations[d] != 0:
                 info += f" (D+={self.elevations[d]:.0f}m) "
         return info
-
-    def get_key(self):
-        race_perso = ""
-        for d, di in enumerate(self.disciplines):
-            race_perso += f",{di}:{self.distances[d]}"
-            if self.elevations[d] != 0:
-                race_perso += f":{self.elevations[d]:.0f}"
-        return race_perso[1:]
 
     def get_start_time(self):
         return self.start_time
@@ -148,7 +155,6 @@ class Race:
 
     @staticmethod
     def load_races_configs():
-        # info_box.info("Load races from db")
         races_db = firestore.Client().collection("races")
         races_stream = races_db.stream()
         races_configs = {doc.id: doc.to_dict() for doc in races_stream}

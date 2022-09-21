@@ -38,6 +38,7 @@ def update_cookie(key):
 
 trianer.set_var_on_change_function(update_cookie)
 trianer.set_var_cookies(all_cookies)
+trianer.variables["race_default"].srange = [r for r, c in trianer.races.items() if "type" not in c]
 
 
 info_box = st.empty()
@@ -46,9 +47,6 @@ info_box = st.empty()
 @st.cache(persist=False, allow_output_mutation=True, suppress_st_warning=True, show_spinner=True)
 def load_races_configs():
     return trianer.Race.load_races_configs()
-
-
-races_configs = load_races_configs()
 
 
 def configure_physiology():
@@ -137,41 +135,48 @@ def main():
         elif race_menu == "Existing format":
             race_title = trianer.Race(tsti.get_value("race_format")).get_info()
         else:
+
+            cookies_source = tsti.get_value
+            race_perso = ""
+            pdisciplines = cookies_source("disciplines")
+            for d in pdisciplines:
+                race_perso += f",{d}:" + str(cookies_source(f"{d}_lengh"))
+                if d in ["cycling", "running"]:
+                    dplus = cookies_source(f"p{d}_dplus")
+                    race_perso += f":{dplus}"
+            st.write(race_perso[1:])
             race_title = trianer.Race.init_from_cookies(tsti.get_value).get_info()
 
         st.header(f"Race details")
         st.subheader(f"{race_title}")
 
-        if 1:
-            race_menu = tsti.get_var_radio("race_menu")
-            available_races = [r for r in list(races_configs.keys()) if "Info" not in r]
-            trianer.variables["race_default"].srange = available_races
-            if race_menu == "Existing race":
-                temperature = None
-                race_default = tsti.get_var_selectbox("race_default")
-            elif race_menu == "Existing format":
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    race_format = tsti.get_var_selectbox("race_format")
-                with col2:
-                    cycling_dplus = tsti.get_var_number("cycling_dplus")
-                with col3:
-                    running_dplus = tsti.get_var_number("running_dplus")
-            else:
-                # if st.file_uploader("") is None:
-                #    st.write("Or use sample dataset to try the application")
+        race_menu = tsti.get_var_radio("race_menu")
+        if race_menu == "Existing race":
+            temperature = None
+            race_default = tsti.get_var_selectbox("race_default")
+        elif race_menu == "Existing format":
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                race_format = tsti.get_var_selectbox("race_format")
+            with col2:
+                cycling_dplus = tsti.get_var_number("cycling_dplus")
+            with col3:
+                running_dplus = tsti.get_var_number("running_dplus")
+        else:
+            # if st.file_uploader("") is None:
+            #    st.write("Or use sample dataset to try the application")
 
-                disciplines = tsti.get_var_multiselect("disciplines")
-                c, noc = 0, int(np.sum([1 if d == "swimming" else 2 for d in disciplines]))
-                cols = st.columns(noc)
-                for d in disciplines:
-                    with cols[c]:
-                        tsti.get_var_number(f"{d}_lengh")
-                    c += 1
-                    with cols[c]:
-                        if d in ["cycling", "running"]:
-                            tsti.get_var_number(f"p{d}_dplus")
-                            c += 1
+            disciplines = tsti.get_var_multiselect("disciplines")
+            c, noc = 0, int(np.sum([1 if d == "swimming" else 2 for d in disciplines]))
+            cols = st.columns(noc)
+            for d in disciplines:
+                with cols[c]:
+                    tsti.get_var_number(f"{d}_lengh")
+                c += 1
+                with cols[c]:
+                    if d in ["cycling", "running"]:
+                        tsti.get_var_number(f"p{d}_dplus")
+                        c += 1
 
             col1, col2, col3 = st.columns(3)
             with col1:
