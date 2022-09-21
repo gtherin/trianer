@@ -34,24 +34,18 @@ class Race:
         # Init epreuve and longueur
         self.init_basic(name, cycling_dplus, running_dplus)
 
-        import streamlit as st
-
-        st.write(races.keys())
-
         if name in races:
             self.init_from_race(name)
         else:
             self.init_from_string(name)
 
-    def init_from_string(self, name) -> None:
-        import streamlit as st
+        self.init_elevations()
+        self.init_fuelings()
 
+    def init_from_string(self, name) -> None:
         self.name = name
         self.longueur = None
         self.title = "Personalized"
-
-        st.write(name)
-        st.write(self.disciplines)
 
         disciplines = name.split(",")
         for e in disciplines:
@@ -86,7 +80,13 @@ class Race:
             if k in race:
                 setattr(self, k, race[k])
 
-        self.init_elevations()
+    def init_fuelings(self) -> None:
+        if not hasattr(self, "dfuelings"):
+            self.dfuelings = [[0]] * len(self.disciplines)
+        else:
+            for d, discipline in enumerate(self.disciplines):
+                if "x2" in self.options[d] and discipline != "swimming":
+                    self.dfuelings[d] += [0.5 * self.distances[d] + f for f in self.dfuelings[d]]
 
     def init_basic(self, epreuve, cycling_dplus, running_dplus) -> None:
         if epreuve is not None and "(" in epreuve:
@@ -123,26 +123,16 @@ class Race:
         return ["swimming", "cycling", "running"]
 
     def has_data(self, d):
-        return gpx.has_data(self.epreuve, self.longueur, self.get_discipline(d), options=self.get_option(d))
+        return gpx.has_data(self.epreuve, self.longueur, self.get_discipline(d), options=self.options[d])
 
     def get_data(self, d, info_box):
         return gpx.get_data(
             self.epreuve,
             self.longueur,
             self.get_discipline(d),
-            options=self.get_option(d),
+            options=self.options[d],
             info_box=info_box,
         )
-
-    def get_option(self, d):
-        if not hasattr(self, "options"):
-            return ""
-        return self.options[d]
-
-    def get_elevation(self, d):
-        if not hasattr(self, "elevation"):
-            return 0.0
-        return self.elevations[d]
 
     @staticmethod
     def get_available_races():

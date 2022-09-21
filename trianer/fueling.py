@@ -196,7 +196,7 @@ https://www.strava.com/api/v3/athlete/activities?client_id=93746&access_token=9f
     """
 
 
-def calculate_hydration(df, triathlon, athlete) -> pd.DataFrame:
+def calculate_hydration(df, race, athlete) -> pd.DataFrame:
     """
     Max hydration 700ml homme, 600ml femme
 
@@ -262,28 +262,27 @@ def calculate_kcalories(df, race, athlete) -> pd.DataFrame:
     return df
 
 
-def calculate_fuelings(df, triathlon, athlete) -> pd.DataFrame:
+def calculate_fuelings(df, race, athlete) -> pd.DataFrame:
 
     df["cduration"] = df.groupby("discipline")["duration"].cumsum()
     df["ddistance"] = df["distance"].diff().clip(0, 1000).fillna(0.0)
 
     fuelings = []
+    fuels = {discipline: race.dfuelings[d] for d, discipline in enumerate(race.get_disciplines())}
 
-    fuels = {
-        "swimming": [0],
-        "cycling": triathlon.get_org_fueling("cycling")[1:],
-        "running": triathlon.get_org_fueling("running")[1:],
-    }
+    print(fuels)
 
     tot_distance, tot_duration = 0, 0
     for d in df.index:
         tot_duration += df["duration"][d]
         tot_distance += df["ddistance"][d]
 
-        def add_fuelings(d, source, drinks, food):
+        def add_fuelings(d, source, drinks, food, pop=False):
             fuelings.append(
                 [d, df["sequence"][d], df["discipline"][d], tot_distance, source, tot_duration, drinks, food]
             )
+            if pop:
+                fuels[df["discipline"][d]].pop(0)
 
         if df["discipline"][d] in ["transition 1"]:
             add_fuelings(d, "Isotonic+pate de fruits + compote", 300, 200)
@@ -291,24 +290,25 @@ def calculate_fuelings(df, triathlon, athlete) -> pd.DataFrame:
             add_fuelings(d, "Isotonic+pate de fruits + gel", 300, 200)
         if df["discipline"][d] in ["swimming"]:
             if len(fuels[df["discipline"][d]]) > 0 and df["distance"][d] >= fuels[df["discipline"][d]][0]:
-                add_fuelings(d, "transition", 100, 0)
-                fuels[df["discipline"][d]].pop(0)
+                add_fuelings(d, "transition", 100, 0, pop=True)
         if df["discipline"][d] in ["cycling"]:
             if len(fuels[df["discipline"][d]]) > 0 and df["distance"][d] >= fuels[df["discipline"][d]][0]:
-                add_fuelings(d, "org: remplir eau", 300, 100)
-                fuels[df["discipline"][d]].pop(0)
-
+                add_fuelings(d, "org: remplir eau", 300, 100, pop=True)
         if df["discipline"][d] in ["running"]:
             if len(fuels[df["discipline"][d]]) > 0 and df["distance"][d] >= fuels[df["discipline"][d]][0]:
-                add_fuelings(d, "org: eau + fruit", 300, 100)
-                fuels[df["discipline"][d]].pop(0)
+                add_fuelings(d, "org: eau + fruit", 300, 100, pop=True)
         if df["discipline"][d] in ["cycling"]:
             if tot_duration - fuelings[-1][5] > 0.5:
                 add_fuelings(d, "30 min", 300, 100)
+        if d == df.index[-1]:
+            add_fuelings(d, "Who's up for a beer ?", 0, 0)
 
     fuelings = pd.DataFrame(
         fuelings, columns=["index", "sequence", "discipline", "fdistance", "fooding", "cduration", "drinks", "food"]
-    ).set_index("index")
+    )
+
+    # Get rid of double fuelings during transitions
+    fuelings = fuelings.groupby("fdistance", as_index=False).first().sort_values("fdistance").set_index("index")
 
     df = df.merge(fuelings[["fooding", "drinks", "food"]], how="left", left_index=True, right_index=True)
 

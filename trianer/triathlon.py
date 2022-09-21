@@ -55,8 +55,7 @@ class Triathlon:
         self.start_time = self.race.get_start_time()
         self.gpx = self.get_adjusted_data()
 
-        if athlete is not None:
-            self.simulate_race(athlete, temperature=temperature)
+        self.simulate_race(athlete, temperature=temperature)
 
     def get_adjusted_data(self):
         data = []
@@ -67,27 +66,22 @@ class Triathlon:
         ref_dist = 0
         for d, discipline in enumerate(self.race.disciplines):
 
-            fuelings = self.race.distances[d] if hasattr(self.race, "distances") else 0
-
-            if "x2" in self.race.get_option(d) and discipline != "swimming":
-                self.dfuelings[d] += [0.5 * +f for f in self.get_org_fueling(d)]
-
             if self.race.has_data(d):
                 df = self.race.get_data(d, self.info_box)
             else:
                 df = (
-                    pd.DataFrame(np.linspace(0, fuelings, 10), columns=["distance"])
-                    .assign(altitude=self.race.get_elevation(d))
-                    .assign(elevation=self.race.get_elevation(d))
+                    pd.DataFrame(np.linspace(0, self.race.distances[d], 10), columns=["distance"])
+                    .assign(altitude=self.race.elevations[d])
+                    .assign(elevation=self.race.elevations[d])
                     .assign(discipline=discipline)
                 )
 
-            df["distance"] *= fuelings / df.distance.iloc[-1]
-            df["elevation"] *= self.race.get_elevation(d) / np.max([df.elevation.clip(0, 1000).sum(), 0.1])
+            df["distance"] *= self.race.distances[d] / df.distance.iloc[-1]
+            df["elevation"] *= self.race.elevations[d] / np.max([df.elevation.clip(0, 1000).sum(), 0.1])
             data.append(df.assign(sequence=d * 2))
 
-            self.fuelings += [f for f in self.get_org_fueling(d)]
-            ref_dist += fuelings
+            self.fuelings += self.race.dfuelings[d]
+            ref_dist += self.race.distances[d]
 
         self.fuelings = sorted(list(set(self.fuelings)))
 
@@ -102,25 +96,20 @@ class Triathlon:
         return weather.get_forecasts(coordonates=self.get_mean_coordonates()[:2])
 
     def get_gpx(self, data, discipline=None):
-        if discipline is not None:
-            data = data.query(f"discipline=='{self.race.get_discipline(discipline)}'")
+        if discipline is None:
+            return data
 
-        if self.race.get_discipline(discipline) != "swimming":
-            d = data.distance.clip(0, 1000).diff()
-            cutoff = d.mean() * 3
-            data = data[d < cutoff]
+        d_str = discipline if type(discipline) == str else self.race.get_discipline(discipline)
+        data = data.query(f"discipline=='{d_str}'")
+
+        if d_str == "swimming":
+            return data
+
+        d = data.distance.clip(0, 1000).diff()
+        cutoff = d.mean() * 3
+        data = data[d < cutoff]
 
         return data
-
-    def get_org_fueling(self, d):
-        if not hasattr(self, "dfuelings"):
-            self.dfuelings = [[0]] * len(self.race.disciplines)
-        if type(d) == int:
-            return self.dfuelings[d]
-        for idd, idiscipline in enumerate(self.race.get_disciplines()):
-            if idiscipline == d and len(self.dfuelings) > idd:
-                return self.dfuelings[idd]
-        return [0]
 
     def get_distance(self, d):
         if type(d) == int:
@@ -130,11 +119,9 @@ class Triathlon:
                 return self.distances[idd]
         return 0
 
-    def get_colors(self):
-        return ["blue", "brown", "green"]
-
-    def get_color(self, d):
-        return self.get_colors()[d]
+    def get_color(self, discipline):
+        colors = {"swimming": "blue", "cycling": "brown", "running": "green"}
+        return colors[discipline]
 
     def simulate_race(self, athlete, temperature=None):
 
@@ -178,17 +165,15 @@ class Triathlon:
         )
 
         data["fdistance"] = data["distance"].diff().clip(0, 10000).fillna(0.0).cumsum()
-
-        data = fueling.calculate_hydration(data, self, athlete)
-        data = fueling.calculate_kcalories(data, self.race, athlete)
-        data = fueling.calculate_fuelings(data, self, athlete)
+        for f in [fueling.calculate_hydration, fueling.calculate_kcalories, fueling.calculate_fuelings]:
+            data = f(data, self.race, athlete)
 
         self.data = data
         self.athlete = athlete
         return data
 
     def show_weather_forecasts(self):
-        return f"La temperature attendue est de {self.get_temperature()} °C"
+        return f"The expected temperature is {self.get_temperature()} °C"
 
     def show_gpx_track(triathlon):
         from branca.element import Figure
@@ -201,16 +186,16 @@ class Triathlon:
         from folium.plugins import MarkerCluster
 
         marker_cluster = MarkerCluster().add_to(trimap)
-        for d in range(3):
+        for d, discipline in enumerate(triathlon.race.disciplines):
 
-            gpx = triathlon.get_gpx(triathlon.gpx, d)
+            gpx = triathlon.get_gpx(triathlon.gpx, discipline)
             gpx = gpx.dropna(subset=["latitude", "longitude"])
             if "latitude" not in gpx.columns or np.isnan(gpx["latitude"].mean()) or gpx.empty:
                 continue
 
             folium.PolyLine(
                 list(zip(gpx["latitude"], gpx["longitude"])),
-                color=triathlon.get_color(d),
+                color=triathlon.get_color(discipline),
                 weight=3,
                 opacity=0.8,
             ).add_to(trimap)
@@ -276,7 +261,7 @@ class Triathlon:
 
         if 1:
             patches = []
-            for d in range(3):
+            for d, discipline in enumerate(triathlon.race.disciplines):
                 ddata = triathlon.get_gpx(data, d)
                 label = triathlon.race.get_discipline(d)
                 duration = ddata["duration"].sum()
@@ -285,7 +270,7 @@ class Triathlon:
                 if ddata["elevation"].clip(0, 1000).sum() > 3:
                     label += f", D+={ddata['elevation'].clip(0, 1000).sum():0.0f}m"
 
-                patches.append(Line2D([0], [0], color=triathlon.get_color(d), lw=4, label=label))
+                patches.append(Line2D([0], [0], color=triathlon.get_color(discipline), lw=4, label=label))
             patches.append(Line2D([0], [0], color="yellow", label=f"temperature, max={data['temperature'].max()}°C"))
             ax.legend(handles=patches, loc=1, prop={"size": 16})
 
@@ -340,11 +325,11 @@ class Triathlon:
 
     def plot_core(self, data, ax, variable, xaxis):
         ax.set_facecolor("#cdcdcd")
-        for d in range(3):
-            ddata = self.get_gpx(data, d)
+        for d, discipline in enumerate(self.race.disciplines):
+            ddata = self.get_gpx(data, discipline)
             ddata[variable].plot(
-                color=self.get_color(d),
-                label=f"{self.race.get_discipline(d)} elevation={ddata['elevation'].clip(0, 1000).sum():0.0f} m",
+                color=self.get_color(discipline),
+                label=f"{discipline} elevation={ddata['elevation'].clip(0, 1000).sum():0.0f} m",
                 ax=ax,
             )
 
@@ -474,13 +459,13 @@ class Triathlon:
             }
         )
 
-        # ff["Durée totale"] = pd.to_timedelta(ff["duration"].cumsum(), unit="h")  # .dt.strftime("%H:%M")
         ff["Durée totale"] = (
             datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             + pd.to_timedelta(ff["duration"].cumsum(), unit="h")
         ).dt.strftime("%H:%M")
 
         ff = ff[(~ff["Boisson"].isna()) | (ff.index[-1] == ff.index)]
+        ff["discipline"].iloc[-1] = "The end"
 
         for c in ["dtime", "hydration", "kcalories", "duration"]:
             if c in ff.columns:
@@ -495,6 +480,8 @@ class Triathlon:
                 return ["background-color: rgba(0, 255, 0, 0.3);"] * len(s)
             elif s.discipline == "swimming":
                 return ["background-color: rgba(0, 0, 255, 0.2);"] * len(s)
+            elif s.discipline == "The end":
+                return ["background-color: rgba(0, 6, 57, 112);color: red;"] * len(s)
             else:
                 return ["background-color: white"] * len(s)
 
