@@ -4,32 +4,17 @@ hydralit_components
 
 pandas
 pandas-datareader
-#data_cache
-#psutil
-
-#geopandas
-#mplleaflet
-#contextily
-#descartes
 meteostat
-uncertainties
+#uncertainties
 
 seaborn
 plotly
 matplotlib
 sklearn
-xgboost
+#xgboost
 
-flaml
-
-
-#ipykernel
-#jupyterlab
-#ipywidgets
-#jupyterlab-geojson
-
-#tqdm
-black
+#flaml
+#black
 
 folium
 streamlit-folium
