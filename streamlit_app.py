@@ -239,7 +239,7 @@ def main():
 
         race_menu = tsti.get_value("race_menu")
         if race_menu == "Existing race":
-            race = trianer.Race(epreuve=race_default)
+            race = trianer.Race(epreuve=tsti.get_value("race_default"))
         elif race_menu == "Existing format":
             pars = get_pars(["race_format", "cycling_dplus", "running_dplus"])
             race = trianer.Race(**pars)
