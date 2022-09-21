@@ -32,10 +32,6 @@ class Triathlon:
     def __init__(self, race=None, athlete=None, temperature=None, info_box=None) -> None:
 
         self.race = race
-        # Race(
-        #    epreuve, longueur, cycling_dplus=cycling_dplus, running_dplus=running_dplus, disciplines=disciplines
-        # )
-
         self.info_box = get_empty_box() if info_box is None else info_box
 
         if 0:  # self.race.epreuve is not None and self.race.epreuve not in Race.get_available_races().keys():

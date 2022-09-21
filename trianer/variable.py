@@ -22,6 +22,8 @@ class Variable:
             return int(var)
         elif self.srange[0] == "d" and type(var) in [str, float, int]:
             return int(var)
+        elif self.srange[0] == "b" and type(var) in [str, float, int]:
+            return bool(var)
         else:
             return var
 
@@ -36,6 +38,11 @@ class Variable:
         import streamlit as st
 
         kwargs.update(dict(key=self.key, help=self.help, on_change=lambda: Variable.update_cookie(self.key)))
+
+        if input_cls in [st.expander]:
+            kwargs.update(dict(expanded=self.get_init_value()))
+            return input_cls(self.key if self.label is None else self.label, **kwargs)
+
         smin_value, smax_value, sstep = self.get_range_values()
 
         if input_cls in [st.radio]:

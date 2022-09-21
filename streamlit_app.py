@@ -3,7 +3,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import streamlit as st
 import datetime
+
 import trianer
+import trianer.st_inputs as tsti
+
 import extra_streamlit_components as stx
 
 from streamlit_folium import folium_static
@@ -86,92 +89,95 @@ def configure_physiology():
 def get_perso_race():
     race_perso = ""
 
-    pdisciplines = trianer.get_value("disciplines")
+    pdisciplines = tsti.get_value("disciplines")
     for d in pdisciplines:
-        race_perso += f",{d}:" + str(trianer.get_value(f"{d}_lengh"))
+        race_perso += f",{d}:" + str(tsti.get_value(f"{d}_lengh"))
         if d in ["cycling", "running"]:
-            dplus = trianer.get_value(f"p{d}_dplus")
+            dplus = tsti.get_value(f"p{d}_dplus")
             race_perso += f":{dplus}"
     return race_perso
 
 
 def main():
 
+    tab1, tab2, tab3, tab4 = st.tabs(["Athlete performances", "Race details", "Athlete details", "Race Simulation"])
+
+    with tab1:
+        st.header("A cat")
+        st.image("https://static.streamlit.io/examples/cat.jpg", width=200)
+
+    with tab2:
+        st.header("A dog")
+        st.image("https://static.streamlit.io/examples/dog.jpg", width=200)
+
+    with tab3:
+        st.header("An owl")
+        st.image("https://static.streamlit.io/examples/owl.jpg", width=200)
+
+    with tab4:
+        st.header("An owl")
+        st.image("https://static.streamlit.io/examples/owl.jpg", width=200)
+
+    # athlete_switch = tsti.get_var_expander("athlete_switch")
     with st.expander("Athlete's performances", expanded=True):
 
         col1, col2, col3 = st.columns(3)
         with col1:
-            swimming_sX100m = trianer.get_var_slider("swimming_sX100m")
+            swimming_sX100m = tsti.get_var_slider("swimming_sX100m")
 
         with col2:
-            cycling_kmXh = trianer.get_var_number("cycling_kmXh")
+            cycling_kmXh = tsti.get_var_number("cycling_kmXh")
 
         with col3:
-            running_sXkm = trianer.get_var_slider("running_sXkm")
+            running_sXkm = tsti.get_var_slider("running_sXkm")
 
         col1, col2 = st.columns(2)
         with col1:
-            transition_swi2cyc_s = trianer.get_var_slider("transition_swi2cyc_s")
+            transition_swi2cyc_s = tsti.get_var_slider("transition_swi2cyc_s")
 
         with col2:
-            transition_cyc2run_s = trianer.get_var_slider("transition_cyc2run_s")
+            transition_cyc2run_s = tsti.get_var_slider("transition_cyc2run_s")
 
-    race_menu = trianer.get_value("race_menu")
+    race_menu = tsti.get_value("race_menu")
     if race_menu == "Existing race":
-        race_title = trianer.Race(trianer.get_value("race_default")).get_info()
+        race_title = trianer.Race(tsti.get_value("race_default")).get_info()
     elif race_menu == "Existing format":
-        race_title = trianer.Race(trianer.get_value("race_format")).get_info()
+        race_title = trianer.Race(tsti.get_value("race_format")).get_info()
     else:
         race_title = trianer.Race(get_perso_race()).get_info()
 
     with st.expander(race_title, expanded=True):
-        race_menu = trianer.get_var_radio("race_menu")
+        race_menu = tsti.get_var_radio("race_menu")
         available_races = [r for r in list(races_configs.keys()) if "Info" not in r]
         trianer.variables["race_default"].srange = available_races
         if race_menu == "Existing race":
             temperature = None
-            race_default = trianer.get_var_selectbox("race_default")
+            race_default = tsti.get_var_selectbox("race_default")
         elif race_menu == "Existing format":
             col1, col2, col3 = st.columns(3)
             with col1:
-                race_format = trianer.get_var_selectbox("race_format")
+                race_format = tsti.get_var_selectbox("race_format")
             with col2:
-                cycling_dplus = trianer.get_var_number("cycling_dplus")
+                cycling_dplus = tsti.get_var_number("cycling_dplus")
             with col3:
-                running_dplus = trianer.get_var_number("running_dplus")
+                running_dplus = tsti.get_var_number("running_dplus")
         else:
             # if st.file_uploader("") is None:
             #    st.write("Or use sample dataset to try the application")
 
-            disciplines = trianer.get_var_multiselect("disciplines")
+            disciplines = tsti.get_var_multiselect("disciplines")
             c, noc = 0, int(np.sum([1 if d == "swimming" else 2 for d in disciplines]))
             cols = st.columns(noc)
-            dlongueur = []
-
-            race_perso = ""
-
             for d in disciplines:
                 with cols[c]:
-                    if "swimming" == d:
-                        swimming_lengh = trianer.get_var_number("swimming_lengh")
-                        dlongueur.append(swimming_lengh)
-                    if "cycling" == d:
-                        cycling_lengh = trianer.get_var_number("cycling_lengh")
-                        dlongueur.append(cycling_lengh)
-                    if "running" == d:
-                        running_lengh = trianer.get_var_number("running_lengh")
-                        dlongueur.append(running_lengh)
-                race_perso += f",{d}:{dlongueur[-1]}"
+                    tsti.get_var_number(f"{d}_lengh")
                 c += 1
                 with cols[c]:
-                    if "cycling" == d:
-                        pcycling_dplus = trianer.get_var_number(f"p{d}_dplus")
-                        race_perso += f":{pcycling_dplus}"
+                    if d in ["cycling", "running"]:
+                        tsti.get_var_number(f"p{d}_dplus")
                         c += 1
-                    if "running" == d:
-                        prunning_dplus = trianer.get_var_number(f"p{d}_dplus")
-                        race_perso += f":{prunning_dplus}"
-                        c += 1
+
+            race_perso = get_perso_race()
 
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -179,21 +185,21 @@ def main():
             atemp = st.radio("Temperature", ["Manual", "From date"], index=0, disabled=is_manual_temp)
             is_manual_temp |= atemp == "Manual"
         with col2:
-            temperature = trianer.get_var_number("temperature", disabled=not is_manual_temp)
+            temperature = tsti.get_var_number("temperature", disabled=not is_manual_temp)
         with col3:
-            dtemperature = trianer.get_var_date("dtemperature", disabled=is_manual_temp)
+            dtemperature = tsti.get_var_date("dtemperature", disabled=is_manual_temp)
 
     with st.expander("Athlete's details", expanded=True):
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-            sex = trianer.get_var_radio("sex")
+            sex = tsti.get_var_radio("sex")
         with col2:
-            weight_kg = trianer.get_var_number("weight_kg")
+            weight_kg = tsti.get_var_number("weight_kg")
         with col3:
-            year_of_birth = trianer.get_var_number("year_of_birth")
+            year_of_birth = tsti.get_var_number("year_of_birth")
         with col4:
-            height_cm = trianer.get_var_number("height_cm")
+            height_cm = tsti.get_var_number("height_cm")
 
     athlete = trianer.Athlete(
         name="John Doe",
@@ -213,7 +219,6 @@ def main():
         race = trianer.Race(epreuve=race_format, cycling_dplus=cycling_dplus, running_dplus=running_dplus)
     else:
         race = trianer.Race(epreuve=race_perso)
-        # race = trianer.Race(longueur=dlongueur, disciplines=disciplines, cycling_dplus=cycling_dplus, running_dplus=running_dplus)
 
     ttemperature = temperature if is_manual_temp else None
     simulation = trianer.Triathlon(race=race, temperature=ttemperature, athlete=athlete, info_box=info_box)

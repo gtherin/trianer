@@ -115,6 +115,7 @@ variables = [
         srange=["Existing format", "Existing race", "Personalized format"],
         default="Existing format",
     ),
+    dict(key="athlete_switch", label="Athlete's performances", help=None, srange="b", default=True),
     dict(key="race_default", srange="s", help="Format of the selected race", default="Bois-le-Roi (L)", label=""),
     dict(
         key="sex",
@@ -134,45 +135,3 @@ variables = [
 ]
 
 variables = {v["key"]: Variable(**v) for v in variables}
-
-
-def get_var_slider(key, **kwargs):
-    import streamlit as st
-
-    return variables[key].get_input(st.slider, **kwargs)
-
-
-def get_var_number(key, **kwargs):
-    import streamlit as st
-
-    return variables[key].get_input(st.number_input, **kwargs)
-
-
-def get_var_selectbox(key, **kwargs):
-    import streamlit as st
-
-    return variables[key].get_input(st.selectbox, **kwargs)
-
-
-def get_var_radio(key, **kwargs):
-    import streamlit as st
-
-    return variables[key].get_input(st.radio, **kwargs)
-
-
-def get_var_date(key, **kwargs):
-    import streamlit as st
-
-    return variables[key].get_input(st.date_input, **kwargs)
-
-
-def get_var_multiselect(key, **kwargs):
-    import streamlit as st
-
-    return variables[key].get_input(st.multiselect, **kwargs)
-
-
-def get_value(key):
-    import streamlit as st
-
-    return variables[key].get_init_value()
