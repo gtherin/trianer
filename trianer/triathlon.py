@@ -11,8 +11,7 @@ import matplotlib
 import time
 
 
-from .races import Race
-
+from .race import Race
 from . import gpx
 from . import weather
 from . import fueling
@@ -31,30 +30,27 @@ def get_empty_box():
 class Triathlon:
     def __init__(self, race=None, athlete=None, temperature=None, info_box=None) -> None:
 
-        self.race = race
-        self.info_box = get_empty_box() if info_box is None else info_box
-
-        if 0:  # self.race.epreuve is not None and self.race.epreuve not in Race.get_available_races().keys():
-            raise ValueError(
-                f"""Liste des epreuves documentées:
+        f"""Liste des epreuves documentées:
 
         - {list(Race.get_available_races().keys())} ou
-        - {self.race.disciplines}
+        - {race.disciplines}
 
         # Definir un athlete
         athlete = triaainer.Athlete(weight=80, swimming="2min10s/100m", cycling="27.0km/h", running="5min30s/km", transitions="10min")
 
         # Definir une course
-        race = triaainer.Race(epreuve="running", longueur="20")
+        race = triaainer.Race(name="running (20)")
 
         # Simule une course a pieds de 20km
         course = triaainer.Triathlon(race=race, athlete=athlete, temperature=[20, 25])
 
         # Simule la realisation d'un Elsassman au format L
-        race = triaainer.Race(epreuve="Elsassman", longueur="L")
+        race = triaainer.Race(name="Elsassman (L)")
         elsassman = triaainer.Triathlon(race=race, athlete=athlete)
         """
-            )
+
+        self.race = race
+        self.info_box = get_empty_box() if info_box is None else info_box
 
         self.start_time = self.race.get_start_time()
         self.gpx = self.get_adjusted_data()
@@ -184,7 +180,7 @@ class Triathlon:
         data["fdistance"] = data["distance"].diff().clip(0, 10000).fillna(0.0).cumsum()
 
         data = fueling.calculate_hydration(data, self, athlete)
-        data = fueling.calculate_kcalories(data, self, athlete)
+        data = fueling.calculate_kcalories(data, self.race, athlete)
         data = fueling.calculate_fuelings(data, self, athlete)
 
         self.data = data

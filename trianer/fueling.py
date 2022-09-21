@@ -231,7 +231,7 @@ def calculate_hydration(df, triathlon, athlete) -> pd.DataFrame:
     return df
 
 
-def calculate_kcalories(df, triathlon, athlete) -> pd.DataFrame:
+def calculate_kcalories(df, race, athlete) -> pd.DataFrame:
     """
 
     Contrairement aux sports terrestres, en natation, la puissance mécanique est utilisée pour surpasser
@@ -252,8 +252,8 @@ def calculate_kcalories(df, triathlon, athlete) -> pd.DataFrame:
         del df["kcalories"]
 
     kcalories = pd.Series(
-        [get_kcalories(athlete.weight, discipline=d, speed=athlete.speeds[d]) for d in triathlon.race.disciplines],
-        index=[d for d in triathlon.race.disciplines],
+        [get_kcalories(athlete.weight, discipline=d, speed=athlete.speeds[d]) for d in race.disciplines],
+        index=[d for d in race.disciplines],
     ).to_frame(name="kcalories")
     df = df.merge(kcalories, how="left", left_on=df["discipline"], right_index=True)
     df["kcalories"] = -df["kcalories"] * df["duration"]
@@ -310,7 +310,6 @@ def calculate_fuelings(df, triathlon, athlete) -> pd.DataFrame:
         fuelings, columns=["index", "sequence", "discipline", "fdistance", "fooding", "cduration", "drinks", "food"]
     ).set_index("index")
 
-    # print(fuelings)
     df = df.merge(fuelings[["fooding", "drinks", "food"]], how="left", left_index=True, right_index=True)
 
     df["kcalories"] += df["food"].fillna(0.0)

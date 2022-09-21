@@ -87,20 +87,8 @@ def configure_physiology():
     st.pyplot(fig)
 
 
-def get_perso_race():
-    race_perso = ""
-
-    pdisciplines = tsti.get_value("disciplines")
-    for d in pdisciplines:
-        race_perso += f",{d}:" + str(tsti.get_value(f"{d}_lengh"))
-        if d in ["cycling", "running"]:
-            dplus = tsti.get_value(f"p{d}_dplus")
-            race_perso += f":{dplus}"
-    return race_perso
-
-
 def get_pars(pars):
-    return {k: tsti.get_value(k) for k in pars}
+    return {"name" if k in ["race_format", "race_default"] else k: tsti.get_value(k) for k in pars}
 
 
 def main():
@@ -149,13 +137,12 @@ def main():
         elif race_menu == "Existing format":
             race_title = trianer.Race(tsti.get_value("race_format")).get_info()
         else:
-            race_title = trianer.Race(get_perso_race()).get_info()
+            race_title = trianer.Race.init_from_cookies(tsti.get_value).get_info()
 
         st.header(f"Race details")
         st.subheader(f"{race_title}")
 
-        # with st.expander(race_title, expanded=True):
-        if 1:  # with st.container():
+        if 1:
             race_menu = tsti.get_var_radio("race_menu")
             available_races = [r for r in list(races_configs.keys()) if "Info" not in r]
             trianer.variables["race_default"].srange = available_races
@@ -185,8 +172,6 @@ def main():
                         if d in ["cycling", "running"]:
                             tsti.get_var_number(f"p{d}_dplus")
                             c += 1
-
-                race_perso = get_perso_race()
 
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -224,28 +209,21 @@ def main():
     if menu_id == "simulation":
         st.header("Race simulation")
 
-        pars = get_pars(
-            [
-                "swimming_sX100m",
-                "cycling_kmXh",
-                "running_sXkm",
-                "transition_swi2cyc_s",
-                "transition_cyc2run_s",
-                "weight_kg",
-            ]
+        athlete = trianer.Athlete(
+            config=get_pars(
+                ["swimming_sX100m", "cycling_kmXh", "running_sXkm"]
+                + ["transition_swi2cyc_s", "transition_cyc2run_s", "weight_kg"]
+            )
         )
-
-        athlete = trianer.Athlete(name="John Doe", config=pars)
 
         race_menu = tsti.get_value("race_menu")
         if race_menu == "Existing race":
-            race = trianer.Race(epreuve=tsti.get_value("race_default"))
+            race = trianer.Race(name=tsti.get_value("race_default"))
         elif race_menu == "Existing format":
             pars = get_pars(["race_format", "cycling_dplus", "running_dplus"])
             race = trianer.Race(**pars)
         else:
-            race_perso = get_perso_race()
-            race = trianer.Race(epreuve=race_perso)
+            race = trianer.Race.init_from_cookies(tsti.get_value)
 
         temperature = tsti.get_value("temperature")
         ttemperature = temperature  # if is_manual_temp else None
