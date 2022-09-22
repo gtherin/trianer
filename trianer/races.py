@@ -80,7 +80,7 @@ available_races = {
             elevations=[0, 472, 132],
             # options=["x2", "", "Mx2"],
             dfuelings=[[0], [0, 43], [0, 3.5, 6.5]],
-            gpx_data=["Bois_le_roi_L_swimming.gpx,x2", "Bois_le_roi_L_cycling.gpx", "Bois_le_roi_L_running.gpx,x2"],
+            gpx_data=["Bois_le_Roi_L_swimming.gpx,x2", "Bois_le_Roi_L_cycling.gpx", "Bois_le_Roi_L_running.gpx,x2"],
         ),
         dict(key="Marathon", distances=[42.195], disciplines=["running"], type="format"),
         dict(key="Half-Marathon", distances=[21.195], disciplines=["running"], type="format"),
