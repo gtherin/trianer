@@ -36,7 +36,6 @@ def update_cookie(key):
         st.error(e)
 
 
-st.write(st.config.get_option("server.enableCORS"))
 trianer.set_var_on_change_function(update_cookie)
 trianer.set_var_cookies(all_cookies)
 
@@ -96,6 +95,7 @@ def main():
         {"id": "race", "icon": "🌍", "label": "Race details"},
         {"id": "athlete", "icon": "💗", "label": "Athlete details"},
         {"id": "simulation", "icon": "🏆", "label": "Race simulation"},
+        {"id": "about", "icon": "💻", "label": "About"},
     ]
 
     over_theme = {"txc_inactive": "#FFFFFF"}
@@ -245,6 +245,21 @@ def main():
             st.pyplot(simulation.show_nutrition(xaxis=xaxis))
         with st.expander("F&B", expanded=True):
             st.markdown(simulation.show_roadmap().to_html(), unsafe_allow_html=True)
+
+    if menu_id == "about":
+        st.header("About")
+        st.success(f"Using version {trianer.__version__}")
+        st.markdown(
+            f"""
+        
+- Version 2.2.0:
+Authomatic deploy from github
+
+- Version 2.1.0:
+Use gpx local files
+
+"""
+        )
 
 
 if __name__ == "__main__":
