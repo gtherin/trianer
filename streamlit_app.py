@@ -250,6 +250,7 @@ def main():
     if menu_id == "about":
         st.header("About")
         st.success(f"Using version {trianer.__version__}")
+        st.markdown(open("./CHANGELOG.md", "r").read())
 
         ffiles = glob.glob("./*")
         ffiles2 = glob.glob("./trainer/*")
@@ -258,13 +259,6 @@ def main():
             f"""
 {ffiles}
 {ffiles2}
-
-- Version 2.2.0:
-Authomatic deploy from github
-
-- Version 2.1.0:
-Use gpx local files
-
 """
         )
 
