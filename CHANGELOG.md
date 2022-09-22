@@ -4,6 +4,8 @@ All notable changes to this project will be documented here.
 #### [TODO list] - 2022-09-22
  
 - Make it possible to add gpx files
+- Have a algorithm to clean gpx files
+- Improve predictions with data analyses
 
 #### [2.3.1] - 2022-09-22
 

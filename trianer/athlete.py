@@ -13,15 +13,16 @@ class Athlete:
         self.weight = self.config["weight_kg"]
 
         # Extract natation_speed
-        swimming_pace = Athlete.get_pace(self.config["swimming_sX100m"])
-        self.swimming_speed = 3600 / (10 * swimming_pace)
+        self.swimming_pace = Athlete.get_pace(self.config["swimming_sX100m"])
+        self.swimming_speed = 3600 / (10 * self.swimming_pace)
 
         # Extract cycling_speed
         self.cycling_speed = float(self.config["cycling_kmXh"])
+        self.cycling_pace = 3600.0 / self.cycling_speed
 
         # Extract running_speed
-        running_pace = Athlete.get_pace(self.config["running_sXkm"])
-        self.running_speed = 3600 / running_pace
+        self.running_pace = Athlete.get_pace(self.config["running_sXkm"])
+        self.running_speed = 3600 / self.running_pace
 
         # Global speeds
         self.speeds = {"swimming": self.swimming_speed, "cycling": self.cycling_speed, "running": self.running_speed}

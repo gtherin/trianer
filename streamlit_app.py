@@ -236,6 +236,30 @@ def main():
         ttemperature = None  # temperature  # if is_manual_temp else None
         simulation = trianer.Triathlon(race=race, temperature=ttemperature, athlete=athlete, info_box=info_box)
 
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            st.metric(
+                "Swimming speed",
+                f"{athlete.swimming_speed:.2f} km/h",
+                f"{athlete.swimming_pace:.0f} s/km",
+                delta_color="off",
+            )
+        with col2:
+            st.metric(
+                "cycling_speed",
+                f"{athlete.cycling_speed:.2f} km/h",
+                f"{athlete.cycling_pace:.0f} s/100m",
+                delta_color="off",
+            )
+        with col3:
+            st.metric(
+                "Running speed",
+                f"{athlete.running_speed:.2f} km/h",
+                f"{athlete.running_pace:.0f} s/km",
+                delta_color="off",
+            )
+
         if race_menu == "Existing race":
             with st.expander("Show race gpx track", expanded=False):
                 folium_static(simulation.show_gpx_track())

@@ -82,6 +82,15 @@ available_races = {
             dfuelings=[[0], [0, 43], [0, 3.5, 6.5]],
             gpx_data=["Bois_le_Roi_L_swimming.gpx,x2", "Bois_le_Roi_L_cycling.gpx", "Bois_le_Roi_L_running.gpx,x2"],
         ),
+        # Chtriman
+        dict(
+            key="Paris (Marathon)",
+            start_time=datetime.datetime.strptime("2023-04-02 10:00", "%Y-%m-%d %H:%M"),
+            distances=[42.195],
+            disciplines=["running"],
+            dfuelings=[[0, 7, 12.8, 17.7, 22.8, 27, 29.9, 34.6, 38.5]],
+            gpx_data=["Paris_Marathon.gpx"],
+        ),
         dict(key="Marathon", distances=[42.195], disciplines=["running"], type="format"),
         dict(key="Half-Marathon", distances=[21.195], disciplines=["running"], type="format"),
         dict(key="Ironman", distances=[3.8, 180, 42.195], type="format"),

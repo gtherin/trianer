@@ -76,7 +76,7 @@ class Race:
 
     def init_from_race(self, name) -> None:
         self.disciplines = ["swimming", "cycling", "running"]
-        for k in ["start_time", "distances", "elevations", "gpx_data"]:
+        for k in ["disciplines", "start_time", "distances", "elevations", "gpx_data"]:
             if k in available_races[name]:
                 setattr(self, k, available_races[name][k])
 
@@ -96,6 +96,7 @@ class Race:
             self.dfuelings = [[] for _ in self.disciplines]
             immutable_fuelings = available_races[name]["dfuelings"].copy()
             for d, discipline in enumerate(self.disciplines):
+
                 gpx_info = self.gpx_data[d].split(",x")
                 nlaps = 1 if len(gpx_info) == 1 or discipline == "swimming" else int(gpx_info[1])
 
