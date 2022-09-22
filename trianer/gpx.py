@@ -151,18 +151,24 @@ def get_data_from_file(filename):
 
     ext = filename.split(".")[-1]
 
+    import streamlit as st
+    import glob
+
+    ffiles = glob.glob("./*")
+    st.info(ffiles)
+
     if "http" in filename:
         url_req = get_requests(filename)
         xml = url_req.text.split("<trkpt")
     elif ext == "tcx":
         xml = open(filename, "r").read().split("<Trackpoint")
     elif os.path.exists(dfilename := f"./data/{filename}"):
+        st.info("YEP MAN", dfilename)
         xml = open(dfilename, "r").read().split("<trkpt")
     # elif os.path.exists(dfilename := f"trianer/data/{filename}"):
     #    xml = open(dfilename, "r").read().split("<trkpt")
     # elif os.path.exists(dfilename := f"trianer/data/{filename}"):
     #    xml = open(dfilename, "r").read().split("<trkpt")
-    import streamlit as st
 
     st.info(dfilename)
 
