@@ -154,8 +154,12 @@ def get_data_from_file(filename):
     import streamlit as st
     import glob
 
-    ffiles = glob.glob("./*")
+    ffiles = glob.glob("./data/*")
     st.info(ffiles)
+
+    dfilename = f"./data/{filename}"
+    st.info(dfilename)
+    st.info(os.path.exists(dfilename))
 
     if "http" in filename:
         url_req = get_requests(filename)
