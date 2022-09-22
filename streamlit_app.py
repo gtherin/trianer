@@ -253,6 +253,7 @@ def main():
 
         ffiles = glob.glob("./*")
         ffiles2 = glob.glob("./trainer/*")
+        ffiles2 = glob.glob("./data/*")
         st.markdown(
             f"""
 {ffiles}
