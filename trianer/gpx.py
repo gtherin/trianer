@@ -160,6 +160,8 @@ def get_data_from_file(filename):
         xml = open(dfilename, "r").read().split("<trkpt")
     elif os.path.exists(dfilename := f"trianer/data/{filename}"):
         xml = open(dfilename, "r").read().split("<trkpt")
+    elif os.path.exists(dfilename := f"trianer/trianer/data/{filename}"):
+        xml = open(dfilename, "r").read().split("<trkpt")
 
     data = []
     for p in xml:
