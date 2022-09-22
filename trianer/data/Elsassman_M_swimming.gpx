@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx creator="Garmin Connect" version="1.1"
+  xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/11.xsd"
+  xmlns:ns3="http://www.garmin.com/xmlschemas/TrackPointExtension/v1"
+  xmlns="http://www.topografix.com/GPX/1/1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns2="http://www.garmin.com/xmlschemas/GpxExtensions/v3">
+  <metadata>
+    <name>Elsassman Natation M 2020</name>
+    <link href="connect.garmin.com">
+      <text>Garmin Connect</text>
+    </link>
+    <time>2020-10-26T10:47:43.000Z</time>
+  </metadata>
+  <trk>
+    <name>Elsassman Natation M 2020</name>
+    <trkseg>
+      <trkpt lat="47.86405938293132" lon="7.339439034331009">
+        <ele>211.7626953125</ele>
+        <time>2020-10-26T10:47:43.000Z</time>
+      </trkpt>
+      <trkpt lat="47.864857645498475" lon="7.337751388549806">
+        <ele>211.7557830810547</ele>
+        <time>2020-10-26T10:47:43.046Z</time>
+      </trkpt>
+      <trkpt lat="47.864468735243975" lon="7.335479021203355">
+        <ele>211.0</ele>
+        <time>2020-10-26T10:47:43.145Z</time>
+      </trkpt>
+      <trkpt lat="47.86350713964711" lon="7.3353910446167">
+        <ele>211.0</ele>
+        <time>2020-10-26T10:47:43.276Z</time>
+      </trkpt>
+      <trkpt lat="47.864206320783076" lon="7.338659048145928">
+        <ele>211.0</ele>
+        <time>2020-10-26T10:47:43.484Z</time>
+      </trkpt>
+      <trkpt lat="47.86403690520551" lon="7.33935964133707">
+        <ele>211.72137451171875</ele>
+        <time>2020-10-26T10:47:43.709Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

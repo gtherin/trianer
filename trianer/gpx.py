@@ -156,8 +156,10 @@ def get_data_from_file(filename):
         xml = url_req.text.split("<trkpt")
     elif ext == "tcx":
         xml = open(filename, "r").read().split("<Trackpoint")
-    else:
-        xml = open(filename, "r").read().split("<trkpt")
+    elif os.path.exists(dfilename := f"../trianer/data/{filename}"):
+        xml = open(dfilename, "r").read().split("<trkpt")
+    elif os.path.exists(dfilename := f"trianer/data/{filename}"):
+        xml = open(dfilename, "r").read().split("<trkpt")
 
     data = []
     for p in xml:
@@ -186,6 +188,8 @@ def get_diff_in_seconds(time1, time2):
 
 
 def enrich_data(data, target_distance=None, target_elelevation=None):
+
+    # FIlter distance
     data["fdistance"] = data["distance"].diff().clip(0, 10000).fillna(0.0).cumsum()
 
     # Calculate elevation
@@ -207,62 +211,20 @@ def enrich_data(data, target_distance=None, target_elelevation=None):
     return data.set_index("fdistance")
 
 
-def get_filename(epreuve=None, longueur=None, discipline="all", options="", filename=None):
-    if filename is not None:
-        pass
-    elif "M" in options:
-        filename = f"races/{epreuve}_M_{discipline}.gpx".replace("-", "_")
-    else:
-        filename = f"races/{epreuve}_{longueur}_{discipline}.gpx".replace("-", "_")
+def get_data(filename=None, nlaps=1, info_box=None):
 
-    if "pace_data" not in filename and "http" not in filename:
-        filename = "http://trianer.guydegnol.net/" + filename
+    # import streamlit as st
 
-    return filename
+    # if info_box is None:
+    #    info_box = st.empty()
 
+    # info_box.info(f"⏳ Read {filename}")
 
-def has_data(epreuve=None, longueur=None, discipline="all", options="", filename=None):
-
-    import streamlit as st
-
-    filename = get_filename(
-        epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename
-    )
-
-    if "http" in filename:
-        url_req = get_requests(filename)
-        if "404 Not Found" in url_req.text:
-            # print(f"{filename} : File does not exist")
-            # st.error(f"{filename} : Url does not exist")
-            return False
-    elif not os.path.exists(filename):
-        # print(f"{filename} : File does not exist")
-        # st.error(f"{filename} : File does not exist")
-        return False
-    return True
-
-
-def get_data(epreuve=None, longueur=None, discipline="all", options="", filename=None, info_box=None):
-
-    import streamlit as st
-
-    filename = get_filename(
-        epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename
-    )
-
-    if not has_data(epreuve=epreuve, longueur=longueur, discipline=discipline, options=options, filename=filename):
-        st.error(f"File {filename} does not exist")
-        return pd.DataFrame()
-
-    if info_box is None:
-        info_box = st.empty()
-
-    info_box.info(f"⏳ Read {filename}")
+    # if "pace_data" not in filename and "http" not in filename:
+    #    filename = "http://trianer.guydegnol.net/" + filename
 
     data = get_data_from_file(filename)
-
-    if "x2" in options:
-        data = pd.concat([data, data])
+    data = pd.concat([data] * nlaps)
 
     if data["distance"].mean() < 0:
         data["distance"] = (
@@ -277,13 +239,7 @@ def get_data(epreuve=None, longueur=None, discipline="all", options="", filename
     # data["altitude"] = sp.signal.savgol_filter(data["altitude"], 5, 4)
     data["altitude"] = pd.Series(data["altitude"]).apply(lambda x: int(5 * round(float(x) / 5)))
 
-    # Calculate elevation
-    data["elevation"] = (data["altitude"] - data["altitude"].iloc[0]).diff().fillna(0.0)
-    # data["elevation"] = data["elevation"].where(data["distance"].diff() > 2.0, other=0)
-
-    data["discipline"] = discipline
-    info_box.empty()
-
+    # info_box.empty()
     return data
 
 

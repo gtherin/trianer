@@ -2,7 +2,7 @@ class Athlete:
     def __init__(
         self,
         name="John Doe",
-        sudation="normal",
+        sudation=1.0,
         config=None,
     ) -> None:
 
@@ -28,7 +28,6 @@ class Athlete:
         self.dspeeds_slope = {"swimming": 0.0, "cycling": 2.6, "running": 0.1}
 
         self.transitions = [Athlete.get_pace(self.config[k]) for k in ["transition_swi2cyc_s", "transition_cyc2run_s"]]
-        print(self.transitions)
 
         self.sudation = sudation
 

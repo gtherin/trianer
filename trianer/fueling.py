@@ -210,10 +210,6 @@ def calculate_hydration(df, race, athlete) -> pd.DataFrame:
 
     if type(athlete.sudation) == float:
         hydr *= athlete.sudation
-    elif athlete.sudation == "intense":
-        hydr *= 1.2
-    elif athlete.sudation == "faible":
-        hydr *= 0.8
     hydr = df.merge(hydr, how="left", left_on=df["temperature"].round(), right_index=True)
 
     df.loc[df["discipline"] == "swimming", "hydration"] = -900 * df.loc[df["discipline"] == "swimming", "duration"]
@@ -268,10 +264,7 @@ def calculate_fuelings(df, race, athlete) -> pd.DataFrame:
     df["ddistance"] = df["distance"].diff().clip(0, 1000).fillna(0.0)
 
     fuelings = []
-    fuels = {discipline: race.dfuelings[d] for d, discipline in enumerate(race.get_disciplines())}
-
-    print(race.dfuelings)
-    print(fuels)
+    fuels = race.get_fuels()
 
     tot_distance, tot_duration, pdiscipline, pindex = 0, 0, race.disciplines[0], df.index[0]
     for d in df.index:
@@ -291,22 +284,24 @@ def calculate_fuelings(df, race, athlete) -> pd.DataFrame:
             if pop:
                 fuels[df["discipline"][i]].pop(0)
 
+        if d == df.index[0]:
+            add_fuelings(d, "Start", 0, 0)
         if df["discipline"][d] in ["transition 1"]:
-            add_fuelings(d, "Isotonic+pate de fruits + compote", 300, 200)
+            add_fuelings(d, "Isotonic+fruit paste+compote", 300, 200)
         if df["discipline"][d] in ["transition 2"]:
-            add_fuelings(d, "Isotonic+pate de fruits + gel", 300, 200)
-        if df["discipline"][d] in ["swimming"]:
-            if len(fuels[df["discipline"][d]]) > 0 and df["distance"][d] >= fuels[df["discipline"][d]][0]:
-                add_fuelings(d, "transition", 100, 0, pop=True)
+            add_fuelings(d, "Isotonic+fruit paste+gel", 300, 200)
         if df["discipline"][d] in ["cycling"]:
             if len(fuels[df["discipline"][d]]) > 0 and df["distance"][d] >= fuels[df["discipline"][d]][0]:
-                add_fuelings(d, "org: remplir eau", 300, 100, pop=True)
+                add_fuelings(d, "org: fill up water", 300, 100, pop=True)
         if df["discipline"][d] in ["running"]:
             if len(fuels[df["discipline"][d]]) > 0 and df["distance"][d] >= fuels[df["discipline"][d]][0]:
-                add_fuelings(d, "org: eau + fruit", 300, 100, pop=True)
+                add_fuelings(d, "org: water+fruit", 300, 100, pop=True)
         if df["discipline"][d] in ["cycling"]:
             if tot_duration - fuelings[-1][5] > 0.5:
-                add_fuelings(d, "30 min", 300, 100)
+                add_fuelings(d, "Food (30 min)", 300, 100)
+        if df["discipline"][d] in ["running"]:
+            if tot_duration - fuelings[-1][5] > 0.5:
+                add_fuelings(d, "Gel (30 min)", 300, 100)
         if d == df.index[-1]:
             add_fuelings(d, "Who's up for a beer ?", 0, 0)
 

@@ -1,3 +1,5 @@
+import numpy as np
+import pandas as pd
 import datetime
 import os
 from google.cloud import firestore
@@ -43,7 +45,6 @@ class Race:
         self.init_fuelings(name)
 
     def init_from_string(self, name) -> None:
-        self.name = name
         self.longueur = None
         self.title = "Personalized"
 
@@ -75,23 +76,35 @@ class Race:
 
     def init_from_race(self, name) -> None:
         self.disciplines = ["swimming", "cycling", "running"]
-        for k in ["start_time", "distances", "elevations", "options"]:
+        for k in ["start_time", "distances", "elevations", "gpx_data"]:
             if k in available_races[name]:
                 setattr(self, k, available_races[name][k])
 
+    def get_param(self, k):
+        if self.name in available_races and k in available_races[self.name]:
+            return available_races[self.name][k]
+        return None
+
     def init_fuelings(self, name) -> None:
-        if "dfuelings" not in available_races[name]:
+        if (
+            name not in available_races
+            or "dfuelings" not in available_races[name]
+            or "gpx_data" not in available_races[name]
+        ):
             self.dfuelings = [[0.0] for _ in self.disciplines]
         else:
+            self.dfuelings = [[] for _ in self.disciplines]
             immutable_fuelings = available_races[name]["dfuelings"].copy()
-            self.dfuelings = [
-                immutable_fuelings[d] + [0.5 * self.distances[d] + f for f in immutable_fuelings[d]]
-                if "x2" in self.options[d]
-                else immutable_fuelings[d]
-                for d, _ in enumerate(self.disciplines)
-            ]
+            for d, discipline in enumerate(self.disciplines):
+                gpx_info = self.gpx_data[d].split(",x")
+                nlaps = 1 if len(gpx_info) == 1 or discipline == "swimming" else int(gpx_info[1])
+
+                for l in range(nlaps):
+                    self.dfuelings[d] += [self.distances[d] * float(l) / nlaps + f for f in immutable_fuelings[d]]
+                # print(discipline, self.distances[d], nlaps, self.dfuelings[d])
 
     def init_basic(self, epreuve, cycling_dplus, running_dplus) -> None:
+        self.name = epreuve
         if epreuve is not None and "(" in epreuve:
             self.epreuve = epreuve.split(" (")[0]
             self.longueur = epreuve[epreuve.find("(") + 1 : epreuve.find(")")]
@@ -101,7 +114,7 @@ class Race:
 
         self.disciplines, self.distances, self.elevations = [], [], []
         self.ielevations = {"swimming": 0, "cycling": cycling_dplus, "running": running_dplus}
-        self.options = ["", "", ""]
+        self.gpx_data = ["", "", ""]
         self.start_time = gpx.get_default_datetime()
 
     def init_elevations(self) -> None:
@@ -116,35 +129,45 @@ class Race:
                 info += f" (D+={self.elevations[d]:.0f}m) "
         return info
 
-    def get_start_time(self):
-        return self.start_time
+    def get_fuels(self):
+        return {discipline: self.dfuelings[d] for d, discipline in enumerate(self.disciplines)}
 
-    def get_discipline(self, d):
-        return self.get_disciplines()[d] if type(d) == int else d
+    def get_gpx_data(self, info_box):
+        data = []
+        self.fuelings = [0]
 
-    def get_disciplines(self):
-        return ["swimming", "cycling", "running"]
+        for d, discipline in enumerate(self.disciplines):
 
-    def has_data(self, d):
-        return gpx.has_data(self.epreuve, self.longueur, self.get_discipline(d), options=self.options[d])
+            gpx_info = self.gpx_data[d].split(",x")
 
-    def get_data(self, d, info_box):
-        return gpx.get_data(
-            self.epreuve,
-            self.longueur,
-            self.get_discipline(d),
-            options=self.options[d],
-            info_box=info_box,
-        )
+            if len(gpx_info[0]) > 0:
+                nlaps = 1 if len(gpx_info) == 1 else int(gpx_info[1])
+                df = gpx.get_data(filename=gpx_info[0], nlaps=nlaps, info_box=info_box)
+            else:
+                step = 11
+                df = pd.DataFrame(np.linspace(0, self.distances[d], step), columns=["distance"]).assign(
+                    altitude=np.linspace(0, self.elevations[d], step)
+                )
 
-    @staticmethod
-    def get_available_races():
-        return {
-            "Elsassman": {},
-            "Deauville": {},
-            "Paris": {},
-            "Bois-le-Roi": {},
-        }
+            # print(self.distances[d])
+            # print(df)
+
+            if (corr := self.distances[d] / df.distance.iloc[-1]) > 0:
+                df["distance"] *= corr
+
+            df["elevation"] = (df["altitude"] - df["altitude"].iloc[0]).diff().fillna(0.0)
+            df["aelevation"] = df["elevation"].clip(0.0, 1000)
+
+            if (corr := self.elevations[d] / df.aelevation.sum()) > 0:
+                df["aelevation"] *= corr
+
+            data.append(df.assign(sequence=d * 2).assign(discipline=discipline))
+
+            self.fuelings += self.dfuelings[d]
+
+        self.fuelings = sorted(list(set(self.fuelings)))
+
+        return gpx.enrich_data(pd.concat(data))
 
     @staticmethod
     def load_races_configs():

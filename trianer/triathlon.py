@@ -1,7 +1,6 @@
 import datetime
 import numpy as np
 import pandas as pd
-import scipy as sp
 import logging
 
 import matplotlib.pyplot as plt
@@ -9,10 +8,9 @@ from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.lines import Line2D
 import matplotlib
 import time
+import sys
 
 
-from .race import Race
-from . import gpx
 from . import weather
 from . import fueling
 
@@ -21,109 +19,64 @@ logging.getLogger("matplotlib").setLevel(logging.ERROR)
 pd.plotting.register_matplotlib_converters()
 
 
+def is_kernel():
+    if "IPython" not in sys.modules:
+        # IPython hasn't been imported, definitely not
+        return False
+    from IPython import get_ipython
+
+    # check for `kernel` attribute on the IPython instance
+    return getattr(get_ipython(), "kernel", None) is not None
+
+
 def get_empty_box():
+    return None
     import streamlit as st
 
+    st.config.set_option("server.enableCORS", True)
     return st.empty()
 
 
 class Triathlon:
     def __init__(self, race=None, athlete=None, temperature=None, info_box=None) -> None:
+        self.race, self.athlete = race, athlete
 
-        f"""Liste des epreuves documentées:
-
-        - {list(Race.get_available_races().keys())} ou
-        - {race.disciplines}
-
-        # Definir un athlete
-        athlete = triaainer.Athlete(weight=80, swimming="2min10s/100m", cycling="27.0km/h", running="5min30s/km", transitions="10min")
-
-        # Definir une course
-        race = triaainer.Race(name="running (20)")
-
-        # Simule une course a pieds de 20km
-        course = triaainer.Triathlon(race=race, athlete=athlete, temperature=[20, 25])
-
-        # Simule la realisation d'un Elsassman au format L
-        race = triaainer.Race(name="Elsassman (L)")
-        elsassman = triaainer.Triathlon(race=race, athlete=athlete)
-        """
-
-        self.race = race
         self.info_box = get_empty_box() if info_box is None else info_box
+        self.gpx = self.race.get_gpx_data(info_box)
 
-        self.start_time = self.race.get_start_time()
-        self.gpx = self.get_adjusted_data()
-
-        self.simulate_race(athlete, temperature=temperature)
-
-    def get_adjusted_data(self):
-        data = []
-        self.fuelings = [0]
-
-        get_empty_box()
-
-        ref_dist = 0
-        for d, discipline in enumerate(self.race.disciplines):
-
-            if self.race.has_data(d):
-                df = self.race.get_data(d, self.info_box)
-            else:
-                df = (
-                    pd.DataFrame(np.linspace(0, self.race.distances[d], 10), columns=["distance"])
-                    .assign(altitude=self.race.elevations[d])
-                    .assign(elevation=self.race.elevations[d])
-                    .assign(discipline=discipline)
-                )
-
-            df["distance"] *= self.race.distances[d] / df.distance.iloc[-1]
-            df["elevation"] *= self.race.elevations[d] / np.max([df.elevation.clip(0, 1000).sum(), 0.1])
-            data.append(df.assign(sequence=d * 2))
-
-            self.fuelings += self.race.dfuelings[d]
-            ref_dist += self.race.distances[d]
-
-        self.fuelings = sorted(list(set(self.fuelings)))
-
-        return gpx.enrich_data(pd.concat(data))
+        self.data = self.simulate_race(self.race, self.athlete, temperature=temperature)
 
     def get_mean_coordonates(self):
+        coordonates = self.race.get_param("weather_coordonates")
+        if coordonates:
+            return coordonates
         if "latitude" not in self.gpx.columns:
             return weather.get_default_coordonates()[:2]
         return self.gpx.latitude.mean(), self.gpx.longitude.mean()
 
     def get_temperature(self):
-        return weather.get_forecasts(coordonates=self.get_mean_coordonates()[:2])
+        return weather.get_forecasts(coordonates=self.get_mean_coordonates())
 
-    def get_gpx(self, data, discipline=None):
+    def get_gpx(self, data, discipline):
         if discipline is None:
             return data
 
-        d_str = discipline if type(discipline) == str else self.race.get_discipline(discipline)
-        data = data.query(f"discipline=='{d_str}'")
+        data = data.query(f"discipline=='{discipline}'")
 
-        if d_str == "swimming":
-            return data
+        # if discipline == "swimming":
+        #    return data
 
-        d = data.distance.clip(0, 1000).diff()
-        cutoff = d.mean() * 3
-        data = data[d < cutoff]
+        # d = data.distance.clip(0, 1000).diff()
+        # cutoff = d.mean() * 3
+        # data = data[d < cutoff]
 
         return data
-
-    def get_distance(self, d):
-        if type(d) == int:
-            return self.distances[d]
-        for idd, idiscipline in enumerate(self.get_disciplines()):
-            if idiscipline == d:
-                return self.distances[idd]
-        return 0
 
     def get_color(self, discipline):
         colors = {"swimming": "blue", "cycling": "brown", "running": "green"}
         return colors[discipline]
 
-    def simulate_race(self, athlete, temperature=None):
+    def simulate_race(self, race, athlete, temperature=None):
 
         data = []
 
@@ -131,14 +84,14 @@ class Triathlon:
             if c in self.gpx.columns:
                 del self.gpx[c]
 
-        for d, discipline in enumerate(self.race.disciplines):
+        for d, discipline in enumerate(race.disciplines):
             df = self.gpx.query(f"discipline=='{discipline}'").copy()
             # Speed km/h
             df = athlete.calculate_speed(df, discipline)
             # Duration between 2 points in hour
             df["duration"] = (df["distance"].diff().clip(0, 1000) / df["speed"]).fillna(0)
 
-            if d < len(self.race.disciplines) - 1:
+            if d < len(race.disciplines) - 1:
                 transition = df.iloc[-1].to_dict()
 
                 transition.update(
@@ -158,19 +111,17 @@ class Triathlon:
         data = pd.concat(data).sort_values(["sequence", "distance", "duration"])
         data.index = range(len(data))
 
-        data["dtime"] = self.start_time + pd.to_timedelta(data["duration"].cumsum(), unit="h")
+        data["dtime"] = race.start_time + pd.to_timedelta(data["duration"].cumsum(), unit="h")
 
         # Set temperature
         data = weather.merge_temperature_forecasts(
-            data, coordonates=self.get_mean_coordonates()[:2], start_time=self.start_time, temperature=temperature
+            data, coordonates=self.get_mean_coordonates(), start_time=race.start_time, temperature=temperature
         )
 
         data["fdistance"] = data["distance"].diff().clip(0, 10000).fillna(0.0).cumsum()
         for f in [fueling.calculate_hydration, fueling.calculate_kcalories, fueling.calculate_fuelings]:
-            data = f(data, self.race, athlete)
+            data = f(data, race, athlete)
 
-        self.data = data
-        self.athlete = athlete
         return data
 
     def show_weather_forecasts(self):
@@ -181,13 +132,13 @@ class Triathlon:
         import folium
 
         fig = Figure(width=900, height=300)
-        trimap = folium.Map(location=triathlon.get_mean_coordonates()[:2], zoom_start=10)
+        trimap = folium.Map(location=triathlon.get_mean_coordonates(), zoom_start=10)
         fig.add_child(trimap)
 
         from folium.plugins import MarkerCluster
 
         marker_cluster = MarkerCluster().add_to(trimap)
-        for d, discipline in enumerate(triathlon.race.disciplines):
+        for discipline in triathlon.race.disciplines:
 
             gpx = triathlon.get_gpx(triathlon.gpx, discipline)
             gpx = gpx.dropna(subset=["latitude", "longitude"])
@@ -216,7 +167,7 @@ class Triathlon:
                 icon=folium.DivIcon(html=f"""<div style="color: black; background-color:white">{f}</div>"""),
             ).add_to(marker_cluster)
 
-        for f in triathlon.fuelings:
+        for f in triathlon.race.fuelings:
             si = triathlon.gpx.index.searchsorted(f)
             if si == len(triathlon.gpx):
                 continue
@@ -234,9 +185,9 @@ class Triathlon:
 
         data = triathlon.data
         # xaxis = st.radio("x axis", ["Total distance", "Expected time of day", "Expected time"], horizontal=True)
-        if "ime" in xaxis and "ay" in xaxis:
+        if "time" in xaxis.lower() and "day" in xaxis.lower():
             xaxis = "dtime"
-        elif "Time" in xaxis:
+        elif "ime" in xaxis.lower():
             data["etime"] = data["duration"].cumsum()
             xaxis = "etime"
         else:
@@ -262,18 +213,18 @@ class Triathlon:
 
         if 1:
             patches = []
-            for d, discipline in enumerate(triathlon.race.disciplines):
-                ddata = triathlon.get_gpx(data, d)
-                label = triathlon.race.get_discipline(d)
+            for discipline in triathlon.race.disciplines:
+                ddata = triathlon.get_gpx(data, discipline)
+                label = discipline
                 duration = ddata["duration"].sum()
                 duration = ", t=%.0fmin." % (duration * 60)
                 label += duration
-                if ddata["elevation"].clip(0, 1000).sum() > 3:
-                    label += f", D+={ddata['elevation'].clip(0, 1000).sum():0.0f}m"
+                if ddata["aelevation"].sum() > 3:
+                    label += f", D+={ddata['aelevation'].sum():0.0f}m"
 
                 patches.append(Line2D([0], [0], color=triathlon.get_color(discipline), lw=4, label=label))
             patches.append(Line2D([0], [0], color="yellow", label=f"temperature, max={data['temperature'].max()}°C"))
-            ax.legend(handles=patches, loc=1, prop={"size": 16})
+            ax.legend(handles=patches, loc=2, prop={"size": 16}, framealpha=0)
 
         if xaxis == "fdistance":
             # TODO: Fix it with other axis
@@ -321,15 +272,14 @@ class Triathlon:
             )
 
         ax.grid()
-        # return fig
 
     def plot_core(self, data, ax, variable, xaxis):
         ax.set_facecolor("#cdcdcd")
-        for d, discipline in enumerate(self.race.disciplines):
+        for discipline in self.race.disciplines:
             ddata = self.get_gpx(data, discipline)
             ddata[variable].plot(
                 color=self.get_color(discipline),
-                label=f"{discipline} elevation={ddata['elevation'].clip(0, 1000).sum():0.0f} m",
+                label=f"{discipline} D+={ddata['aelevation'].sum():0.0f} m",
                 ax=ax,
             )
 
@@ -442,29 +392,32 @@ class Triathlon:
                 "kcalories",
                 "fooding",
                 "drinks",
+                "aelevation",
                 "food",
             ]
         ].copy()
-        ff["Temps de passage"] = ff["dtime"].dt.strftime("%H:%M")
-        ff["Bilan hydrique"] = ff["hydration"].fillna(0).cumsum()
-        ff["Bilan kcalorique"] = ff["kcalories"].fillna(0).cumsum()
-        ff["Depuis depart"] = (60 * ff["duration"].fillna(0)).cumsum().round()
+        ff["Transit time"] = ff["dtime"].dt.strftime("%H:%M")
+        ff["Hydric balance"] = ff["hydration"].fillna(0).cumsum()
+        ff["Caloric balance"] = ff["kcalories"].fillna(0).cumsum()
+        ff["Since start"] = (60 * ff["duration"].fillna(0)).cumsum().round()
+        # ff["aelevation"] = ff["elevation"].fillna(0).clip(0, 1000)
+        ff["D+"] = ff.groupby("discipline")["aelevation"].cumsum().round()
 
         ff = ff.rename(
             columns={
-                "drinks": "Boisson",
-                "fooding": "Consommation",
-                "food": "Alimentation",
+                "drinks": "Drinks",
+                "fooding": "Comments",
+                "food": "Food supply",
                 "temperature": "Temperature",
             }
         )
 
-        ff["Durée totale"] = (
+        ff["Total time"] = (
             datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             + pd.to_timedelta(ff["duration"].cumsum(), unit="h")
         ).dt.strftime("%H:%M")
 
-        ff = ff[(~ff["Boisson"].isna()) | (ff.index[-1] == ff.index)]
+        ff = ff[(~ff["Drinks"].isna()) | (ff.index[-1] == ff.index)]
         ff["discipline"].iloc[-1] = "The end"
 
         for c in ["dtime", "hydration", "kcalories", "duration"]:
@@ -488,16 +441,17 @@ class Triathlon:
         return (
             ff[
                 [
-                    "Depuis depart",
+                    "Since start",
                     "discipline",
                     "distance",
-                    "Consommation",
-                    "Boisson",
-                    "Alimentation",
-                    "Temps de passage",
-                    "Bilan hydrique",
-                    "Bilan kcalorique",
-                    "Durée totale",
+                    "Comments",
+                    "Drinks",
+                    "Food supply",
+                    "Transit time",
+                    "Hydric balance",
+                    "Caloric balance",
+                    "D+",
+                    "Total time",
                     "Temperature",
                 ]
             ]
@@ -513,12 +467,13 @@ class Triathlon:
                 {
                     "distance": "{0:,.0f} km",
                     "Temperature": "{0:,.0f} °C",
-                    "Bilan hydrique": "{0:.0f} ml",
-                    "Bilan kcalorique": "{0:.0f} kcal",
-                    "Boisson": "{0:.0f} ml",
-                    "Alimentation": "{0:.0f} kcal",
-                    "Depuis depart": "{0:.0f} min",
+                    "Hydric balance": "{0:.0f} ml",
+                    "Caloric balance": "{0:.0f} kcal",
+                    "Drinks": "{0:.0f} ml",
+                    "Food supply": "{0:.0f} kcal",
+                    "Since start": "{0:.0f} min",
+                    "D+": "{0:.0f} m",
                 }
             )
-            .bar(color=["Red", "Green"], subset=["Depuis depart"], align="left")
+            .bar(color=["Red", "Green"], subset=["Since start"], align="left")
         )

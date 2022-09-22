@@ -42,9 +42,13 @@ def get_htmin_max(coordonates, start_time):
         # 53 rue rebeval by default
         coordonates = (48.875017179462446, 2.3795896457900936, 70)
 
+    # coordonates = (45.188529, 5.724524, 70)
+    print(coordonates, start_time, start_time.month)
+
     # Get historical data
-    pdf = get_weather(coordonates=[coordonates[0], coordonates[1], 200], start=None, end=None)
-    pdf = pdf[pdf.index.month == 7]
+    pdf = get_weather(coordonates=[coordonates[0], coordonates[1], 0], start=None, end=None)
+
+    pdf = pdf[pdf.index.month == start_time.month]
     htemps = pdf.groupby(pdf.index.year).mean().ewm(3).mean().iloc[-1].to_dict()
     htmin, htmax = np.mean(htemps["tmin"]), np.mean(htemps["tmax"])
     return (htmin, htmax)
@@ -81,7 +85,6 @@ def get_forecasts(coordonates=None, start=None, end=None):
 
     fig, ax = plt.subplots(figsize=(18, 3))
     ax.plot(np.arange(24), (tmin + 0.5 * (tmax - tmin) * (1 + np.sin(0.25 * np.arange(24) + np.pi))), color="yellow")
-    print(res.text)
     return temp_forecast
 
 

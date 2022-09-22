@@ -36,6 +36,7 @@ def update_cookie(key):
         st.error(e)
 
 
+st.write(st.config.get_option("server.enableCORS"))
 trianer.set_var_on_change_function(update_cookie)
 trianer.set_var_cookies(all_cookies)
 
@@ -78,7 +79,6 @@ def configure_physiology():
     temp = np.arange(0, 40)
     hydr = pd.Series(-np.clip(temp * 100 - 600, 400, 2500), index=temp).to_frame(name="hydration")
     hydr *= 1.5
-    sudation = 5
     hydr.plot(ax=ax)
 
     st.pyplot(fig)
@@ -229,8 +229,10 @@ def main():
         else:
             race = trianer.Race.init_from_cookies(tsti.get_value)
 
+        st.success(f"Race info: {race.get_info()} (code={race.get_key()})")
+
         temperature = tsti.get_value("temperature")
-        ttemperature = temperature  # if is_manual_temp else None
+        ttemperature = None  # temperature  # if is_manual_temp else None
         simulation = trianer.Triathlon(race=race, temperature=ttemperature, athlete=athlete, info_box=info_box)
 
         if race_menu == "Existing race":
