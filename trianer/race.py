@@ -79,6 +79,8 @@ class Race:
         for k in ["disciplines", "start_time", "distances", "elevations", "gpx_data"]:
             if k in available_races[name]:
                 setattr(self, k, available_races[name][k])
+        if not getattr(self, "distances"):
+            self.distances = available_races["Triathlon (M)"]["distances"]
 
     def get_param(self, k):
         if self.name in available_races and k in available_races[self.name]:
@@ -102,7 +104,6 @@ class Race:
 
                 for l in range(nlaps):
                     self.dfuelings[d] += [self.distances[d] * float(l) / nlaps + f for f in immutable_fuelings[d]]
-                # print(discipline, self.distances[d], nlaps, self.dfuelings[d])
 
     def init_basic(self, epreuve, cycling_dplus, running_dplus) -> None:
         self.name = epreuve
@@ -149,9 +150,6 @@ class Race:
                 df = pd.DataFrame(np.linspace(0, self.distances[d], step), columns=["distance"]).assign(
                     altitude=np.linspace(0, self.elevations[d], step)
                 )
-
-            # print(self.distances[d])
-            # print(df)
 
             if (corr := self.distances[d] / df.distance.iloc[-1]) > 0:
                 df["distance"] *= corr

@@ -31,7 +31,10 @@ class Point:
 
     @staticmethod
     def get_altitude(point):
-        return np.round(float(Point.get_anchor_value(point, "ele")), 2)
+        if "ele" in point:
+            return np.round(float(Point.get_anchor_value(point, "ele")), 2)
+        else:
+            return 0.0
 
     @staticmethod
     def get_time(point):
@@ -51,8 +54,8 @@ class Point:
             return point
         return point[: point.find("<extensions>")] + point[point.find("</extensions>") + len("</extensions>") :]
 
-    def __init__(self, point):
-        self.is_valid_gpx = "<ele>" in point
+    def __init__(self, point, splitter="<trkpt"):
+        self.is_valid_gpx = "lat=" in point
         self.is_valid_tcx = "<AltitudeMeters>" in point
 
         self.point = point
@@ -65,17 +68,22 @@ class Point:
         self.hr = -1
 
         if self.is_valid_gpx:
-            self.point = "<trkpt" + point
+
+            self.point = splitter + point
             self.latitude = self.get_latitude(self.point)
             self.longitude = self.get_longitude(self.point)
             self.altitude = self.get_altitude(self.point)
             self.dtime = self.get_time(self.point)
             if "gpxtpx:atemp" in point:
                 self.temperature = Point.get_anchor_value(self.point, "gpxtpx:atemp")
+            if "ns3:atemp" in point:
+                self.temperature = Point.get_anchor_value(self.point, "ns3:atemp")
             if "gpxtpx:hr" in point:
                 self.hr = Point.get_anchor_value(self.point, "gpxtpx:hr")
+            if "ns3:hr" in point:
+                self.hr = Point.get_anchor_value(self.point, "ns3:hr")
         elif self.is_valid_tcx:
-            self.point = "<Trackpoint" + point
+            self.point = splitter + point
             self.latitude = Point.get_anchor_value(self.point, "LatitudeDegrees")
             self.longitude = Point.get_anchor_value(self.point, "LongitudeDegrees")
             self.altitude = Point.get_anchor_value(self.point, "AltitudeMeters")
@@ -149,22 +157,27 @@ def get_requests(filename):
 
 def get_data_from_file(filename):
 
-    ext = filename.split(".")[-1]
-
     if "http" in filename:
         url_req = get_requests(filename)
-        xml = url_req.text.split("<trkpt")
-    elif ext == "tcx":
-        xml = open(filename, "r").read().split("<Trackpoint")
+        xml = url_req.text
     else:
         for d in ["./data", "../data"]:
             dfilename = f"{d}/{filename}"
             if os.path.exists(dfilename):
-                xml = open(dfilename, "r").read().split("<trkpt")
+                xml = open(dfilename, "r").read()
+
+    if "<trkpt" in xml:
+        splitter = "<trkpt"
+    elif "<Trackpoint" in xml:
+        splitter = "<Trackpoint"
+    elif "<ns3:TrackPointExtension" in xml:
+        splitter = "<ns3:TrackPointExtension"
+
+    xml = xml.split(splitter)
 
     data = []
     for p in xml:
-        point = Point(p)
+        point = Point(p, splitter=splitter)
         if point.longitude != -1:
             data.append(
                 [

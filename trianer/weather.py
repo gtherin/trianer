@@ -42,9 +42,6 @@ def get_htmin_max(coordonates, start_time):
         # 53 rue rebeval by default
         coordonates = (48.875017179462446, 2.3795896457900936, 70)
 
-    # coordonates = (45.188529, 5.724524, 70)
-    print(coordonates, start_time, start_time.month)
-
     # Get historical data
     pdf = get_weather(coordonates=[coordonates[0], coordonates[1], 0], start=None, end=None)
 
