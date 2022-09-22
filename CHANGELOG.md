@@ -7,7 +7,7 @@ All notable changes to this project will be documented here.
 - Have a algorithm to clean gpx files
 - Improve predictions with data analyses
 
-#### [2.3.1] - 2022-09-22
+#### [2.3.2] - 2022-09-22
 
 - Be in production mode
 
