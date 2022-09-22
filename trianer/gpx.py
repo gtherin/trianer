@@ -156,12 +156,15 @@ def get_data_from_file(filename):
         xml = url_req.text.split("<trkpt")
     elif ext == "tcx":
         xml = open(filename, "r").read().split("<Trackpoint")
-        # elif os.path.exists(dfilename := f"../trianer/data/{filename}"):
+    elif os.path.exists(dfilename := f"./data/{filename}"):
         xml = open(dfilename, "r").read().split("<trkpt")
     # elif os.path.exists(dfilename := f"trianer/data/{filename}"):
     #    xml = open(dfilename, "r").read().split("<trkpt")
     # elif os.path.exists(dfilename := f"trianer/data/{filename}"):
     #    xml = open(dfilename, "r").read().split("<trkpt")
+    import streamlit as st
+
+    st.info(dfilename)
 
     data = []
     for p in xml:
