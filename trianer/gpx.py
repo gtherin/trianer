@@ -151,19 +151,6 @@ def get_data_from_file(filename):
 
     ext = filename.split(".")[-1]
 
-    import streamlit as st
-    import glob
-
-    ffiles = glob.glob("../data/Bois*swim*")
-    st.info(ffiles)
-
-    # dfilename = f"./data/{filename}"
-    # dfilename = f"../data/{filename}"
-    # st.info(dfilename)
-    # st.info(os.path.exists(dfilename))
-
-    print(ffiles)
-
     if "http" in filename:
         url_req = get_requests(filename)
         xml = url_req.text.split("<trkpt")
@@ -173,10 +160,7 @@ def get_data_from_file(filename):
         for d in ["./data", "../data"]:
             dfilename = f"{d}/{filename}"
             if os.path.exists(dfilename):
-                st.info(dfilename)
                 xml = open(dfilename, "r").read().split("<trkpt")
-
-    st.info(dfilename)
 
     data = []
     for p in xml:
