@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import datetime
 import os
+import glob
 
 import streamlit as st
 import hydralit_components as hc
@@ -249,9 +250,14 @@ def main():
     if menu_id == "about":
         st.header("About")
         st.success(f"Using version {trianer.__version__}")
+
+        ffiles = glob.glob("./*")
+        ffiles2 = glob.glob("./trainer/*")
         st.markdown(
             f"""
-        
+{ffiles}
+{ffiles2}
+
 - Version 2.2.0:
 Authomatic deploy from github
 
