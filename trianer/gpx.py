@@ -163,7 +163,6 @@ def get_data_from_file(filename):
     # st.info(os.path.exists(dfilename))
 
     print(ffiles)
-    print(dfilename)
 
     if "http" in filename:
         url_req = get_requests(filename)
@@ -176,10 +175,6 @@ def get_data_from_file(filename):
             if os.path.exists(dfilename):
                 st.info(dfilename)
                 xml = open(dfilename, "r").read().split("<trkpt")
-    # elif os.path.exists(dfilename := f"trianer/data/{filename}"):
-    #    xml = open(dfilename, "r").read().split("<trkpt")
-    # elif os.path.exists(dfilename := f"trianer/data/{filename}"):
-    #    xml = open(dfilename, "r").read().split("<trkpt")
 
     st.info(dfilename)
 
