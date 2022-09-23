@@ -1,7 +1,6 @@
 import datetime
 import os
 import json
-import time
 import logging
 
 import numpy as np
@@ -155,16 +154,24 @@ def get_requests(filename):
     return url_req
 
 
-def get_data_from_file(filename):
-
+def get_file(filename, read=False):
     if "http" in filename:
         url_req = get_requests(filename)
-        xml = url_req.text
+        if read:
+            xml = url_req.text
+        return filename
     else:
         for d in ["./data", "../data"]:
             dfilename = f"{d}/{filename}"
             if os.path.exists(dfilename):
-                xml = open(dfilename, "r").read()
+                if read:
+                    return open(dfilename, "r").read()
+                return dfilename
+
+
+def get_data_from_file(filename):
+
+    xml = get_file(filename, read=True)
 
     if "<trkpt" in xml:
         splitter = "<trkpt"

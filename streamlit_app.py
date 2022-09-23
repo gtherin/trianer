@@ -236,8 +236,11 @@ def main():
 
     if menu_id == "about":
         st.header(gl(menu_id))
+        vetruve_file = trianer.gpx.get_file("vetruve_gen.png")
+        st.image(vetruve_file)
         st.success(f"Using version {trianer.__version__}")
         st.markdown(open("./CHANGELOG.md", "r").read())
+
         with st.expander("Cookies management", expanded=False):
             st.write(all_cookies)
             cookie = st.text_input("Cookie", key="Cookie list")

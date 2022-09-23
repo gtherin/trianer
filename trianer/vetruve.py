@@ -34,6 +34,11 @@ def wordcloud_calories_per_sport():
     Show activities depending on the calories spent
 
     """
+    from . import __version__
+
+    version = __version__
+    rd.seed(42)
+
     from wordcloud import WordCloud
 
     data = get_kcalories(None)
@@ -44,8 +49,10 @@ def wordcloud_calories_per_sport():
     words = []
     for d in ddata.index:
         words += [d] * int(w[d])
+    words += [f"v_{version}".replace(".", "_")] * 100
 
     rd.shuffle(words)
+    # print(words)
 
     # read the mask image
     alice_mask = np.array(Image.open("vetruve.png"))
@@ -66,7 +73,7 @@ def wordcloud_calories_per_sport():
 
     # generate word cloud
     wc.generate(" ".join(words))
-    wc.to_file("vetruve_gen.png")
+    #wc.to_file("../data/vetruve_gen.png")
 
     # show
     plt.imshow(wc, interpolation="bilinear")

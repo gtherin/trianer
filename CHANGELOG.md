@@ -9,13 +9,15 @@ All notable changes to this project will be documented here.
 - Improve slope dependencies with speed
 - Set a french/english flag
 - Add language menu
+- Add sudation parameters
 
-#### [2.4.3] - 2022-09-23
+#### [2.4.4] - 2022-09-23
 
 - Temperature can be set on every pages
 - Fix weight input
 - Add axis on graphs
 - Start introducing fr/en translations
+- Add fun vetruve
 
 #### [2.3.2] - 2022-09-22
 
