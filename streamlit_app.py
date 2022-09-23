@@ -239,6 +239,7 @@ def main():
         vetruve_file = trianer.gpx.get_file("vetruve_gen.png")
         st.image(vetruve_file)
         st.success(f"Using version {trianer.__version__}")
+        st.markdown("[Contact Us](mailto:gt@guydegnol.net)")
         st.markdown(open("./CHANGELOG.md", "r").read())
 
         with st.expander("Cookies management", expanded=False):
