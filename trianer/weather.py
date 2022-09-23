@@ -102,8 +102,7 @@ def merge_temperature_forecasts(data, coordonates=None, start_time=datetime.date
     elif type(temperature) == list:
         tmin, tmax = temperature
     else:
-        tmin, tmax = temperature, temperature
-    # print(htmin, htmax)
+        tmin, tmax = temperature - 0.5 * (tmax - tmin), temperature + 0.5 * (tmax - tmin)
 
     if "temperature" in data.columns:
         del data["temperature"]

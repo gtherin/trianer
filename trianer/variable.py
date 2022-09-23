@@ -1,10 +1,17 @@
 import numpy as np
 import datetime
+import copy
 
 
 class Variable:
     update_cookie = None
     cookies = {}
+
+    @staticmethod
+    def clone(var, key):
+        v = copy.deepcopy(var)
+        v.key = key
+        return v
 
     def __init__(
         self, key=None, srange=None, help=None, label=None, default=None, orange=None, input_format=None

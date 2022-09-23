@@ -71,28 +71,21 @@ variables = [
         default=0,
     ),
     dict(
-        key="pcycling_dplus",
-        label="Positive elevation gain cyc. (m)",
-        help="Positive elevation gain during cycling in meter",
-        srange="i:0:5000:10",
-        default=0,
-    ),
-    dict(
-        key="prunning_dplus",
-        label="Positive elevation gain run. (m)",
-        help="Positive elevation gain during running in meter",
-        srange="i:0:10000:5",
-        default=0,
-    ),
-    dict(
-        key="temperature",
+        key="temperature_race",
         label="Temperature (°C)",
         help="Expected temperature in degres Celsius",
         srange="i:0:40:1",
         default=22,
     ),
     dict(
-        key="dtemperature",
+        key="temperature_menu_race",
+        srange=["Automatic", "Manual", "From date"],
+        help="running_lengh",
+        default="Automatic",
+        input_format="radio",
+    ),
+    dict(
+        key="dtemperature_race",
         label="Temperature (°C)",
         help="Expected temperature in degres Celsius",
         srange="d:0:365:1",
@@ -155,7 +148,26 @@ variables = [
         help="Year of birth is used to have a better estimation of energy spent",
         default=1980,
     ),
+    dict(
+        key="sudation",
+        srange="i:1:10:1",
+        help="If the athlete sweat a lot",
+        default=5,
+        input_format="slider",
+    ),
     dict(key="height_cm", label="Height (cm)", help="You height in centimeters", srange="i:100:240:1", default=170),
 ]
 
 variables = {v["key"]: Variable(**v) for v in variables}
+
+variables["pcycling_dplus"] = Variable.clone(variables["cycling_dplus"], "pcycling_dplus")
+variables["prunning_dplus"] = Variable.clone(variables["running_dplus"], "prunning_dplus")
+
+variables["temperature_format"] = Variable.clone(variables["temperature_race"], "temperature_format")
+variables["temperature_perso"] = Variable.clone(variables["temperature_race"], "temperature_perso")
+
+variables["temperature_menu_format"] = Variable.clone(variables["temperature_menu_race"], "temperature_menu_format")
+variables["temperature_menu_perso"] = Variable.clone(variables["temperature_menu_race"], "temperature_menu_perso")
+
+variables["dtemperature_format"] = Variable.clone(variables["dtemperature_race"], "dtemperature_format")
+variables["dtemperature_perso"] = Variable.clone(variables["dtemperature_race"], "dtemperature_perso")

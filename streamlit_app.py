@@ -86,12 +86,6 @@ def get_pars(pars):
     return {"name" if k in ["race_format", "race_default"] else k: tsti.get_value(k) for k in pars}
 
 
-def get_inputs(vars):
-    for p, col in enumerate(st.columns(len(vars))):
-        with col:
-            tsti.get_var_input(vars[p])
-
-
 def main():
 
     # set_language(tsti.get_value("language"))
@@ -118,8 +112,8 @@ def main():
 
     if menu_id == "perf":
         st.header(gl(menu_id))
-        get_inputs(["swimming_sX100m", "cycling_kmXh", "running_sXkm"])
-        get_inputs(["transition_swi2cyc_s", "transition_cyc2run_s"])
+        tsti.get_inputs(["swimming_sX100m", "cycling_kmXh", "running_sXkm"])
+        tsti.get_inputs(["transition_swi2cyc_s", "transition_cyc2run_s"])
 
     # with tab2:
     if menu_id == "race":
@@ -146,8 +140,10 @@ def main():
         race_menu = tsti.get_var_input("race_menu")
         if race_menu == gl("existing_race"):
             tsti.get_var_input("race_default")
+            tsti.get_temperature_menu("race")
         elif race_menu == gl("existing_format"):
-            get_inputs(["race_format", "cycling_dplus", "running_dplus"])
+            tsti.get_inputs(["race_format", "cycling_dplus", "running_dplus"])
+            tsti.get_temperature_menu("format")
         else:
             # if st.file_uploader("") is None:
             #    st.write("Or use sample dataset to try the application")
@@ -164,22 +160,18 @@ def main():
                         tsti.get_var_input(f"p{d}_dplus")
                         c += 1
 
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                is_manual_temp = race_menu != gl("existing_race")
-                atemp = st.radio("Temperature", ["Manual", "From date"], index=0, disabled=is_manual_temp, key="ATEMP")
-                is_manual_temp |= atemp == "Manual"
-            with col2:
-                temperature = tsti.get_var_input("temperature", disabled=not is_manual_temp)
-            with col3:
-                dtemperature = tsti.get_var_input("dtemperature", disabled=is_manual_temp)
+            tsti.get_temperature_menu("perso")
 
     # with tab3:
     if menu_id == "athlete":
         st.header(gl(menu_id))
-        # tsti.get_var_input("language")
         with st.expander("Athlete's details", expanded=True):
-            get_inputs(["sex", "weight_kg", "year_of_birth", "height_cm"])
+            tsti.get_inputs(["sex", "weight_kg", "height_cm"])
+            # col1, col2, col3 = st.columns(3)
+            # with col1:
+            #    tsti.get_var_input("language", disabled=True)
+
+            tsti.get_inputs(["language", "year_of_birth", "sudation"], options=[dict(disabled=True), {}, {}])
 
     if menu_id == "simulation":
         st.header(gl(menu_id))
@@ -194,17 +186,18 @@ def main():
         race_menu = tsti.get_value("race_menu")
         if race_menu == gl("existing_race"):
             race = trianer.Race(name=tsti.get_value("race_default"))
+            temperature = tsti.get_temperature("race")
         elif race_menu == gl("existing_format"):
             pars = get_pars(["race_format", "cycling_dplus", "running_dplus"])
             race = trianer.Race(**pars)
+            temperature = tsti.get_temperature("format")
         else:
             race = trianer.Race.init_from_cookies(tsti.get_value)
+            temperature = tsti.get_temperature("perso")
 
         st.success(f"Race info: {race.get_info()} (code={race.get_key()})")
 
-        temperature = tsti.get_value("temperature")
-        ttemperature = None  # temperature  # if is_manual_temp else None
-        simulation = trianer.Triathlon(race=race, temperature=ttemperature, athlete=athlete, info_box=info_box)
+        simulation = trianer.Triathlon(race=race, temperature=temperature, athlete=athlete, info_box=info_box)
 
         col1, col2, col3, col4 = st.columns(4)
 
