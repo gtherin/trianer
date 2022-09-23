@@ -6,9 +6,11 @@ class Variable:
     update_cookie = None
     cookies = {}
 
-    def __init__(self, key=None, srange=None, help=None, label=None, default=None, orange=None) -> None:
+    def __init__(
+        self, key=None, srange=None, help=None, label=None, default=None, orange=None, input_format=None
+    ) -> None:
         self.key, self.srange, self.help, self.label, self.default = key, srange, help, label, default
-        self.orange = orange
+        self.orange, self.input_format = orange, input_format
 
     def get_format_value(self, var):
         if self.srange[0] == "t" and type(var) == str and ":" in var:

@@ -13,6 +13,7 @@ import sys
 
 from . import weather
 from . import fueling
+from .labels import gl
 
 logging.getLogger("matplotlib.font_manager").disabled = True
 logging.getLogger("matplotlib").setLevel(logging.ERROR)
@@ -184,14 +185,8 @@ class Triathlon:
     def show_race_details(triathlon, xaxis="fdistance", fields="altitude,temperature"):
 
         data = triathlon.data
-        # xaxis = st.radio("x axis", ["Total distance", "Expected time of day", "Expected time"], horizontal=True)
-        if "time" in xaxis.lower() and "day" in xaxis.lower():
-            xaxis = "dtime"
-        elif "ime" in xaxis.lower():
-            data["etime"] = data["duration"].cumsum()
-            xaxis = "etime"
-        else:
-            xaxis = "fdistance"
+        data["etime"] = data["duration"].cumsum()
+        xaxis = triathlon.get_axis(xaxis)
 
         if xaxis in data.columns:
             data = data.set_index(xaxis)
@@ -237,6 +232,8 @@ class Triathlon:
                 cmap=cm,
             )
         Triathlon.plot_ravitos(fuels, ax, xaxis, "altitude")
+        ax.set_xlabel(xlabel=gl(xaxis))
+        ax.set_ylabel(ylabel="Elevation (m)")
 
         ax = axes[1]
 
@@ -252,6 +249,8 @@ class Triathlon:
                 lambda ms, x: time.strftime("%H:%M", time.gmtime((ms % 1) * 24 * 3600))
             )
             ax.xaxis.set_major_formatter(formatter)
+        ax.set_ylabel(ylabel="Temperature (°C)")
+        ax.set_xlabel(xlabel=gl(xaxis))
 
     @staticmethod
     def plot_ravitos(fuels, ax, x, variable):
@@ -283,6 +282,15 @@ class Triathlon:
                 ax=ax,
             )
 
+    @staticmethod
+    def get_axis(xaxis):
+        if "time" in xaxis.lower() and "day" in xaxis.lower():
+            return "dtime"
+        elif "ime" in xaxis.lower():
+            return "etime"
+        else:
+            return "fdistance"
+
     def show_nutrition(triathlon, xaxis="fdistance"):
 
         """
@@ -294,19 +302,18 @@ class Triathlon:
         4% dangereux"""
 
         # xaxis = st.radio("x axis", ["Total distance", "Expected time of day", "Expected time"], horizontal=True)
-        if "Expected time" in xaxis:
-            xaxis = "itime"
-        else:
-            xaxis = "fdistance"
+        data = triathlon.data
+        data["etime"] = data["duration"].cumsum()
+        xaxis = triathlon.get_axis(xaxis)
 
-        gperf = triathlon.data
-        fuels = triathlon.data[~triathlon.data["drinks"].isna()]
+        gperf = data
+        fuels = data[~data["drinks"].isna()]
 
         fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(15, 6), sharex=True)
         fig.subplots_adjust(hspace=0)
         fig.patch.set_facecolor("#cdcdcd")
         axes[0].set_title(
-            f"Nutrition for {triathlon.race.get_info()}",
+            triathlon.race.get_info(),
             loc="center",
             fontdict={"family": "serif", "color": "darkred", "weight": "normal", "size": 16},
         )
@@ -324,17 +331,16 @@ class Triathlon:
             color="red",
             alpha=0.8,
         )
-        ax.text(0.9, -6000 - 500, "Reservoir energetique", fontsize=20)
+        ax.text(0.9, -6000 - 500, gl("caloric_reserve"), fontsize=20)
 
         ax.grid()
 
         patches = [
-            Line2D([0], [0], color="purple", label=f"kCalories"),
-            Line2D([0], [0], color="darkcyan", label=f"Hydratation"),
+            Line2D([0], [0], color="purple", label=gl("caloric_balance")),
+            Line2D([0], [0], color="darkcyan", label=gl("hydric_balance")),
         ]
-        ax.legend(handles=patches, loc=1, prop={"size": 16})
-
-        # ax.legend(loc=9, prop={"size": 20})
+        ax.legend(handles=patches, loc=6, prop={"size": 16}, framealpha=0)
+        ax.set_ylabel(ylabel=gl("caloric_balance") + " (kcal)")
 
         ax = axes[1]
         fig.patch.set_facecolor("#cdcdcd")
@@ -347,7 +353,7 @@ class Triathlon:
             color="green",
             alpha=0.2,
         )
-        plt.text(0.9, -500, "Hydratation ideale", fontsize=20)
+        plt.text(0.9, -500, gl("hydration_ideal"), fontsize=20)
 
         gperf.set_index("fdistance")["ihydration"].cumsum().plot(ax=ax, color="green", label="")
         gperf.set_index("fdistance")["hydration"].cumsum().plot(ax=ax, lw=3, color="darkcyan")
@@ -365,7 +371,7 @@ class Triathlon:
             color="red",
             alpha=0.2,
         )
-        plt.text(0.9, -triathlon.athlete.weight * 0.02 * 1000 - 500, "Perte de perf 20%", fontsize=20)
+        plt.text(0.9, -triathlon.athlete.weight * 0.02 * 1000 - 500, gl("perf_loss_20"), fontsize=20)
 
         ax.fill_between(
             np.linspace(0, gperf["fdistance"].max(), 50),
@@ -374,9 +380,11 @@ class Triathlon:
             color="red",
             alpha=0.8,
         )
-        plt.text(0.9, -triathlon.athlete.weight * 0.04 * 1000 - 500, "Zone de risque", fontsize=20)
+        plt.text(0.9, -triathlon.athlete.weight * 0.04 * 1000 - 500, gl("risk_zone"), fontsize=20)
 
         ax.grid()
+        ax.set_ylabel(ylabel=gl("hydric_balance") + " (ml)")
+        ax.set_xlabel(xlabel=gl(xaxis))
 
     def show_roadmap(triathlon):
 
@@ -396,10 +404,10 @@ class Triathlon:
                 "food",
             ]
         ].copy()
-        ff["Transit time"] = ff["dtime"].dt.strftime("%H:%M")
-        ff["Hydric balance"] = ff["hydration"].fillna(0).cumsum()
-        ff["Caloric balance"] = ff["kcalories"].fillna(0).cumsum()
-        ff["Since start"] = (60 * ff["duration"].fillna(0)).cumsum().round()
+        ff[gl("dtime_str")] = ff["dtime"].dt.strftime("%H:%M")
+        ff[gl("hydric_balance")] = ff["hydration"].fillna(0).cumsum()
+        ff[gl("caloric_balance")] = ff["kcalories"].fillna(0).cumsum()
+        ff[gl("cduration_min")] = (60 * ff["duration"].fillna(0)).cumsum().round()
         # ff["aelevation"] = ff["elevation"].fillna(0).clip(0, 1000)
         ff["D+"] = ff.groupby("discipline")["aelevation"].cumsum().round()
 
@@ -412,7 +420,7 @@ class Triathlon:
             }
         )
 
-        ff["Total time"] = (
+        ff[gl("time_total")] = (
             datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             + pd.to_timedelta(ff["duration"].cumsum(), unit="h")
         ).dt.strftime("%H:%M")
@@ -441,17 +449,17 @@ class Triathlon:
         return (
             ff[
                 [
-                    "Since start",
+                    gl("cduration_min"),
                     "discipline",
                     "distance",
                     "Comments",
                     "Drinks",
                     "Food supply",
-                    "Transit time",
-                    "Hydric balance",
-                    "Caloric balance",
+                    gl("dtime_str"),
+                    gl("hydric_balance"),
+                    gl("caloric_balance"),
                     "D+",
-                    "Total time",
+                    gl("time_total"),
                     "Temperature",
                 ]
             ]
@@ -467,13 +475,13 @@ class Triathlon:
                 {
                     "distance": "{0:,.0f} km",
                     "Temperature": "{0:,.0f} °C",
-                    "Hydric balance": "{0:.0f} ml",
-                    "Caloric balance": "{0:.0f} kcal",
+                    gl("hydric_balance"): "{0:.0f} ml",
+                    gl("caloric_balance"): "{0:.0f} kcal",
                     "Drinks": "{0:.0f} ml",
                     "Food supply": "{0:.0f} kcal",
-                    "Since start": "{0:.0f} min",
+                    gl("cduration_min"): "{0:.0f} min",
                     "D+": "{0:.0f} m",
                 }
             )
-            .bar(color=["Red", "Green"], subset=["Since start"], align="left")
+            .bar(color=["Red", "Green"], subset=[gl("cduration_min")], align="left")
         )

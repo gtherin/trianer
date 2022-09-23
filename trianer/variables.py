@@ -1,6 +1,7 @@
 import datetime
 from .variable import Variable
 from .races import available_races
+from .labels import gl
 
 variables = [
     # Performances
@@ -10,6 +11,7 @@ variables = [
         help="Pace is how much time you need to swim 100m",
         srange="t:1:5:1",
         default=datetime.time(2, 0),
+        input_format="slider",
     ),
     dict(
         key="running_sXkm",
@@ -17,6 +19,7 @@ variables = [
         help="Pace is how much time you need to run 1km (flat surface)",
         srange="t:3:10:5",
         default=datetime.time(5, 30),
+        input_format="slider",
     ),
     dict(
         key="cycling_kmXh",
@@ -32,6 +35,7 @@ variables = [
         help="Transition time between swimming and cycling in minutes:seconds",
         srange="t:1:5:15",
         default=datetime.time(2, 0),
+        input_format="slider",
     ),
     dict(
         key="transition_cyc2run_s",
@@ -39,6 +43,7 @@ variables = [
         help="Transition time between cycling and running in minutes:seconds",
         srange="t:1:5:15",
         default=datetime.time(2, 0),
+        input_format="slider",
     ),
     # Race conditions
     dict(
@@ -46,6 +51,7 @@ variables = [
         srange=["swimming", "cycling", "running"],
         help="running_lengh",
         default=["swimming", "running"],
+        input_format="multiselect",
     ),
     dict(key="swimming_lengh", srange="f:0.0:4.0:0.1", help="swimming_lengh", default=1.5),
     dict(key="cycling_lengh", srange="i:0:200:1", help="cycling_lengh", default=40),
@@ -91,6 +97,7 @@ variables = [
         help="Expected temperature in degres Celsius",
         srange="d:0:365:1",
         default=datetime.date.today(),
+        input_format="date_input",
     ),
     dict(
         key="race_format",
@@ -106,13 +113,15 @@ variables = [
             "Half-Marathon",
         ],
         default="Half-Ironman (70.3)",
+        input_format="selectbox",
     ),
     dict(
         key="race_menu",
         label="Type of race",
         help="You can either use a default format, load an known race or build your own race",
-        srange=["Existing format", "Existing race", "Personalized format"],
-        default="Existing format",
+        srange=[gl("existing_format"), gl("existing_race"), "Personalized format"],
+        default=gl("existing_format"),
+        input_format="radio",
     ),
     dict(key="athlete_switch", label="Athlete's performances", help=None, srange="b", default=True),
     dict(
@@ -121,6 +130,7 @@ variables = [
         help="Format of the selected race",
         default="Bois-le-Roi (L)",
         label="",
+        input_format="selectbox",
     ),
     dict(
         key="sex",
@@ -128,6 +138,15 @@ variables = [
         srange=["Female", "Male"],
         help="Metabolism is different on average between man and woman",
         default="Female",
+        input_format="radio",
+    ),
+    dict(
+        key="language",
+        label=gl("favorite_language"),
+        srange=["En", "Fr"],
+        help="To switch language/Pour changer de langue",
+        default="En",
+        input_format="radio",
     ),
     dict(key="weight_kg", label="Weight (kg)", help="Your weight (in kg)", srange="i:40:100:1", default=70),
     dict(

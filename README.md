@@ -24,3 +24,6 @@ git add . && git commit -m "Try fix" && git push heroku master
 git add streamlit_app.py && git commit -m "Try fix" && git push heroku master
 heroku logs --tail
 heroku builds:cache:purge -a fathomless-brook-99194  --confirm fathomless-brook-99194
+
+
+killall streamlit
