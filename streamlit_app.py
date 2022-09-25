@@ -41,45 +41,9 @@ trianer.set_var_on_change_function(update_cookie)
 trianer.set_var_cookies(all_cookies)
 
 
-info_box = st.empty()
-
-
 @st.cache(persist=False, allow_output_mutation=True, suppress_st_warning=True, show_spinner=True)
 def load_races_configs():
     return trianer.Race.load_races_configs()
-
-
-def configure_physiology():
-    st.select_slider(
-        "Allure pour la shit",
-        options=[f"{m+1}min{s:02.0f}s/100m" for m in range(1, 2) for s in np.linspace(0, 55, 12)],
-    )
-
-    st.subheader("Calories")
-    st.pyplot(trianer.show_kcalories())
-
-    fig, ax = plt.subplots(figsize=(15, 4))
-    for w in [80 * 0.9, 80, 80 * 1.1]:
-        kcalories = trianer.get_kcalories(w, discipline="swimming").set_index("speed")["atl"]
-        kcalories.plot(ax=ax)
-    st.pyplot(fig)
-
-    fig, ax = plt.subplots(figsize=(15, 4))
-    for w in [80 * 0.9, 80, 80 * 1.1]:
-        kcalories = trianer.get_kcalories(w, discipline="running").set_index("speed")["atl"]
-        kcalories.plot(ax=ax)
-    st.pyplot(fig)
-
-    # 1000/1100 kcal pour les hommes et 800/900 kcal par repas
-
-    fig, ax = plt.subplots(figsize=(15, 4))
-
-    temp = np.arange(0, 40)
-    hydr = pd.Series(-np.clip(temp * 100 - 600, 400, 2500), index=temp).to_frame(name="hydration")
-    hydr *= 1.5
-    hydr.plot(ax=ax)
-
-    st.pyplot(fig)
 
 
 def get_pars(pars):
@@ -102,22 +66,26 @@ def main():
         m["label"] = gl(m["id"])
 
     over_theme = {"txc_inactive": "#FFFFFF"}
-    menu_id = hc.nav_bar(
-        menu_definition=menu_data,
-        override_theme=over_theme,
-        hide_streamlit_markers=False,
-        sticky_nav=True,
-        sticky_mode="pinned",
-    )
 
-    if menu_id == "perf":
+    use_nav_bar = False
+    if use_nav_bar:
+        menu_id = hc.nav_bar(
+            menu_definition=menu_data,
+            override_theme=over_theme,
+            hide_streamlit_markers=False,
+            sticky_nav=True,
+            sticky_mode="pinned",
+        )
+    else:
+        menu_id = stx.stepper_bar(steps=["Performance", "Race", "Athlete", "Simulation"])
+
+    if menu_id == "perf" or menu_id == 0:
         st.header(gl(menu_id))
         tsti.get_inputs(["swimming_sX100m", "cycling_kmXh", "running_sXkm"])
         tsti.get_inputs(["transition_swi2cyc_s", "transition_cyc2run_s"])
 
     # with tab2:
-    if menu_id == "race":
-        st.header(gl(menu_id))
+    if menu_id == "race" or menu_id == 1:
         race_menu = tsti.get_value("race_menu")
         if race_menu == gl("existing_race"):
             race_title = trianer.Race(tsti.get_value("race_default")).get_info()
@@ -132,10 +100,10 @@ def main():
                 if d in ["cycling", "running"]:
                     dplus = cookies_source(f"p{d}_dplus")
                     race_perso += f":{dplus}"
-            st.write(race_perso[1:])
             race_title = trianer.Race.init_from_cookies(tsti.get_value).get_info()
 
-        st.subheader(f"{race_title}")
+        st.header(f"{race_title}")
+        # st.success(f"Race info: {race.get_info()} (code={race.get_key()})")
 
         race_menu = tsti.get_var_input("race_menu")
         if race_menu == gl("existing_race"):
@@ -163,17 +131,16 @@ def main():
             tsti.get_temperature_menu("perso")
 
     # with tab3:
-    if menu_id == "athlete":
+    if menu_id == "athlete" or menu_id == 2:
         st.header(gl(menu_id))
-        with st.expander("Athlete's details", expanded=True):
-            tsti.get_inputs(["sex", "weight_kg", "height_cm"])
-            # col1, col2, col3 = st.columns(3)
-            # with col1:
-            #    tsti.get_var_input("language", disabled=True)
+        tsti.get_inputs(["sex", "weight_kg", "height_cm"])
+        # col1, col2, col3 = st.columns(3)
+        # with col1:
+        #    tsti.get_var_input("language", disabled=True)
 
-            tsti.get_inputs(["language", "year_of_birth", "sudation"], options=[dict(disabled=True), {}, {}])
+        tsti.get_inputs(["language", "year_of_birth", "sudation"], options=[dict(disabled=True), {}, {}])
 
-    if menu_id == "simulation":
+    if menu_id == "simulation" or menu_id == 3:
         st.header(gl(menu_id))
 
         athlete = trianer.Athlete(
@@ -195,33 +162,31 @@ def main():
             race = trianer.Race.init_from_cookies(tsti.get_value)
             temperature = tsti.get_temperature("perso")
 
-        st.success(f"Race info: {race.get_info()} (code={race.get_key()})")
+        # st.success(f"Race info: {race.get_info()} (code={race.get_key()})")
+        simulation = trianer.Triathlon(race=race, temperature=temperature, athlete=athlete)
 
-        simulation = trianer.Triathlon(race=race, temperature=temperature, athlete=athlete, info_box=info_box)
+        disciplines = ["Swimming", "Cycling", "Running"]
+        cols = st.columns(3)
+        for d, discipline in enumerate(disciplines):
+            with cols[d]:
+                st.subheader(gl(discipline))
+                r = race.get_dinfo(discipline)
+                a = athlete.get_dinfo(discipline)
 
-        col1, col2, col3, col4 = st.columns(4)
+                st.metric(
+                    "Distance&D+",
+                    f"{r[0]:.2f} km",
+                    f"{r[1]:.0f} m",
+                    delta_color="off",
+                )
 
-        with col1:
-            st.metric(
-                "Swimming speed",
-                f"{athlete.swimming_speed:.2f} km/h",
-                f"{athlete.swimming_pace:.0f} s/km",
-                delta_color="off",
-            )
-        with col2:
-            st.metric(
-                "cycling_speed",
-                f"{athlete.cycling_speed:.2f} km/h",
-                f"{athlete.cycling_pace:.0f} s/100m",
-                delta_color="off",
-            )
-        with col3:
-            st.metric(
-                "Running speed",
-                f"{athlete.running_speed:.2f} km/h",
-                f"{athlete.running_pace:.0f} s/km",
-                delta_color="off",
-            )
+                st.metric(
+                    "Speed&pace",
+                    f"{a[0]:.2f} km/h",
+                    f"{a[1]:.0f} s/km",
+                    delta_color="off",
+                )
+                # f"{athlete.cycling_pace:.0f} s/100m",
 
         if race_menu == gl("existing_race"):
             with st.expander("Show race gpx track", expanded=False):
@@ -234,19 +199,20 @@ def main():
         with st.expander("F&B", expanded=True):
             st.markdown(simulation.show_roadmap().to_html(), unsafe_allow_html=True)
 
-    if menu_id == "about":
-        st.header(gl(menu_id))
+    with st.expander(f"ℹ️ - About this app (pyversion={trianer.__version__})", expanded=False):
+
+        # st.header(gl(menu_id))
         vetruve_file = trianer.gpx.get_file("vetruve_gen.png")
         st.image(vetruve_file)
         st.success(f"Using version {trianer.__version__}")
         st.markdown("[Contact Us](mailto:gt@guydegnol.net)")
         st.markdown(open("./CHANGELOG.md", "r").read())
 
-        with st.expander("Cookies management", expanded=False):
-            st.write(all_cookies)
-            cookie = st.text_input("Cookie", key="Cookie list")
-            if st.button("Delete"):
-                cookie_manager.delete(cookie)
+        st.markdown("## Cookies management")
+        st.write(all_cookies)
+        cookie = st.text_input("Cookie", key="Cookie list")
+        if st.button("Delete a cookie"):
+            cookie_manager.delete(cookie)
 
 
 if __name__ == "__main__":

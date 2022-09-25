@@ -1,4 +1,4 @@
-__version__ = "2.4.4"
+__version__ = "2.5.1"
 
 from .gpx import *
 from .fueling import *

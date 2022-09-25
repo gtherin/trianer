@@ -11,6 +11,10 @@ All notable changes to this project will be documented here.
 - Add language menu
 - Add sudation parameters
 
+#### [2.5.1] - 2022-09-25
+
+- Add new interface
+
 #### [2.4.4] - 2022-09-23
 
 - Temperature can be set on every pages

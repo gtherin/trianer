@@ -26,6 +26,7 @@ class Athlete:
 
         # Global speeds
         self.speeds = {"swimming": self.swimming_speed, "cycling": self.cycling_speed, "running": self.running_speed}
+        self.paces = {"swimming": self.swimming_pace, "cycling": self.cycling_pace, "running": self.running_pace}
         self.dspeeds_slope = {"swimming": 0.0, "cycling": 2.6, "running": 0.1}
 
         self.transitions = [Athlete.get_pace(self.config[k]) for k in ["transition_swi2cyc_s", "transition_cyc2run_s"]]
@@ -43,3 +44,6 @@ class Athlete:
             return float(swimming_pace[0]) * 60 + float(swimming_pace[1]) / 60
         else:
             return float(pace.hour) * 60 + float(pace.minute) / 60
+
+    def get_dinfo(self, discispline):
+        return self.speeds[discispline.lower()], self.paces[discispline.lower()]

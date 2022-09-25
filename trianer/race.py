@@ -130,6 +130,12 @@ class Race:
                 info += f" (D+={self.elevations[d]:.0f}m) "
         return info
 
+    def get_dinfo(self, discispline):
+        for d in range(len(self.disciplines)):
+            if discispline.lower() == self.disciplines[d]:
+                return self.distances[d], self.elevations[d]
+        return 0.0, 0.0
+
     def get_fuels(self):
         return {discipline: self.dfuelings[d] for d, discipline in enumerate(self.disciplines)}
 

@@ -41,3 +41,36 @@ def get_temperature(race_choice):
         if get_value(f"temperature_menu_{race_choice}") == "Automatic"
         else get_value(f"temperature_{race_choice}")
     )
+
+
+def configure_physiology():
+    st.select_slider(
+        "Allure pour la shit",
+        options=[f"{m+1}min{s:02.0f}s/100m" for m in range(1, 2) for s in np.linspace(0, 55, 12)],
+    )
+
+    st.subheader("Calories")
+    st.pyplot(trianer.show_kcalories())
+
+    fig, ax = plt.subplots(figsize=(15, 4))
+    for w in [80 * 0.9, 80, 80 * 1.1]:
+        kcalories = trianer.get_kcalories(w, discipline="swimming").set_index("speed")["atl"]
+        kcalories.plot(ax=ax)
+    st.pyplot(fig)
+
+    fig, ax = plt.subplots(figsize=(15, 4))
+    for w in [80 * 0.9, 80, 80 * 1.1]:
+        kcalories = trianer.get_kcalories(w, discipline="running").set_index("speed")["atl"]
+        kcalories.plot(ax=ax)
+    st.pyplot(fig)
+
+    # 1000/1100 kcal pour les hommes et 800/900 kcal par repas
+
+    fig, ax = plt.subplots(figsize=(15, 4))
+
+    temp = np.arange(0, 40)
+    hydr = pd.Series(-np.clip(temp * 100 - 600, 400, 2500), index=temp).to_frame(name="hydration")
+    hydr *= 1.5
+    hydr.plot(ax=ax)
+
+    st.pyplot(fig)

@@ -2,9 +2,13 @@ class Labels:
     labels = {
         # Menus
         "perf": ["Performances", "Performances"],
+        0: ["Performances", "Performances"],
         "race": ["Race details", "Details course"],
+        1: ["Race details", "Details course"],
         "athlete": ["Athlete details", "Details Athlete"],
+        2: ["Athlete details", "Details Athlete"],
         "simulation": ["Race simulation", "Simulation"],
+        3: ["Race simulation", "Simulation"],
         "about": ["About", "A propos"],
         "show_race_details": ["Show race details", "Details de la course"],
         "existing_race": ["Existing race", "Course existante"],
