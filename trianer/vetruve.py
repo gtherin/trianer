@@ -29,54 +29,62 @@ def hist_calories_per_sport():
     fig.show()
 
 
-def wordcloud_calories_per_sport(filename=None):
+def wordcloud_calories_per_sport(filename=None, generate=True):
     """
     Show activities depending on the calories spent
 
     """
-    from . import __version__
-
-    version = __version__
-    rd.seed(42)
-
-    from wordcloud import WordCloud
-
-    data = get_kcalories(None)
-
-    ddata = data.groupby("discipline").mean()
-    w = np.round(10 * ddata["X kg"] / ddata["X kg"].max())
-
-    words = []
-    for d in ddata.index:
-        words += [d] * int(w[d])
-    words += [f"v_{version}".replace(".", "_")] * 100
-
-    rd.shuffle(words)
-    # print(words)
-
-    # read the mask image
-    print("./notebooks/vetruve.png")
-    alice_mask = np.array(Image.open("./notebooks/vetruve.png"))
 
     plt.figure(figsize=(15, 10))
+    if not generate:
+        print(f"Read file {filename}")
+        import matplotlib.image as mpimg
 
-    wc = WordCloud(
-        background_color="white",
-        max_words=2000,
-        mask=alice_mask,
-        contour_width=0,
-        contour_color="#f5f4f2",
-        repeat=True,
-        min_font_size=1,
-        colormap="gist_ncar",
-    )
-    # wc = WordCloud(background_color='white', width=750, height=500)
+        wc = mpimg.imread(filename)
 
-    # generate word cloud
-    wc.generate(" ".join(words))
-    if filename:
-        print(f"Write in {filename}")
-        wc.to_file(filename)
+    else:
+
+        from . import __version__
+
+        version = __version__
+        rd.seed(42)
+
+        from wordcloud import WordCloud
+
+        data = get_kcalories(None)
+
+        ddata = data.groupby("discipline").mean()
+        w = np.round(10 * ddata["X kg"] / ddata["X kg"].max())
+
+        words = []
+        for d in ddata.index:
+            words += [d] * int(w[d])
+        words += [f"v_{version}".replace(".", "_")] * 100
+
+        rd.shuffle(words)
+        # print(words)
+
+        # read the mask image
+        print("./notebooks/vetruve.png")
+        alice_mask = np.array(Image.open("./notebooks/vetruve.png"))
+
+        wc = WordCloud(
+            background_color="white",
+            max_words=2000,
+            mask=alice_mask,
+            contour_width=0,
+            contour_color="#f5f4f2",
+            repeat=True,
+            min_font_size=1,
+            colormap="gist_ncar",
+        )
+        # wc = WordCloud(background_color='white', width=750, height=500)
+
+        # generate word cloud
+        wc.generate(" ".join(words))
+        if filename:
+            print(f"Write in {filename}")
+            wc.to_file(filename)
 
     # show
     plt.imshow(wc, interpolation="bilinear")

@@ -56,12 +56,13 @@ def main():
 
     # specify the primary menu definition
     menu_data = [
-        {"id": "perf", "icon": "🏊🚴🏃"},
-        {"id": "race", "icon": "🌍"},
         {"id": "athlete", "icon": "💗"},
+        {"id": "race", "icon": "🌍"},
+        {"id": "perf", "icon": "🏊🚴🏃"},
         {"id": "simulation", "icon": "🏆"},
-        {"id": "about", "icon": "💻"},
+        # {"id": "about", "icon": "💻"},
     ]
+    menu_steps = [m["id"] for m in menu_data]
     for m in menu_data:
         m["label"] = gl(m["id"])
 
@@ -77,15 +78,15 @@ def main():
             sticky_mode="pinned",
         )
     else:
-        menu_id = stx.stepper_bar(steps=["Performance", "Race", "Athlete", "Simulation"])
+        menu_id = stx.stepper_bar(steps=menu_steps)
 
-    if menu_id == "perf" or menu_id == 0:
+    if menu_id == "perf" or menu_id == menu_steps.index("perf"):
         st.header(gl(menu_id))
         tsti.get_inputs(["swimming_sX100m", "cycling_kmXh", "running_sXkm"])
         tsti.get_inputs(["transition_swi2cyc_s", "transition_cyc2run_s"])
 
     # with tab2:
-    if menu_id == "race" or menu_id == 1:
+    if menu_id == "race" or menu_id == menu_steps.index("race"):
         race_menu = tsti.get_value("race_menu")
         if race_menu == gl("existing_race"):
             race_title = trianer.Race(tsti.get_value("race_default")).get_info()
@@ -131,7 +132,7 @@ def main():
             tsti.get_temperature_menu("perso")
 
     # with tab3:
-    if menu_id == "athlete" or menu_id == 2:
+    if menu_id == "athlete" or menu_id == menu_steps.index("athlete"):
         st.header(gl(menu_id))
         tsti.get_inputs(["sex", "weight_kg", "height_cm"])
         # col1, col2, col3 = st.columns(3)
@@ -140,7 +141,7 @@ def main():
 
         tsti.get_inputs(["language", "year_of_birth", "sudation"], options=[dict(disabled=True), {}, {}])
 
-    if menu_id == "simulation" or menu_id == 3:
+    if menu_id == "simulation" or menu_id == menu_steps.index("simulation"):
         st.header(gl(menu_id))
 
         athlete = trianer.Athlete(
@@ -165,28 +166,47 @@ def main():
         # st.success(f"Race info: {race.get_info()} (code={race.get_key()})")
         simulation = trianer.Triathlon(race=race, temperature=temperature, athlete=athlete)
 
-        disciplines = ["Swimming", "Cycling", "Running"]
-        cols = st.columns(3)
-        for d, discipline in enumerate(disciplines):
-            with cols[d]:
-                st.subheader(gl(discipline))
+        with st.expander("Summary", expanded=True):
+            disciplines = ["Swimming", "Cycling", "Running", "Total"]
+            cols = st.columns(4)
+            for d, discipline in enumerate(disciplines):
                 r = race.get_dinfo(discipline)
-                a = athlete.get_dinfo(discipline)
+                if r[0] > 0:
+                    with cols[d]:
+                        st.subheader(gl(discipline))
 
-                st.metric(
-                    "Distance&D+",
-                    f"{r[0]:.2f} km",
-                    f"{r[1]:.0f} m",
-                    delta_color="off",
-                )
+                        st.metric("Distance&D+", f"{r[0]:.2f} km", f"{r[1]:.0f} m", delta_color="off")
 
-                st.metric(
-                    "Speed&pace",
-                    f"{a[0]:.2f} km/h",
-                    f"{a[1]:.0f} s/km",
-                    delta_color="off",
-                )
-                # f"{athlete.cycling_pace:.0f} s/100m",
+            cols = st.columns(4)
+            for d, discipline in enumerate(disciplines):
+                r = race.get_dinfo(discipline)
+                if r[0] > 0:
+                    with cols[d]:
+                        if discipline != "Total":
+                            a = athlete.get_dinfo(discipline)
+                            st.metric(
+                                "Speed&pace",
+                                f"{a[0]:.2f} km/h",
+                                f"{a[1]:.0f} s/" + ("km" if discipline.lower() != "swimming" else "100m"),
+                                delta_color="off",
+                            )
+
+            cols = st.columns(4)
+            for d, discipline in enumerate(disciplines):
+                r = race.get_dinfo(discipline)
+                if r[0] > 0:
+                    with cols[d]:
+                        if discipline == "Total":
+                            du = simulation.data["duration"].sum()
+                        else:
+                            du = simulation.data.query(f"discipline == '{discipline.lower()}'")["duration"].sum()
+                        du = f"{du:.0f}h{60 * (du % 1):02.0f}min"
+                        st.metric(
+                            "Duration",
+                            f"{du}",
+                            f"0",
+                            delta_color="off",
+                        )
 
         if race_menu == gl("existing_race"):
             with st.expander("Show race gpx track", expanded=False):
