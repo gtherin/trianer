@@ -9,6 +9,10 @@ All notable changes to this project will be documented here.
 - Improve slope dependencies with speed
 - Set a french/english flag
 - Add language menu
+
+#### [2.6.1] - 2022-09-26
+
+- Add new summary
 - Add sudation parameters
 
 #### [2.5.1] - 2022-09-25

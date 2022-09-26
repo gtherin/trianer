@@ -2,7 +2,6 @@ class Athlete:
     def __init__(
         self,
         name="John Doe",
-        sudation=1.0,
         config=None,
     ) -> None:
 
@@ -31,7 +30,7 @@ class Athlete:
 
         self.transitions = [Athlete.get_pace(self.config[k]) for k in ["transition_swi2cyc_s", "transition_cyc2run_s"]]
 
-        self.sudation = sudation
+        self.sudation = 1 + 0.1 * (self.config["sudation"] - 5.0)
 
     def calculate_speed(self, df, discipline) -> float:
         df["speed"] = df.apply(lambda x: self.speeds[discipline] - self.dspeeds_slope[discipline] * x["slope"], axis=1)

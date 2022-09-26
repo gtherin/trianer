@@ -212,7 +212,9 @@ def calculate_hydration(df, race, athlete) -> pd.DataFrame:
         hydr *= athlete.sudation
     hydr = df.merge(hydr, how="left", left_on=df["temperature"].round(), right_index=True)
 
-    df.loc[df["discipline"] == "swimming", "hydration"] = -900 * df.loc[df["discipline"] == "swimming", "duration"]
+    df.loc[df["discipline"] == "swimming", "hydration"] = (
+        -athlete.sudation * 900 * df.loc[df["discipline"] == "swimming", "duration"]
+    )
     df.loc[df["discipline"] == "cycling", "hydration"] = (
         df.loc[df["discipline"] == "cycling", "duration"] * hydr.loc[hydr["discipline"] == "cycling", "hydration"]
     )

@@ -18,6 +18,7 @@ available_races = {
             start_time=datetime.datetime.strptime("2023-07-03 07:00", "%Y-%m-%d %H:%M"),
             distances=[3.8, 180, 42.195],
             dfuelings=[[0], [0, 39], [0, 3.25, 6.75]],
+            elevations=[0.0, 1220.0, 40.0],  # From data
             gpx_data=[",x2", "Chtriman_XL_cycling.gpx,x2", "Chtriman_XL_running.gpx,x4"],
         ),
         # Embrunman

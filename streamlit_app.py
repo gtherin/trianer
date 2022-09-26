@@ -85,7 +85,6 @@ def main():
         tsti.get_inputs(["swimming_sX100m", "cycling_kmXh", "running_sXkm"])
         tsti.get_inputs(["transition_swi2cyc_s", "transition_cyc2run_s"])
 
-    # with tab2:
     if menu_id == "race" or menu_id == menu_steps.index("race"):
         race_menu = tsti.get_value("race_menu")
         if race_menu == gl("existing_race"):
@@ -131,7 +130,6 @@ def main():
 
             tsti.get_temperature_menu("perso")
 
-    # with tab3:
     if menu_id == "athlete" or menu_id == menu_steps.index("athlete"):
         st.header(gl(menu_id))
         tsti.get_inputs(["sex", "weight_kg", "height_cm"])
@@ -146,7 +144,7 @@ def main():
 
         athlete = trianer.Athlete(
             config=get_pars(
-                ["swimming_sX100m", "cycling_kmXh", "running_sXkm"]
+                ["swimming_sX100m", "cycling_kmXh", "running_sXkm", "sudation"]
                 + ["transition_swi2cyc_s", "transition_cyc2run_s", "weight_kg"]
             )
         )
@@ -174,7 +172,6 @@ def main():
                 if r[0] > 0:
                     with cols[d]:
                         st.subheader(gl(discipline))
-
                         st.metric("Distance&D+", f"{r[0]:.2f} km", f"{r[1]:.0f} m", delta_color="off")
 
             cols = st.columns(4)
@@ -200,11 +197,10 @@ def main():
                             du = simulation.data["duration"].sum()
                         else:
                             du = simulation.data.query(f"discipline == '{discipline.lower()}'")["duration"].sum()
-                        du = f"{du:.0f}h{60 * (du % 1):02.0f}min"
                         st.metric(
                             "Duration",
-                            f"{du}",
-                            f"0",
+                            f"{du:.0f}h{60 * (du % 1):02.0f}min",
+                            f"{60*du:.0f}min",
                             delta_color="off",
                         )
 
@@ -214,6 +210,7 @@ def main():
 
         with st.expander(gl("show_race_details"), expanded=True):
             xaxis = st.radio("x axis", ["Total distance", gl("time_total"), gl("dtime")], horizontal=True, key="moon")
+            st.write(athlete.sudation)
             st.pyplot(simulation.show_race_details(xaxis=xaxis))
             st.pyplot(simulation.show_nutrition(xaxis=xaxis))
         with st.expander("F&B", expanded=True):

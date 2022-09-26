@@ -164,7 +164,9 @@ class Race:
             df["elevation"] = (df["altitude"] - df["altitude"].iloc[0]).diff().fillna(0.0)
             df["aelevation"] = df["elevation"].clip(0.0, 1000)
 
-            if (corr := self.elevations[d] / df.aelevation.sum()) > 0:
+            if self.elevations[d] == 0 and df.aelevation.sum() != 0:
+                self.elevations[d] = df.aelevation.sum()
+            elif (corr := self.elevations[d] / df.aelevation.sum()) > 0:
                 df["aelevation"] *= corr
 
             data.append(df.assign(sequence=d * 2).assign(discipline=discipline))
