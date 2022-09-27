@@ -202,7 +202,7 @@ def main():
 
         if race_menu == gl("existing_race"):
             with st.expander("Show race gpx track", expanded=False):
-                folium_static(simulation.show_gpx_track())
+                folium_static(trianer.show_gpx_track(simulation))
 
         with st.expander(gl("show_race_details"), expanded=True):
             xaxis = st.radio("x axis", ["Total distance", gl("time_total"), gl("dtime")], horizontal=True, key="moon")
@@ -212,7 +212,9 @@ def main():
         with st.expander("F&B", expanded=True):
             st.markdown(simulation.show_roadmap().to_html(), unsafe_allow_html=True)
 
-    with st.expander(f"ℹ️ - About this app (pyversion={trianer.__version__})", expanded=False):
+    from trianer.__version__ import __version__ as version
+
+    with st.expander(f"ℹ️ - About this app (pyversion={version})", expanded=False):
         vetruve_file = trianer.race.gpx.get_file("vetruve_gen.png")
         st.image(vetruve_file)
         st.success(f"Using version {trianer.__version__}")
