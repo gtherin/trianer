@@ -1,4 +1,4 @@
-__version__ = "2.7.3"
+__version__ = "2.7.4"
 
 from .analysis.vetruve import *
 
@@ -13,3 +13,4 @@ from .race.gpx import *
 from .race.weather import *
 from .race.race import Race
 from .race.races import available_races
+from .race.display import show_gpx_track

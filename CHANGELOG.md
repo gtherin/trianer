@@ -9,13 +9,13 @@ All notable changes to this project will be documented here.
 - Improve slope dependencies with speed
 - Set a french/english flag
 - Add language menu
-- Fix nutrition axis graph
 
 
-#### [2.7.3] - 2022-09-27
+#### [2.7.4] - 2022-09-27
 
 - Change code structure
 - Work on the hydric model
+- Fix nutrition axes graph
 
 #### [2.6.1] - 2022-09-26
 

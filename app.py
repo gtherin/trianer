@@ -213,8 +213,6 @@ def main():
             st.markdown(simulation.show_roadmap().to_html(), unsafe_allow_html=True)
 
     with st.expander(f"ℹ️ - About this app (pyversion={trianer.__version__})", expanded=False):
-
-        # st.header(gl(menu_id))
         vetruve_file = trianer.race.gpx.get_file("vetruve_gen.png")
         st.image(vetruve_file)
         st.success(f"Using version {trianer.__version__}")

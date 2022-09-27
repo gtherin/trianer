@@ -232,16 +232,8 @@ def enrich_data(data, target_distance=None, target_elelevation=None):
     return data.set_index("fdistance")
 
 
-def get_data(filename=None, nlaps=1, info_box=None):
+def get_data(filename=None, nlaps=1):
 
-    # import streamlit as st
-
-    # if info_box is None:
-    #    info_box = st.empty()
-
-    # info_box.info(f"⏳ Read {filename}")
-
-    # if "pace_data" not in filename and "http" not in filename:
     #    filename = "http://trianer.guydegnol.net/" + filename
 
     data = get_data_from_file(filename)
@@ -260,7 +252,6 @@ def get_data(filename=None, nlaps=1, info_box=None):
     # data["altitude"] = sp.signal.savgol_filter(data["altitude"], 5, 4)
     data["altitude"] = pd.Series(data["altitude"]).apply(lambda x: int(5 * round(float(x) / 5)))
 
-    # info_box.empty()
     return data
 
 

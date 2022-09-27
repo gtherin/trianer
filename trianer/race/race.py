@@ -141,7 +141,7 @@ class Race:
     def get_fuels(self):
         return {discipline: self.dfuelings[d] for d, discipline in enumerate(self.disciplines)}
 
-    def get_gpx_data(self, info_box):
+    def get_gpx_data(self):
         data = []
         self.fuelings = [0]
 
@@ -151,7 +151,7 @@ class Race:
 
             if len(gpx_info[0]) > 0:
                 nlaps = 1 if len(gpx_info) == 1 else int(gpx_info[1])
-                df = gpx.get_data(filename=gpx_info[0], nlaps=nlaps, info_box=info_box)
+                df = gpx.get_data(filename=gpx_info[0], nlaps=nlaps)
             else:
                 step = 11
                 df = pd.DataFrame(np.linspace(0, self.distances[d], step), columns=["distance"]).assign(

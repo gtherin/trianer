@@ -30,28 +30,18 @@ def is_kernel():
     return getattr(get_ipython(), "kernel", None) is not None
 
 
-def get_empty_box():
-    return None
-    import streamlit as st
-
-    st.config.set_option("server.enableCORS", True)
-    return st.empty()
-
-
 class Triathlon:
-    def __init__(self, race=None, athlete=None, temperature=None, info_box=None) -> None:
+    def __init__(self, race=None, athlete=None, temperature=None) -> None:
         self.race, self.athlete = race, athlete
-
-        self.info_box = get_empty_box() if info_box is None else info_box
-        self.gpx = self.race.get_gpx_data(info_box)
+        self.gpx = self.race.get_gpx_data()
 
         self.data = self.simulate_race(self.race, self.athlete, temperature=temperature)
 
-    def get_mean_coordonates(self):
+    def get_mean_coordonates(self, use_map=False):
         coordonates = self.race.get_param("weather_coordonates")
-        if coordonates:
+        if coordonates and not use_map:
             return coordonates
-        if "latitude" not in self.gpx.columns:
+        if "latitude" not in self.gpx.columns and not use_map:
             return weather.get_default_coordonates()[:2]
         return self.gpx.latitude.mean(), self.gpx.longitude.mean()
 
@@ -64,12 +54,14 @@ class Triathlon:
 
         data = data.query(f"discipline=='{discipline}'")
 
-        # if discipline == "swimming":
-        #    return data
+        # No cleaning for swimming data (points might be too far)
+        if discipline == "swimming":
+            return data
 
-        # d = data.distance.clip(0, 1000).diff()
-        # cutoff = d.mean() * 3
-        # data = data[d < cutoff]
+        # Try to clean gpx tracks
+        d = data.distance.clip(0, 1000).diff()
+        cutoff = d.mean() * 3
+        data = data[d < cutoff]
 
         return data
 
@@ -128,60 +120,6 @@ class Triathlon:
     def show_weather_forecasts(self):
         return f"The expected temperature is {self.get_temperature()} °C"
 
-    def show_gpx_track(triathlon):
-        from branca.element import Figure
-        import folium
-
-        fig = Figure(width=900, height=300)
-        trimap = folium.Map(location=triathlon.get_mean_coordonates(), zoom_start=10)
-        fig.add_child(trimap)
-
-        from folium.plugins import MarkerCluster
-
-        marker_cluster = MarkerCluster().add_to(trimap)
-        for discipline in triathlon.race.disciplines:
-
-            gpx = triathlon.get_gpx(triathlon.gpx, discipline)
-            gpx = gpx.dropna(subset=["latitude", "longitude"])
-            if "latitude" not in gpx.columns or np.isnan(gpx["latitude"].mean()) or gpx.empty:
-                continue
-
-            folium.PolyLine(
-                list(zip(gpx["latitude"], gpx["longitude"])),
-                color=triathlon.get_color(discipline),
-                weight=3,
-                opacity=0.8,
-            ).add_to(trimap)
-
-        # icon = folium.Icon(color='darkblue', icon_color='white', icon='star', angle=0, prefix='fa')
-        # icon = folium.DivIcon(html=f"""<div style="color: blue">1</div>""")
-
-        for f in [10, 20, 30, 40, 50, 60, 70]:
-
-            si = triathlon.gpx.index.searchsorted(f)
-            if si == len(triathlon.gpx):
-                continue
-            r = triathlon.gpx.iloc[si]
-            folium.Marker(
-                location=[r["latitude"], r["longitude"]],
-                popup="Ravito",
-                icon=folium.DivIcon(html=f"""<div style="color: black; background-color:white">{f}</div>"""),
-            ).add_to(marker_cluster)
-
-        for f in triathlon.race.fuelings:
-            si = triathlon.gpx.index.searchsorted(f)
-            if si == len(triathlon.gpx):
-                continue
-            r = triathlon.gpx.iloc[si]
-            if np.isnan(r["latitude"] * r["longitude"]):
-                continue
-            folium.Marker(
-                location=[r["latitude"], r["longitude"]],
-                popup="Ravito",
-                icon=folium.Icon(color="red", icon_color="darkblue", icon="coffee", angle=0, prefix="fa"),
-            ).add_to(marker_cluster)
-        return trimap
-
     def show_race_details(triathlon, xaxis="fdistance", fields="altitude,temperature"):
 
         data = triathlon.data
@@ -219,7 +157,7 @@ class Triathlon:
 
                 patches.append(Line2D([0], [0], color=triathlon.get_color(discipline), lw=4, label=label))
             patches.append(Line2D([0], [0], color="yellow", label=f"temperature, max={data['temperature'].max()}°C"))
-            ax.legend(handles=patches, loc=2, prop={"size": 16}, framealpha=0)
+            ax.legend(handles=patches, prop={"size": 16}, framealpha=0)  # , loc=2
 
         if xaxis == "fdistance":
             # TODO: Fix it with other axis
@@ -255,7 +193,7 @@ class Triathlon:
     @staticmethod
     def plot_ravitos(fuels, ax, x, variable):
 
-        ymin = fuels.altitude.iloc[0] - 10
+        ymin = ax.get_ylim()[0]
 
         for i, ravito in fuels.iterrows():
             color = "purple" if "org" in ravito["fooding"] else "darkcyan"
@@ -263,7 +201,7 @@ class Triathlon:
 
             ax.vlines(
                 i,
-                ymin=ymin,  # ax.get_ylim()[0],
+                ymin=ymin,
                 ymax=ravito[variable] + 2,
                 alpha=0.5,
                 lw=lw,
@@ -293,12 +231,13 @@ class Triathlon:
 
     def show_nutrition(triathlon, xaxis="fdistance"):
 
-        # xaxis = st.radio("x axis", ["Total distance", "Expected time of day", "Expected time"], horizontal=True)
         data = triathlon.data
         data["etime"] = data["duration"].cumsum()
         xaxis = triathlon.get_axis(xaxis)
 
-        gperf = data
+        if xaxis in data.columns:
+            data = data.set_index(xaxis)
+
         fuels = data[~data["drinks"].isna()]
 
         fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(15, 6), sharex=True)
@@ -312,19 +251,21 @@ class Triathlon:
 
         ax = axes[0]
         ax.set_facecolor("#cdcdcd")
-        gperf.set_index("fdistance")["kcalories"].cumsum().plot(ax=ax, lw=3, color="purple")
-        # ax.hlines(-6000, ymin=triathlon.gpx["altitude"].min(), ymax=triathlon.gpx["altitude"].max(), alpha=0.4, color="red")
-        ax.hlines(-6000, xmin=0, xmax=gperf["fdistance"].max(), alpha=0.4, color="red")
+        data["kcalories"].cumsum().plot(ax=ax, lw=3, color="purple")
+
+        xmin, xmax = ax.get_xlim()
+        ax.hlines(-6000, xmin=xmin, xmax=xmax, alpha=0.4, color="red")
 
         ax.fill_between(
-            np.linspace(0, gperf["fdistance"].max(), 50),
+            np.linspace(xmin, xmax, 50),
             [-6000] * 50,
             [-7000] * 50,
             color="red",
             alpha=0.8,
         )
 
-        ax.text(0.9, -nutrition.get_caloric_reserve(triathlon.athlete), gl("caloric_reserve"), fontsize=20)
+        xtext = xmin + 0.1 * (xmax - xmin)
+        ax.text(xtext, -nutrition.get_caloric_reserve(triathlon.athlete), gl("caloric_reserve"), fontsize=20)
 
         ax.grid()
 
@@ -332,7 +273,7 @@ class Triathlon:
             Line2D([0], [0], color="purple", label=gl("caloric_balance")),
             Line2D([0], [0], color="darkcyan", label=gl("hydric_balance")),
         ]
-        ax.legend(handles=patches, loc=6, prop={"size": 16}, framealpha=0)
+        ax.legend(handles=patches, prop={"size": 16}, framealpha=0)  # , loc=6
         ax.set_ylabel(ylabel=gl("caloric_balance") + " (kcal)")
 
         ax = axes[1]
@@ -340,51 +281,59 @@ class Triathlon:
         ax.set_facecolor("#cdcdcd")
 
         ax.fill_between(
-            gperf["fdistance"],
-            gperf.set_index("fdistance")["ihydration"] * 0,
-            gperf.set_index("fdistance")["ihydration"].cumsum(),
+            data.index,
+            data["ihydration"] * 0,
+            data["ihydration"].cumsum(),
             color="green",
             alpha=0.2,
         )
-        plt.text(0.9, -500, gl("hydration_ideal"), fontsize=20)
+        plt.text(xtext, -500, gl("hydration_ideal"), fontsize=20)
 
-        gperf.set_index("fdistance")["ihydration"].cumsum().plot(ax=ax, color="green", label="")
-        gperf.set_index("fdistance")["hydration"].cumsum().plot(ax=ax, lw=3, color="darkcyan")
+        data["ihydration"].cumsum().plot(ax=ax, color="green", label="")
+        data["hydration"].cumsum().plot(ax=ax, lw=3, color="darkcyan")
 
         ax.hlines(
             -nutrition.get_hydric_reserve(triathlon.athlete),
-            xmin=0,
-            xmax=gperf["fdistance"].max(),
+            xmin=xmin,
+            xmax=xmax,
             alpha=0.4,
             color="red",
         )
         ax.hlines(
             -nutrition.get_hydric_reserve(triathlon.athlete, danger=True),
-            xmin=0,
-            xmax=gperf["fdistance"].max(),
+            xmin=xmin,
+            xmax=xmax,
             alpha=0.4,
             color="red",
         )
 
         ax.fill_between(
-            np.linspace(0, gperf["fdistance"].max(), 50),
+            np.linspace(xmin, xmax, 50),
             [-triathlon.athlete.weight * 0.02 * 1000] * 50,
             [-triathlon.athlete.weight * 0.04 * 1000] * 50,
             color="red",
             alpha=0.2,
         )
-        plt.text(0.9, -triathlon.athlete.weight * 0.02 * 1000 - 500, gl("perf_loss_20"), fontsize=20)
+        plt.text(xtext, -triathlon.athlete.weight * 0.02 * 1000 - 500, gl("perf_loss_20"), fontsize=20)
 
         ax.fill_between(
-            np.linspace(0, gperf["fdistance"].max(), 50),
+            np.linspace(xmin, xmax, 50),
             [-triathlon.athlete.weight * 0.04 * 1000] * 50,
             [-triathlon.athlete.weight * 0.05 * 1000] * 50,
             color="red",
             alpha=0.8,
         )
-        plt.text(0.9, -triathlon.athlete.weight * 0.04 * 1000 - 500, gl("risk_zone"), fontsize=20)
+        plt.text(xtext, -triathlon.athlete.weight * 0.04 * 1000 - 500, gl("risk_zone"), fontsize=20)
 
         ax.grid()
+        if xaxis == "etime":
+            formatter = matplotlib.ticker.FuncFormatter(lambda ms, x: time.strftime("%H:%M", time.gmtime(ms * 3600)))
+            ax.xaxis.set_major_formatter(formatter)
+        if xaxis == "dtime":
+            formatter = matplotlib.ticker.FuncFormatter(
+                lambda ms, x: time.strftime("%H:%M", time.gmtime((ms % 1) * 24 * 3600))
+            )
+            ax.xaxis.set_major_formatter(formatter)
         ax.set_ylabel(ylabel=gl("hydric_balance") + " (ml)")
         ax.set_xlabel(xlabel=gl(xaxis))
 
