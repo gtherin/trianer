@@ -27,6 +27,26 @@ def hist_calories_per_sport():
     fig.show()
 
 
+def update_version():
+    logs = open("CHANGELOG.md", "r").read().split("####")
+    for l in logs:
+        if "TODO" not in l and "[" in l:
+            break
+
+    version = l[l.find("[") + 1 : l.find("]")]
+    with open("trianer/__version__.py", "w") as the_file:
+        the_file.write(f"__version__ = '{version}'")
+
+    from ..__version__ import __version__ as pversion
+
+    if pversion == version:
+        print(f"Using version {version}")
+    else:
+        print(f"Update {pversion} => {version}")
+
+    return version
+
+
 def wordcloud_calories_per_sport(filename=None, generate=True):
     """
     Show activities depending on the calories spent
@@ -41,8 +61,9 @@ def wordcloud_calories_per_sport(filename=None, generate=True):
         wc = mpimg.imread(filename)
 
     else:
+        version = update_version()
 
-        from .. import __version__
+        from ..__version__ import __version__
 
         version = __version__
         rd.seed(42)
@@ -63,7 +84,6 @@ def wordcloud_calories_per_sport(filename=None, generate=True):
         # print(words)
 
         # read the mask image
-        print("./notebooks/vetruve.png")
         alice_mask = np.array(Image.open("./notebooks/vetruve.png"))
 
         wc = WordCloud(

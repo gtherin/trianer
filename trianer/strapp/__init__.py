@@ -8,7 +8,6 @@ def push():
             break
 
     comments = [f"-m '{c[2:]}'" for i, c in enumerate(l.split("\n")) if i > 1 and c != ""]
-
     comments = " ".join(comments)
     cmd = f"trianer-vetruve && git add . && git commit {comments} && git push heroku master"
     print(cmd)

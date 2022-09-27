@@ -1,5 +1,3 @@
-__version__ = "2.7.4"
-
 from .analysis.vetruve import *
 
 from .core.athlete import Athlete
