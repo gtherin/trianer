@@ -1,6 +1,6 @@
 import datetime
 from .variable import Variable
-from .races import available_races
+from ..race.races import available_races
 from .labels import gl
 
 variables = [

@@ -4,9 +4,7 @@ import random as rd
 import matplotlib.pyplot as plt
 
 
-# , STOPWORDS
-
-from .fueling import get_kcalories
+from .. import nutrition
 
 
 def hist_calories_per_sport():
@@ -14,7 +12,7 @@ def hist_calories_per_sport():
     from plotly.subplots import make_subplots
     import plotly.graph_objects as go
 
-    data = get_kcalories(None)
+    data = nutrition.get_kcalories(None)
     data["discipline_speed"] = data["discipline"] + "_" + data["speed"].astype(str)
     data2 = data[["discipline_speed", "X kg"]].sort_values("X kg", ascending=False)
 
@@ -44,14 +42,14 @@ def wordcloud_calories_per_sport(filename=None, generate=True):
 
     else:
 
-        from . import __version__
+        from .. import __version__
 
         version = __version__
         rd.seed(42)
 
         from wordcloud import WordCloud
 
-        data = get_kcalories(None)
+        data = nutrition.get_kcalories(None)
 
         ddata = data.groupby("discipline").mean()
         w = np.round(10 * ddata["X kg"] / ddata["X kg"].max())

@@ -1,14 +1,21 @@
 ### Change Log
 All notable changes to this project will be documented here. 
 
-#### [TODO list] - 2022-09-23
- 
+#### [TODO list]
+
 - Make it possible to add gpx files
 - Have a algorithm to clean gpx files
 - Improve predictions with data analyses
 - Improve slope dependencies with speed
 - Set a french/english flag
 - Add language menu
+- Fix nutrition axis graph
+
+
+#### [2.7.3] - 2022-09-27
+
+- Change code structure
+- Work on the hydric model
 
 #### [2.6.1] - 2022-09-26
 

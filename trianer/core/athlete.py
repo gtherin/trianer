@@ -2,35 +2,40 @@ class Athlete:
     def __init__(
         self,
         name="John Doe",
-        config=None,
+        weight_kg=None,
+        swimming_sX100m=None,
+        cycling_kmXh=None,
+        running_sXkm=None,
+        transition_swi2cyc_s=None,
+        transition_cyc2run_s=None,
+        sudation=None,
+        sex=None,
     ) -> None:
 
-        self.config = config
         self.name = name
 
         # Masse en kilogramme
-        self.weight = self.config["weight_kg"]
+        self.weight = weight_kg
+        self.speeds, self.paces = {}, {}
 
         # Extract natation_speed
-        self.swimming_pace = Athlete.get_pace(self.config["swimming_sX100m"])
-        self.swimming_speed = 3600 / (10 * self.swimming_pace)
+        self.paces["swimming"] = Athlete.get_pace(swimming_sX100m)
+        self.speeds["swimming"] = 3600 / (10 * self.paces["swimming"])
 
         # Extract cycling_speed
-        self.cycling_speed = float(self.config["cycling_kmXh"])
-        self.cycling_pace = 3600.0 / self.cycling_speed
+        self.speeds["cycling"] = float(cycling_kmXh)
+        self.paces["cycling"] = 3600.0 / self.speeds["cycling"]
 
         # Extract running_speed
-        self.running_pace = Athlete.get_pace(self.config["running_sXkm"])
-        self.running_speed = 3600 / self.running_pace
+        self.paces["running"] = Athlete.get_pace(running_sXkm)
+        self.speeds["running"] = 3600 / self.paces["running"]
 
         # Global speeds
-        self.speeds = {"swimming": self.swimming_speed, "cycling": self.cycling_speed, "running": self.running_speed}
-        self.paces = {"swimming": self.swimming_pace, "cycling": self.cycling_pace, "running": self.running_pace}
         self.dspeeds_slope = {"swimming": 0.0, "cycling": 2.6, "running": 0.1}
+        self.transitions = [Athlete.get_pace(transition_swi2cyc_s), Athlete.get_pace(transition_cyc2run_s)]
 
-        self.transitions = [Athlete.get_pace(self.config[k]) for k in ["transition_swi2cyc_s", "transition_cyc2run_s"]]
-
-        self.sudation = 1 + 0.1 * (self.config["sudation"] - 5.0)
+        self.sudation = 1 + 0.1 * (sudation - 5.0)
+        self.sex = "F" if sex in ["F", "Female", "Fille"] else "M"
 
     def calculate_speed(self, df, discipline) -> float:
         df["speed"] = df.apply(lambda x: self.speeds[discipline] - self.dspeeds_slope[discipline] * x["slope"], axis=1)

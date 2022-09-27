@@ -1,9 +1,5 @@
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 import datetime
-import os
-import glob
 
 import streamlit as st
 import hydralit_components as hc
@@ -11,8 +7,8 @@ import extra_streamlit_components as stx
 from streamlit_folium import folium_static
 
 import trianer
-import trianer.st_inputs as tsti
-from trianer.labels import gl, set_language
+import trianer.strapp.inputs as tsti
+from trianer.core.labels import gl, set_language
 
 st.set_option("deprecation.showPyplotGlobalUse", False)
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
@@ -143,7 +139,7 @@ def main():
         st.header(gl(menu_id))
 
         athlete = trianer.Athlete(
-            config=get_pars(
+            **get_pars(
                 ["swimming_sX100m", "cycling_kmXh", "running_sXkm", "sudation"]
                 + ["transition_swi2cyc_s", "transition_cyc2run_s", "weight_kg"]
             )
@@ -219,7 +215,7 @@ def main():
     with st.expander(f"ℹ️ - About this app (pyversion={trianer.__version__})", expanded=False):
 
         # st.header(gl(menu_id))
-        vetruve_file = trianer.gpx.get_file("vetruve_gen.png")
+        vetruve_file = trianer.race.gpx.get_file("vetruve_gen.png")
         st.image(vetruve_file)
         st.success(f"Using version {trianer.__version__}")
         st.markdown("[Contact Us](mailto:gt@guydegnol.net)")

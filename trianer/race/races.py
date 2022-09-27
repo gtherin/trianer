@@ -15,7 +15,7 @@ available_races = {
         # Chtriman
         dict(
             key="Chtriman (Ironman)",
-            start_time=datetime.datetime.strptime("2023-07-03 07:00", "%Y-%m-%d %H:%M"),
+            start_time=datetime.datetime.strptime("2023-07-02 07:00", "%Y-%m-%d %H:%M"),
             distances=[3.8, 180, 42.195],
             dfuelings=[[0], [0, 39], [0, 3.25, 6.75]],
             elevations=[0.0, 1220.0, 40.0],  # From data
@@ -83,7 +83,7 @@ available_races = {
             dfuelings=[[0], [0, 43], [0, 3.5, 6.5]],
             gpx_data=["Bois_le_Roi_L_swimming.gpx,x2", "Bois_le_Roi_L_cycling.gpx", "Bois_le_Roi_L_running.gpx,x2"],
         ),
-        # Chtriman
+        # Paris
         dict(
             key="Paris (Marathon)",
             start_time=datetime.datetime.strptime("2023-04-02 10:00", "%Y-%m-%d %H:%M"),
@@ -91,6 +91,14 @@ available_races = {
             disciplines=["running"],
             dfuelings=[[0, 7, 12.8, 17.7, 22.8, 27, 29.9, 34.6, 38.5]],
             gpx_data=["Paris_Marathon.gpx"],
+        ),
+        dict(
+            key="Paris (Ecotrail)",
+            start_time=datetime.datetime.strptime("2023-03-18 11:30", "%Y-%m-%d %H:%M"),
+            distances=[80.0],
+            disciplines=["running"],
+            dfuelings=[[0, 24, 46, 56, 69]],
+            gpx_data=["Paris_Ecotrail.gpx"],
         ),
         dict(
             key="Paris (M)",

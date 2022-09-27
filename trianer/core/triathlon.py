@@ -11,9 +11,9 @@ import time
 import sys
 
 
-from . import weather
-from . import fueling
-from .labels import gl
+from ..race import weather
+from .. import nutrition
+from ..core.labels import gl
 
 logging.getLogger("matplotlib.font_manager").disabled = True
 logging.getLogger("matplotlib").setLevel(logging.ERROR)
@@ -120,7 +120,7 @@ class Triathlon:
         )
 
         data["fdistance"] = data["distance"].diff().clip(0, 10000).fillna(0.0).cumsum()
-        for f in [fueling.calculate_hydration, fueling.calculate_kcalories, fueling.calculate_fuelings]:
+        for f in [nutrition.calculate_hydration, nutrition.calculate_kcalories, nutrition.calculate_fuelings]:
             data = f(data, race, athlete)
 
         return data
@@ -293,14 +293,6 @@ class Triathlon:
 
     def show_nutrition(triathlon, xaxis="fdistance"):
 
-        """
-        Des glucides : pour l’énergie
-        Du sodium : quand on transpire, on évacue principalement de l’eau mais aussi du sodium qui aura pour intérêt de favoriser l’absorption intestinale des glucides).
-
-        1% soif
-        2% perte 20% perf
-        4% dangereux"""
-
         # xaxis = st.radio("x axis", ["Total distance", "Expected time of day", "Expected time"], horizontal=True)
         data = triathlon.data
         data["etime"] = data["duration"].cumsum()
@@ -331,7 +323,8 @@ class Triathlon:
             color="red",
             alpha=0.8,
         )
-        ax.text(0.9, -6000 - 500, gl("caloric_reserve"), fontsize=20)
+
+        ax.text(0.9, -nutrition.get_caloric_reserve(triathlon.athlete), gl("caloric_reserve"), fontsize=20)
 
         ax.grid()
 
@@ -357,11 +350,20 @@ class Triathlon:
 
         gperf.set_index("fdistance")["ihydration"].cumsum().plot(ax=ax, color="green", label="")
         gperf.set_index("fdistance")["hydration"].cumsum().plot(ax=ax, lw=3, color="darkcyan")
+
         ax.hlines(
-            -triathlon.athlete.weight * 0.02 * 1000, xmin=0, xmax=gperf["fdistance"].max(), alpha=0.4, color="red"
+            -nutrition.get_hydric_reserve(triathlon.athlete),
+            xmin=0,
+            xmax=gperf["fdistance"].max(),
+            alpha=0.4,
+            color="red",
         )
         ax.hlines(
-            -triathlon.athlete.weight * 0.04 * 1000, xmin=0, xmax=gperf["fdistance"].max(), alpha=0.4, color="red"
+            -nutrition.get_hydric_reserve(triathlon.athlete, danger=True),
+            xmin=0,
+            xmax=gperf["fdistance"].max(),
+            alpha=0.4,
+            color="red",
         )
 
         ax.fill_between(

@@ -1,12 +1,15 @@
-__version__ = "2.6.1"
+__version__ = "2.7.3"
 
-from .gpx import *
-from .fueling import *
-from .weather import *
-from .athlete import Athlete
-from .triathlon import *
-from .vetruve import *
-from .variable import *
-from .variables import variables
-from .race import Race
-from .races import available_races
+from .analysis.vetruve import *
+
+from .core.athlete import Athlete
+from .core.triathlon import *
+from .core.variable import *
+from .core.variables import variables
+
+from .nutrition.fueling import *
+
+from .race.gpx import *
+from .race.weather import *
+from .race.race import Race
+from .race.races import available_races
