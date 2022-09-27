@@ -11,7 +11,7 @@ All notable changes to this project will be documented here.
 - Add language menu
 
 
-#### [2.7.5] - 2022-09-27
+#### [2.7.6] - 2022-09-27
 
 - Change code structure
 - Work on the hydric model
