@@ -1,6 +1,3 @@
-### Change Log
-All notable changes to this project will be documented here. 
-
 #### [TODO list]
 
 - Make it possible to add gpx files
@@ -10,6 +7,11 @@ All notable changes to this project will be documented here.
 - Set a french/english flag
 - Add language menu
 
+
+#### [2.8.2] - 2022-09-28
+
+- Fix speed problem
+- Add more graphs options
 
 #### [2.7.6] - 2022-09-27
 

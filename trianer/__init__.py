@@ -4,6 +4,8 @@ from .core.athlete import Athlete
 from .core.triathlon import *
 from .core.variable import *
 from .core.variables import variables
+from .core.roadmap import show_roadmap
+from .core import models
 
 from .nutrition.fueling import *
 

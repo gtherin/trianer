@@ -1,12 +1,10 @@
 import numpy as np
-import datetime
-
 import streamlit as st
-import hydralit_components as hc
-import extra_streamlit_components as stx
 from streamlit_folium import folium_static
 
 import trianer
+from trianer import strapp
+
 import trianer.strapp.inputs as tsti
 from trianer.core.labels import gl, set_language
 
@@ -14,32 +12,11 @@ st.set_option("deprecation.showPyplotGlobalUse", False)
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
 
-@st.cache(allow_output_mutation=True, suppress_st_warning=True)
-def get_manager():
-    return stx.CookieManager()
-
-
-cookie_manager = get_manager()
+# Set up cache
+cookie_manager = strapp.cache.get_manager()
 all_cookies = cookie_manager.get_all()
-
-
-def update_cookie(key):
-    val = st.session_state[key]
-    fval = str(val) if type(val) == datetime.time else val
-    try:
-        cookie_manager.set("trianer_" + key, fval, expires_at=datetime.datetime(year=2023, month=2, day=2))
-    except Exception as e:
-        st.error(f"{key} {fval}")
-        st.error(e)
-
-
-trianer.set_var_on_change_function(update_cookie)
-trianer.set_var_cookies(all_cookies)
-
-
-@st.cache(persist=False, allow_output_mutation=True, suppress_st_warning=True, show_spinner=True)
-def load_races_configs():
-    return trianer.Race.load_races_configs()
+strapp.cache.set_var_on_change_function(strapp.cache.update_cookie)
+strapp.cache.set_var_cookies(all_cookies)
 
 
 def get_pars(pars):
@@ -49,39 +26,15 @@ def get_pars(pars):
 def main():
 
     # set_language(tsti.get_value("language"))
+    # set_language(tsti.get_value("language"))
+    menu = strapp.Menu()
 
-    # specify the primary menu definition
-    menu_data = [
-        {"id": "athlete", "icon": "💗"},
-        {"id": "race", "icon": "🌍"},
-        {"id": "perf", "icon": "🏊🚴🏃"},
-        {"id": "simulation", "icon": "🏆"},
-        # {"id": "about", "icon": "💻"},
-    ]
-    menu_steps = [m["id"] for m in menu_data]
-    for m in menu_data:
-        m["label"] = gl(m["id"])
-
-    over_theme = {"txc_inactive": "#FFFFFF"}
-
-    use_nav_bar = False
-    if use_nav_bar:
-        menu_id = hc.nav_bar(
-            menu_definition=menu_data,
-            override_theme=over_theme,
-            hide_streamlit_markers=False,
-            sticky_nav=True,
-            sticky_mode="pinned",
-        )
-    else:
-        menu_id = stx.stepper_bar(steps=menu_steps)
-
-    if menu_id == "perf" or menu_id == menu_steps.index("perf"):
+    if menu.is_menu(menu_id := "perf"):
         st.header(gl(menu_id))
         tsti.get_inputs(["swimming_sX100m", "cycling_kmXh", "running_sXkm"])
         tsti.get_inputs(["transition_swi2cyc_s", "transition_cyc2run_s"])
 
-    if menu_id == "race" or menu_id == menu_steps.index("race"):
+    if menu.is_menu(menu_id := "race"):
         race_menu = tsti.get_value("race_menu")
         if race_menu == gl("existing_race"):
             race_title = trianer.Race(tsti.get_value("race_default")).get_info()
@@ -99,7 +52,6 @@ def main():
             race_title = trianer.Race.init_from_cookies(tsti.get_value).get_info()
 
         st.header(f"{race_title}")
-        # st.success(f"Race info: {race.get_info()} (code={race.get_key()})")
 
         race_menu = tsti.get_var_input("race_menu")
         if race_menu == gl("existing_race"):
@@ -126,22 +78,18 @@ def main():
 
             tsti.get_temperature_menu("perso")
 
-    if menu_id == "athlete" or menu_id == menu_steps.index("athlete"):
+    if menu.is_menu(menu_id := "athlete"):
         st.header(gl(menu_id))
         tsti.get_inputs(["sex", "weight_kg", "height_cm"])
-        # col1, col2, col3 = st.columns(3)
-        # with col1:
-        #    tsti.get_var_input("language", disabled=True)
-
         tsti.get_inputs(["language", "year_of_birth", "sudation"], options=[dict(disabled=True), {}, {}])
 
-    if menu_id == "simulation" or menu_id == menu_steps.index("simulation"):
+    if menu.is_menu(menu_id := "simulation"):
         st.header(gl(menu_id))
 
         athlete = trianer.Athlete(
             **get_pars(
                 ["swimming_sX100m", "cycling_kmXh", "running_sXkm", "sudation"]
-                + ["transition_swi2cyc_s", "transition_cyc2run_s", "weight_kg"]
+                + ["transition_swi2cyc_s", "transition_cyc2run_s", "weight_kg", "year_of_birth", "height_cm"]
             )
         )
 
@@ -205,27 +153,24 @@ def main():
                 folium_static(trianer.show_gpx_track(simulation))
 
         with st.expander(gl("show_race_details"), expanded=True):
-            xaxis = st.radio("x axis", ["Total distance", gl("time_total"), gl("dtime")], horizontal=True, key="moon")
-            st.write(athlete.sudation)
-            st.pyplot(simulation.show_race_details(xaxis=xaxis))
+            xaxis = st.radio("x axis", [gl("fdistance"), gl("time_total"), gl("dtime")], horizontal=True, key="moon")
+            yaxis = st.radio(
+                "y axis",
+                [gl("altitude"), gl("fdistance"), gl("speed"), gl("slope")],
+                horizontal=True,
+                key="ymoon",
+            )
+            if xaxis != yaxis:
+                st.pyplot(simulation.show_race_details(xaxis=xaxis, yaxis=yaxis))
+            else:
+                st.error(f"x axis ({xaxis}) and y axis ({xaxis}) should not be equal")
             st.pyplot(simulation.show_nutrition(xaxis=xaxis))
         with st.expander("F&B", expanded=True):
-            st.markdown(simulation.show_roadmap().to_html(), unsafe_allow_html=True)
+            st.markdown(trianer.show_roadmap(simulation).to_html(), unsafe_allow_html=True)
 
-    from trianer.__version__ import __version__ as version
-
-    with st.expander(f"ℹ️ - About this app (pyversion={version})", expanded=False):
-        vetruve_file = trianer.race.gpx.get_file("vetruve_gen.png")
-        st.image(vetruve_file)
-        st.success(f"Using version {trianer.__version__}")
-        st.markdown("[Contact Us](mailto:gt@guydegnol.net)")
-        st.markdown(open("./CHANGELOG.md", "r").read())
-
-        st.markdown("## Cookies management")
-        st.write(all_cookies)
-        cookie = st.text_input("Cookie", key="Cookie list")
-        if st.button("Delete a cookie"):
-            cookie_manager.delete(cookie)
+    # Show about section
+    if menu.is_menu(["athlete", "simulation"]):
+        strapp.about.get_section(all_cookies, cookie_manager)
 
 
 if __name__ == "__main__":

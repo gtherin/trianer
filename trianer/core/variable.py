@@ -98,11 +98,3 @@ class Variable:
             return int(smin_value), int(smax_value), int(sstep)
         elif stype == "f":
             return float(smin_value), float(smax_value), float(sstep)
-
-
-def set_var_on_change_function(update_cookie):
-    Variable.update_cookie = update_cookie
-
-
-def set_var_cookies(cookies):
-    Variable.cookies = cookies

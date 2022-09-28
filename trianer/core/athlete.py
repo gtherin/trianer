@@ -1,3 +1,9 @@
+import numpy as np
+import pandas as pd
+
+from . import models
+
+
 class Athlete:
     def __init__(
         self,
@@ -10,6 +16,8 @@ class Athlete:
         transition_cyc2run_s=None,
         sudation=None,
         sex=None,
+        year_of_birth=None,
+        height_cm=None,
     ) -> None:
 
         self.name = name
@@ -31,15 +39,14 @@ class Athlete:
         self.speeds["running"] = 3600 / self.paces["running"]
 
         # Global speeds
-        self.dspeeds_slope = {"swimming": 0.0, "cycling": 2.6, "running": 0.1}
         self.transitions = [Athlete.get_pace(transition_swi2cyc_s), Athlete.get_pace(transition_cyc2run_s)]
+
+        import datetime
 
         self.sudation = 1 + 0.1 * (sudation - 5.0)
         self.sex = "F" if sex in ["F", "Female", "Fille"] else "M"
-
-    def calculate_speed(self, df, discipline) -> float:
-        df["speed"] = df.apply(lambda x: self.speeds[discipline] - self.dspeeds_slope[discipline] * x["slope"], axis=1)
-        return df
+        self.height = float(height_cm)
+        self.age = datetime.datetime.now().year - float(year_of_birth)
 
     @staticmethod
     def get_pace(pace):
@@ -51,3 +58,6 @@ class Athlete:
 
     def get_dinfo(self, discispline):
         return self.speeds[discispline.lower()], self.paces[discispline.lower()]
+
+    def is_woman(self):
+        return self.sex == "F"

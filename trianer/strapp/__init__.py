@@ -12,3 +12,8 @@ def push():
     cmd = f"trianer-vetruve && git add . && git commit {comments} && git push heroku master"
     print(cmd)
     os.system(cmd)
+
+
+from . import about
+from . import cache
+from .menu import Menu

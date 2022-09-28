@@ -233,9 +233,7 @@ def enrich_data(data, target_distance=None, target_elelevation=None):
 
 
 def get_data(filename=None, nlaps=1):
-
     #    filename = "http://trianer.guydegnol.net/" + filename
-
     data = get_data_from_file(filename)
     data = pd.concat([data] * nlaps)
 
@@ -248,6 +246,8 @@ def get_data(filename=None, nlaps=1):
             .fillna(0)
             .cumsum()
         )
+
+    data["speed"] = 3600.0 * data.distance.diff() / data.dtime.diff().dt.seconds
 
     # data["altitude"] = sp.signal.savgol_filter(data["altitude"], 5, 4)
     data["altitude"] = pd.Series(data["altitude"]).apply(lambda x: int(5 * round(float(x) / 5)))

@@ -1,4 +1,6 @@
+import numpy as np
 import pandas as pd
+
 from . import met
 
 """
@@ -69,40 +71,73 @@ def calculate_kcalories(df, race, athlete) -> pd.DataFrame:
     return df
 
 
-def get_caloric_reserve(athlete, level=None):
-    return 6000 - 500
+def get_basal_metabolic_rate(athlete):
+    # Basal_metabolic_rate: The Mifflin St Jeor equation
+    # 10.0 * weight_kg + 6.25 * height_cm - 5.0 * age_year
+    s = -161 if athlete.is_woman() else 5
+    return 10.0 * athlete.weight + 6.25 * athlete.height - 5.0 * athlete.age + s
+
+
+def get_caloric_reserve(athlete):
+    # Assume it is 3 times the one of the BMR
+    return 3.5 * get_basal_metabolic_rate(athlete)
 
 
 def calculate_fuelings(df, race, athlete) -> pd.DataFrame:
 
     df["cduration"] = df.groupby("discipline")["duration"].cumsum()
+    df["etime"] = df["duration"].cumsum()
     df["ddistance"] = df["distance"].diff().clip(0, 1000).fillna(0.0)
     fuelings = []
     fuels = race.get_fuels()
     needed_calories = df["kcalories"].sum() + get_caloric_reserve(athlete)
 
-    durations = df.groupby("discipline")["duration"].sum()
+    ravitos = {}
+    for discipline, ddf in df.groupby("discipline"):
+        if discipline == "swimming":
+            ravitos[discipline] = np.array([])
+        elif "transition" in discipline:
+            # r.append(ddf["etime"].iloc[0])
+            ravitos[discipline] = np.array([0.0])
+        else:
+            dduration = ddf["duration"].sum()
+            nor = np.round(2 * dduration)
+            # for a in (np.linspace(0.0, 1.0, int(nor) + 2) * dduration)[1:-1]:
+            #    r.append(ddf.iloc[(ddf["duration"] - a).abs().argsort()[:1]]["etime"].iloc[0])
 
-    print("needed_calories=", needed_calories)
-    print(durations)
-    print(durations["cycling"] / 0.5)
-    print(fuels)
+            ravitos[discipline] = (np.linspace(0.0, 1.0, int(nor) + 2) * dduration)[1:-1]
 
-    factor = 1
-    if needed_calories < 6000:
-        factor = 2
+    nor = np.sum([len(r) for r in ravitos.values()])
+    calories_per_stop = np.clip(np.round(-needed_calories / nor / 100), 1, 4)
+
     foods_stuffs = {
-        "running": [300, factor * 100],
-        "cycling": [300, factor * 100],
-        "transition 1": [300, factor * 100],
-        "transition 2": [300, factor * 100],
+        "swimming": [0, 0, f"Start"],
+        "running": [300, calories_per_stop * 100, f"Iso+{calories_per_stop:.0f}xGel"],  # "org: water+fruit"
+        "cycling": [300, calories_per_stop * 100, f"Iso+{calories_per_stop:.0f}xFruitPaste"],  # org: fill up water
+        "transition 1": [300, calories_per_stop * 100, f"Iso+{calories_per_stop:.0f}xFruitPaste"],
+        "transition 2": [300, calories_per_stop * 100, f"Iso+{calories_per_stop:.0f}xFruitPaste"],
     }
 
     tot_distance, tot_duration, pdiscipline, pindex = 0, 0, race.disciplines[0], df.index[0]
     for d in df.index:
 
+        def add_fuelings(i, foods_stuffss):
+            fuelings.append(
+                {
+                    "index": i,
+                    "sequence": df["sequence"][i],
+                    "discipline": df["discipline"][i],
+                    "fdistance": tot_distance,
+                    "drinks": foods_stuffss[0],
+                    "food": foods_stuffss[1],
+                    "fooding": foods_stuffss[2],
+                    "cduration": tot_duration,
+                }
+            )
+            ravitos[discipline] = ravitos[discipline][1:]
+
         if pdiscipline != df["discipline"][d]:
-            add_fuelings(pindex, f"End of {pdiscipline}", 0, 0)
+            add_fuelings(pindex, [0, 0, f"End of {pdiscipline}"])
 
         pindex, pdiscipline = d, df["discipline"][d]
 
@@ -111,41 +146,17 @@ def calculate_fuelings(df, race, athlete) -> pd.DataFrame:
 
         discipline = df["discipline"][d]
 
-        def add_fuelings(i, source, drinks, food, pop=False):
-            fuelings.append(
-                [i, df["sequence"][i], df["discipline"][i], tot_distance, source, tot_duration, drinks, food]
-            )
-            if pop:
-                fuels[df["discipline"][i]].pop(0)
+        dduration = df["cduration"][d] - df["duration"][d]
 
         if d == df.index[0]:
-            add_fuelings(d, "Start", 0, 0)
-        if discipline in ["transition 1"]:
-            add_fuelings(d, "Isotonic+fruit paste+compote", foods_stuffs[discipline][0], foods_stuffs[discipline][1])
-        if discipline in ["transition 2"]:
-            add_fuelings(d, "Isotonic+fruit paste+gel", foods_stuffs[discipline][0], foods_stuffs[discipline][1])
-        if discipline in ["cycling"]:
-            if len(fuels[discipline]) > 0 and df["distance"][d] >= fuels[discipline][0]:
-                add_fuelings(
-                    d, "org: fill up water", foods_stuffs[discipline][0], foods_stuffs[discipline][1], pop=True
-                )
-        if discipline in ["running"]:
-            if len(fuels[discipline]) > 0 and df["distance"][d] >= fuels[discipline][0]:
-                add_fuelings(d, "org: water+fruit", foods_stuffs[discipline][0], foods_stuffs[discipline][1], pop=True)
-        if discipline in ["cycling"]:
-            if tot_duration - fuelings[-1][5] > 0.5:
-                add_fuelings(d, "Food (30 min)", foods_stuffs[discipline][0], foods_stuffs[discipline][1])
-        if discipline in ["running"]:
-            if tot_duration - fuelings[-1][5] > 0.5:
-                add_fuelings(d, "Gel (30 min)", foods_stuffs[discipline][0], foods_stuffs[discipline][1])
+            add_fuelings(d, [0, 0, f"Start"])
         if d == df.index[-1]:
-            add_fuelings(d, "Who's up for a beer ?", 0, 0)
-
-    fuelings = pd.DataFrame(
-        fuelings, columns=["index", "sequence", "discipline", "fdistance", "fooding", "cduration", "drinks", "food"]
-    )
+            add_fuelings(d, [0, 0, "Who's up for a beer ?"])
+        if len(ravitos[discipline]) > 0 and dduration >= ravitos[discipline][0]:
+            add_fuelings(d, foods_stuffs[discipline])
 
     # Get rid of double fuelings during transitions
+    fuelings = pd.DataFrame.from_records(fuelings)
     fuelings = fuelings.groupby("index", as_index=False).first().sort_values("index")
     fuelings = fuelings.groupby("cduration", as_index=False).first().sort_values("index")
 

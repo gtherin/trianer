@@ -1,3 +1,4 @@
+from curses.textpad import rectangle
 import datetime
 import numpy as np
 import pandas as pd
@@ -6,6 +7,7 @@ import logging
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
 import matplotlib
 import time
 import sys
@@ -13,7 +15,9 @@ import sys
 
 from ..race import weather
 from .. import nutrition
-from ..core.labels import gl
+from ..core import models
+from ..core.labels import gl, gc
+
 
 logging.getLogger("matplotlib.font_manager").disabled = True
 logging.getLogger("matplotlib").setLevel(logging.ERROR)
@@ -80,7 +84,8 @@ class Triathlon:
         for d, discipline in enumerate(race.disciplines):
             df = self.gpx.query(f"discipline=='{discipline}'").copy()
             # Speed km/h
-            df = athlete.calculate_speed(df, discipline)
+            df["speed"] = models.get_speed_vs_slope(discipline, athlete.speeds[discipline], df["slope"])
+
             # Duration between 2 points in hour
             df["duration"] = (df["distance"].diff().clip(0, 1000) / df["speed"]).fillna(0)
 
@@ -120,15 +125,17 @@ class Triathlon:
     def show_weather_forecasts(self):
         return f"The expected temperature is {self.get_temperature()} °C"
 
-    def show_race_details(triathlon, xaxis="fdistance", fields="altitude,temperature"):
+    def show_race_details(triathlon, xaxis="fdistance", yaxis="altitude"):
 
         data = triathlon.data
-        data["etime"] = data["duration"].cumsum()
+        # data["cspeed"] = data["duration"].cumsum()
         xaxis = triathlon.get_axis(xaxis)
+        yaxis = triathlon.get_axis(yaxis)
 
         if xaxis in data.columns:
             data = data.set_index(xaxis)
 
+        print(xaxis, yaxis)
         fuels = data[~data["drinks"].isna()]
 
         fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(15, 5), sharex=True, gridspec_kw={"height_ratios": [5, 2]})
@@ -142,8 +149,7 @@ class Triathlon:
 
         ax = axes[0]
 
-        triathlon.plot_core(data, ax, "altitude", xaxis)
-
+        triathlon.plot_core(data, ax, yaxis)
         if 1:
             patches = []
             for discipline in triathlon.race.disciplines:
@@ -159,19 +165,30 @@ class Triathlon:
             patches.append(Line2D([0], [0], color="yellow", label=f"temperature, max={data['temperature'].max()}°C"))
             ax.legend(handles=patches, prop={"size": 16}, framealpha=0)  # , loc=2
 
-        if xaxis == "fdistance":
+        if xaxis == "fdistance" or 1:
             # TODO: Fix it with other axis
             cm = LinearSegmentedColormap.from_list("Custom", ["#cdcdcd", "#f08205DD"], N=30)
+            ax.set_xlim([data.index[0], data.index[-1]])
+
+            if "etime" == xaxis:
+                dd = pd.DataFrame(np.arange(data.index[0], data.index[-1], 1.0 / 3600), columns=[xaxis])
+            elif "time" in xaxis:
+                dd = pd.date_range(start=data.index[0], end=data.index[-1], freq="s").to_frame(name=xaxis)
+            else:
+                dd = pd.DataFrame(np.arange(data.index[0], data.index[-1], 0.5), columns=[xaxis])
+            dd = pd.merge_asof(dd, data[["slope"]].reset_index(), on=xaxis, direction="forward")
 
             ax.pcolorfast(
                 ax.get_xlim(),
                 ax.get_ylim(),
-                data["slope"].clip(3, 60).apply(lambda x: int(2 * round(float(x) / 2))).values[np.newaxis],
+                [dd["slope"].clip(3, 60).values],
                 cmap=cm,
+                vmin=5,
             )
-        Triathlon.plot_ravitos(fuels, ax, xaxis, "altitude")
-        ax.set_xlabel(xlabel=gl(xaxis))
-        ax.set_ylabel(ylabel="Elevation (m)")
+        # plot ravitos
+        Triathlon.plot_ravitos(fuels, ax, xaxis, yaxis)
+        ax.set_xlabel(xlabel=gl(xaxis, u=True))
+        ax.set_ylabel(ylabel=gl(yaxis, u=True))
 
         ax = axes[1]
 
@@ -187,8 +204,8 @@ class Triathlon:
                 lambda ms, x: time.strftime("%H:%M", time.gmtime((ms % 1) * 24 * 3600))
             )
             ax.xaxis.set_major_formatter(formatter)
-        ax.set_ylabel(ylabel="Temperature (°C)")
-        ax.set_xlabel(xlabel=gl(xaxis))
+        ax.set_ylabel(ylabel=gl("temperature", u=True))
+        ax.set_xlabel(xlabel=gl(xaxis, u=True))
 
     @staticmethod
     def plot_ravitos(fuels, ax, x, variable):
@@ -210,7 +227,7 @@ class Triathlon:
 
         ax.grid()
 
-    def plot_core(self, data, ax, variable, xaxis):
+    def plot_core(self, data, ax, variable):
         ax.set_facecolor("#cdcdcd")
         for discipline in self.race.disciplines:
             ddata = self.get_gpx(data, discipline)
@@ -221,24 +238,30 @@ class Triathlon:
             )
 
     @staticmethod
-    def get_axis(xaxis):
+    def get_axis(axis):
+        xaxis = gc(axis)
+
         if "time" in xaxis.lower() and "day" in xaxis.lower():
             return "dtime"
-        elif "ime" in xaxis.lower():
+        elif "time" in xaxis.lower():
             return "etime"
+        elif "altitude" in xaxis.lower():
+            return "altitude"
+        elif "speed" in xaxis.lower():
+            return "speed"
+        elif "slope" in xaxis.lower():
+            return "slope"
         else:
             return "fdistance"
 
     def show_nutrition(triathlon, xaxis="fdistance"):
 
         data = triathlon.data
-        data["etime"] = data["duration"].cumsum()
+        # data["etime"] = data["duration"].cumsum()
         xaxis = triathlon.get_axis(xaxis)
 
         if xaxis in data.columns:
             data = data.set_index(xaxis)
-
-        fuels = data[~data["drinks"].isna()]
 
         fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(15, 6), sharex=True)
         fig.subplots_adjust(hspace=0)
@@ -253,28 +276,34 @@ class Triathlon:
         ax.set_facecolor("#cdcdcd")
         data["kcalories"].cumsum().plot(ax=ax, lw=3, color="purple")
 
+        ax.set_xlim([data.index[0], data.index[-1]])
         xmin, xmax = ax.get_xlim()
-        ax.hlines(-6000, xmin=xmin, xmax=xmax, alpha=0.4, color="red")
+        caloric_reserve = nutrition.get_caloric_reserve(triathlon.athlete)
+        ax.hlines(-caloric_reserve, xmin=xmin, xmax=xmax, alpha=0.4, color="red")
 
         ax.fill_between(
             np.linspace(xmin, xmax, 50),
-            [-6000] * 50,
-            [-7000] * 50,
+            [-caloric_reserve] * 50,
+            [-caloric_reserve - 1000] * 50,
             color="red",
             alpha=0.8,
         )
 
-        xtext = xmin + 0.1 * (xmax - xmin)
-        ax.text(xtext, -nutrition.get_caloric_reserve(triathlon.athlete), gl("caloric_reserve"), fontsize=20)
+        # xtext = xmin + 0.1 * (xmax - xmin)
+        # ax.text(xtext, -caloric_reserve, gl("caloric_reserve"), fontsize=20)
 
         ax.grid()
 
+        # drinks = data["drinks"].sum()
+        # food = data["food"].sum()
+
         patches = [
-            Line2D([0], [0], color="purple", label=gl("caloric_balance")),
-            Line2D([0], [0], color="darkcyan", label=gl("hydric_balance")),
+            Line2D([0], [0], color="purple", label=gl("caloric_balance", u=True)),
+            Line2D([0], [0], color="darkcyan", label=gl("hydric_balance", u=True)),
+            Patch(facecolor="red", edgecolor="r", label=gl("caloric_balance", u=True)),
         ]
         ax.legend(handles=patches, prop={"size": 16}, framealpha=0)  # , loc=6
-        ax.set_ylabel(ylabel=gl("caloric_balance") + " (kcal)")
+        ax.set_ylabel(ylabel=gl("caloric_balance", u=True))
 
         ax = axes[1]
         fig.patch.set_facecolor("#cdcdcd")
@@ -287,7 +316,7 @@ class Triathlon:
             color="green",
             alpha=0.2,
         )
-        plt.text(xtext, -500, gl("hydration_ideal"), fontsize=20)
+        # plt.text(xtext, -500, gl("hydration_ideal"), fontsize=20)
 
         data["ihydration"].cumsum().plot(ax=ax, color="green", label="")
         data["hydration"].cumsum().plot(ax=ax, lw=3, color="darkcyan")
@@ -314,7 +343,7 @@ class Triathlon:
             color="red",
             alpha=0.2,
         )
-        plt.text(xtext, -triathlon.athlete.weight * 0.02 * 1000 - 500, gl("perf_loss_20"), fontsize=20)
+        # plt.text(xtext, -triathlon.athlete.weight * 0.02 * 1000 - 500, gl("perf_loss_20"), fontsize=20)
 
         ax.fill_between(
             np.linspace(xmin, xmax, 50),
@@ -323,7 +352,7 @@ class Triathlon:
             color="red",
             alpha=0.8,
         )
-        plt.text(xtext, -triathlon.athlete.weight * 0.04 * 1000 - 500, gl("risk_zone"), fontsize=20)
+        # plt.text(xtext, -triathlon.athlete.weight * 0.04 * 1000 - 500, gl("risk_zone"), fontsize=20)
 
         ax.grid()
         if xaxis == "etime":
@@ -334,105 +363,12 @@ class Triathlon:
                 lambda ms, x: time.strftime("%H:%M", time.gmtime((ms % 1) * 24 * 3600))
             )
             ax.xaxis.set_major_formatter(formatter)
-        ax.set_ylabel(ylabel=gl("hydric_balance") + " (ml)")
-        ax.set_xlabel(xlabel=gl(xaxis))
 
-    def show_roadmap(triathlon):
-
-        ff = triathlon.data[
-            [
-                "discipline",
-                "dtime",
-                "distance",
-                "cduration",
-                "duration",
-                "temperature",
-                "hydration",
-                "kcalories",
-                "fooding",
-                "drinks",
-                "aelevation",
-                "food",
-            ]
-        ].copy()
-        ff[gl("dtime_str")] = ff["dtime"].dt.strftime("%H:%M")
-        ff[gl("hydric_balance")] = ff["hydration"].fillna(0).cumsum()
-        ff[gl("caloric_balance")] = ff["kcalories"].fillna(0).cumsum()
-        ff[gl("cduration_min")] = (60 * ff["duration"].fillna(0)).cumsum().round()
-        # ff["aelevation"] = ff["elevation"].fillna(0).clip(0, 1000)
-        ff["D+"] = ff.groupby("discipline")["aelevation"].cumsum().round()
-
-        ff = ff.rename(
-            columns={
-                "drinks": "Drinks",
-                "fooding": "Comments",
-                "food": "Food supply",
-                "temperature": "Temperature",
-            }
-        )
-
-        ff[gl("time_total")] = (
-            datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-            + pd.to_timedelta(ff["duration"].cumsum(), unit="h")
-        ).dt.strftime("%H:%M")
-
-        ff = ff[(~ff["Drinks"].isna()) | (ff.index[-1] == ff.index)]
-        ff["discipline"].iloc[-1] = "The end"
-
-        for c in ["dtime", "hydration", "kcalories", "duration"]:
-            if c in ff.columns:
-                del ff[c]
-
-        def highlight(s):
-            if s.discipline == "cycling":
-                return ["background-color: rgba(196, 77, 86, 0.2);"] * len(s)
-            elif "transition" in s.discipline:
-                return ["background-color: rgba(204, 204, 204, 0.5);"] * len(s)
-            elif s.discipline == "running":
-                return ["background-color: rgba(0, 255, 0, 0.3);"] * len(s)
-            elif s.discipline == "swimming":
-                return ["background-color: rgba(0, 0, 255, 0.2);"] * len(s)
-            elif s.discipline == "The end":
-                return ["background-color: rgba(0, 6, 57, 112);color: red; font-weight: bolder"] * len(s)
-            else:
-                return ["background-color: white"] * len(s)
-
-        return (
-            ff[
-                [
-                    gl("cduration_min"),
-                    "discipline",
-                    "distance",
-                    "Comments",
-                    "Drinks",
-                    "Food supply",
-                    gl("dtime_str"),
-                    gl("hydric_balance"),
-                    gl("caloric_balance"),
-                    "D+",
-                    gl("time_total"),
-                    "Temperature",
-                ]
-            ]
-            .style.hide(axis="index")
-            .apply(highlight, axis=1)
-            .set_table_styles(
-                [
-                    {"selector": "th", "props": "background-color: #cdcdcd; color: white;"},
-                ],
-                overwrite=False,
-            )
-            .format(
-                {
-                    "distance": "{0:,.0f} km",
-                    "Temperature": "{0:,.0f} °C",
-                    gl("hydric_balance"): "{0:.0f} ml",
-                    gl("caloric_balance"): "{0:.0f} kcal",
-                    "Drinks": "{0:.0f} ml",
-                    "Food supply": "{0:.0f} kcal",
-                    gl("cduration_min"): "{0:.0f} min",
-                    "D+": "{0:.0f} m",
-                }
-            )
-            .bar(color=["Red", "Green"], subset=[gl("cduration_min")], align="left")
-        )
+        patches = [
+            Line2D([0], [0], color="green", label=gl("hydration_ideal", u=True)),
+            Patch(facecolor="red", edgecolor="r", label=gl("risk_zone", u=True), alpha=0.2),
+            Patch(facecolor="red", edgecolor="r", label=gl("perf_loss_20", u=True), alpha=0.8),
+        ]
+        ax.legend(handles=patches, prop={"size": 16}, framealpha=0)  # , loc=6
+        ax.set_ylabel(ylabel=gl("hydric_balance", u=True))
+        ax.set_xlabel(xlabel=gl(xaxis, u=True))

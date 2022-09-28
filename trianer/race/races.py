@@ -28,6 +28,7 @@ available_races = {
             distances=[3.8, 188, 42.195],
             # dfuelings=[[0], [0, 39], [0, 3.25, 6.75]],
             gpx_data=[",x2", "Embrunman_XL_cycling.gpx", "Embrunman_XL_running.gpx,x3"],
+            comments=["d:100,c:Col de l'Isoard 2361m"],
             weather_coordonates=[45.188529, 5.724524],  # Grenoble
         ),
         # Elsassman

@@ -144,7 +144,7 @@ variables = [
     dict(key="weight_kg", label="Weight (kg)", help="Your weight (in kg)", srange="i:40:100:1", default=70),
     dict(
         key="year_of_birth",
-        srange="i:1920:2018:1",
+        srange="i:1930:2018:1",
         help="Year of birth is used to have a better estimation of energy spent",
         default=1980,
     ),
@@ -155,7 +155,7 @@ variables = [
         default=5,
         input_format="slider",
     ),
-    dict(key="height_cm", label="Height (cm)", help="You height in centimeters", srange="i:100:240:1", default=170),
+    dict(key="height_cm", label="Height (cm)", help="You height in centimeters", srange="i:100:240:1", default=175),
 ]
 
 variables = {v["key"]: Variable(**v) for v in variables}

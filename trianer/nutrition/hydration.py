@@ -2,42 +2,22 @@ from io import StringIO
 import numpy as np
 import pandas as pd
 
+from ..core import models
+
 
 def calculate_hydration(df, race, athlete) -> pd.DataFrame:
-    """
-    Max hydration 700ml homme, 600ml femme
-
-    """
-
-    if "hydration" in df.columns:
-        del df["hydration"]
-
-    temp = np.arange(0, 40)
-    # hydr = pd.Series(np.clip(temp * 70 - 800, 400, 2000), index=temp).to_frame(name="hydration")
-    # hydr = pd.Series(-np.clip(temp * 100 - 600, 400, 2500), index=temp).to_frame(name="hydration")
-    hydr = pd.Series(-np.clip(temp * 100 - 600, 400, 2000), index=temp).to_frame(name="hydration")
-    hydr_nat = 500
-
-    if type(athlete.sudation) == float:
-        hydr *= athlete.sudation
-        hydr_nat *= athlete.sudation
-    hydr = df.merge(hydr, how="left", left_on=df["temperature"].round(), right_index=True)
 
     # Dehydration
-    df.loc[df["discipline"] == "swimming", "hydration"] = (
-        -hydr_nat * df.loc[df["discipline"] == "swimming", "duration"]
-    )
-    df.loc[df["discipline"] == "cycling", "hydration"] = (
-        df.loc[df["discipline"] == "cycling", "duration"] * hydr.loc[hydr["discipline"] == "cycling", "hydration"]
-    )
-    df.loc[df["discipline"] == "running", "hydration"] = (
-        df.loc[df["discipline"] == "running", "duration"] * hydr.loc[hydr["discipline"] == "running", "hydration"]
-    )
+    for discipline in ["swimming", "cycling", "running"]:
+        df.loc[df["discipline"] == discipline, "hydration"] = models.get_hydration_vs_temp(
+            discipline, df.loc[df["discipline"] == discipline, "temperature"]
+        )
+        df.loc[df["discipline"] == discipline, "ihydration"] = models.get_maximum_ideal_hydration(discipline, athlete)
 
-    # Ideal hydration
-    df["ihydration"] = 0.0
-    df.loc[df["discipline"] == "cycling", "ihydration"] = 700 * df.loc[df["discipline"] == "cycling", "duration"]
-    df.loc[df["discipline"] == "running", "ihydration"] = 700 * df.loc[df["discipline"] == "running", "duration"]
+    # Make it proportional to duration
+    sudation = athlete.sudation if type(athlete.sudation) == float else 1.0
+    df["hydration"] *= sudation * df["duration"]
+    df["ihydration"] *= df["duration"]
 
     return df
 

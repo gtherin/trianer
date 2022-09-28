@@ -75,7 +75,7 @@ class Race:
 
     def init_from_race(self, name) -> None:
         self.disciplines = ["swimming", "cycling", "running"]
-        for k in ["disciplines", "start_time", "distances", "elevations", "gpx_data"]:
+        for k in ["disciplines", "start_time", "distances", "elevations", "gpx_data", "comments"]:
             if k in available_races[name]:
                 setattr(self, k, available_races[name][k])
         if not getattr(self, "distances"):
@@ -174,6 +174,14 @@ class Race:
             self.fuelings += self.dfuelings[d]
 
         self.fuelings = sorted(list(set(self.fuelings)))
+
+        if (
+            len(self.disciplines) > 1
+            and self.disciplines[0] == "swimming"
+            and ".gpx" not in self.gpx_data[0]
+            and ".gpx" in self.gpx_data[1]
+        ):
+            data[0]["altitude"] = data[1]["altitude"].iloc[0]
 
         return gpx.enrich_data(pd.concat(data))
 
