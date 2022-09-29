@@ -100,13 +100,13 @@ def main():
         with st.expander(Labels.add_label(en="Show race details", fr="Details de la course"), expanded=True):
 
             xaxis = st.radio(
-                Labels.add_label(en="x axis", fr="Axe x"),
+                Labels.add_label(en="x axis", fr="Axe des x"),
                 [gl("fdistance"), gl("time_total"), gl("dtime")],
                 horizontal=True,
                 key="moon",
             )
             yaxis = st.radio(
-                Labels.add_label(en="y axis", fr="Axe y"),
+                Labels.add_label(en="y axis", fr="Axe des y"),
                 [gl("altitude"), gl("fdistance"), gl("speed"), gl("slope")],
                 horizontal=True,
                 key="ymoon",

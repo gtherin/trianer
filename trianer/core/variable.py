@@ -50,20 +50,6 @@ class Variable:
     def get_input(self, input_cls, **kwargs):
         import streamlit as st
 
-        # st.write(Labels.codes[0])
-        # st.write(Labels.codes[1])
-        # if self.key == "existing_race":
-        # var = self.get_init_value()
-        # code = Labels.codes[0][var] if var in Labels.codes[0]
-
-        # var2 = gc(var)
-        # var3 = translate(var)
-        # if var in Labels.codes[0]:
-        #    st.write(f"BBB key={self.key} var={Labels.codes[0][var]} var1={var}")
-
-        # st.write(f"AAAAAAAAAAAa key={self.key} srange={self.srange} var1={var} var2={var2} var3={var3}")
-        # "existing_race": ["Existing race", "Course existante"],
-
         label = gl(self.key if self.label is None else self.label, u=True)
 
         kwargs.update(dict(key=self.key, help=self.help, on_change=lambda: Variable.update_cookie(self.key)))
@@ -83,11 +69,7 @@ class Variable:
             kwargs.update(dict(index=srange.index(self.get_init_value())))
         elif input_cls in [st.multiselect]:
             irange = [gl(r) for r in self.get_init_value()]
-
             srange = [gl(r) for r in self.srange]
-            # st.write(self.get_init_value())
-            # st.write(irange)
-            # st.write(srange)
             kwargs.update(dict(default=irange))
         else:
             kwargs.update(dict(value=self.get_init_value()))

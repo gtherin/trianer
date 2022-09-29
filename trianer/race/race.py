@@ -9,6 +9,7 @@ if os.path.exists("/home/guydegnol/projects/trianer/trianer_db_credentials.json"
 
 from . import gpx
 from .races import available_races
+from ..core.labels import gl
 
 
 """
@@ -125,7 +126,7 @@ class Race:
     def get_info(self):
         info = f"{self.title} "
         for d in range(len(self.disciplines)):
-            info += f"{self.disciplines[d]}: {self.distances[d]}km "
+            info += f"{gl(self.disciplines[d])}: {self.distances[d]}km "
             if self.elevations[d] != 0:
                 info += f" (D+={self.elevations[d]:.0f}m) "
         return info

@@ -5,9 +5,10 @@
 - Have a algorithm to clean gpx files
 - Improve predictions with data analyses
 - Improve slope dependencies with speed
+- Fix site for ios/safari Universe
 
 
-#### [3.0.0] - 2022-09-29
+#### [3.0.1] - 2022-09-29
 
 - Add language menu
 

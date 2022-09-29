@@ -162,7 +162,7 @@ class Triathlon:
             patches = []
             for discipline in triathlon.race.disciplines:
                 ddata = triathlon.get_gpx(data, discipline)
-                label = discipline
+                label = gl(discipline)
                 duration = ddata["duration"].sum()
                 duration = ", t=%.0fmin." % (duration * 60)
                 label += duration
@@ -170,7 +170,7 @@ class Triathlon:
                     label += f", D+={ddata['aelevation'].sum():0.0f}m"
 
                 patches.append(Line2D([0], [0], color=triathlon.get_color(discipline), lw=4, label=label))
-            patches.append(Line2D([0], [0], color="yellow", label=f"temperature, max={data['temperature'].max()}°C"))
+            patches.append(Line2D([0], [0], color="yellow", label=f"Temperature, max={data['temperature'].max()}°C"))
             ax.legend(handles=patches, prop={"size": 16}, framealpha=0)  # , loc=2
 
         if xaxis == "fdistance" or 1:

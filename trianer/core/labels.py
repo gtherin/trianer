@@ -1,6 +1,8 @@
 class Label:
     def __init__(self, key="dummy", en=None, fr=None, units=False) -> None:
-        self.key, self.en, self.fr, self.units = key, en, fr, units
+        self.key, self.units = key, units
+        self.en = self.key if not en else en
+        self.fr = self.en if not fr else fr
 
 
 class Labels:
@@ -29,7 +31,7 @@ class Labels:
         "existing_race": ["Existing race", "Course existante"],
         "existing_format": ["Existing format", "Format predefini"],
         "personalized_format": ["Personalized format", "Format personalisé"],
-        "language": ["Favorite language", "Language préféré"],
+        "language": ["Favorite language", "Langage préféré"],
         "weight_kg": ["Weight (kg)", "Poids (kg)"],
         "height_cm": ["Height (cm)", "Taille (cm)"],
         # Performances
@@ -52,12 +54,9 @@ class Labels:
         "temperature_menu_perso": ["Temperature", "Temperature"],
         "temperature_menu_format": ["Temperature", "Temperature"],
         # Variables
-        "cduration_min": ["Since start", "Depuis depart"],
-        "dtime_str": ["Transit time", "Temps de passage"],
         "hydric_balance": ["Hydric balance", "Bilan hydrique"],
         "caloric_balance": ["Caloric balance", "Bilan calorique"],
         "time_total": ["Total time", "Durée totale"],
-        "Food supply": "Alimentation",
         "fdistance": ["Total distance", "Distance totale"],
         "dtime": ["Time of day", "Heure de la journée"],
         "etime": ["Time since start", "Temps depuis le départ"],
