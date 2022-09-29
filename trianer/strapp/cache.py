@@ -7,17 +7,13 @@ from ..core.variable import Variable
 from ..race.race import Race
 
 
-st.set_option("deprecation.showPyplotGlobalUse", False)
-st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
-
-
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def get_manager():
     return stx.CookieManager()
 
 
 cookie_manager = get_manager()
-all_cookies = cookie_manager.get_all()
+all_cookies = cookie_manager.get_all(key="trianer_cache")
 
 
 def set_var_on_change_function(update_cookie):

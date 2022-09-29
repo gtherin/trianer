@@ -8,6 +8,9 @@ from ..core.labels import gl
 class Menu:
     def __init__(self, use_nav_bar=False):
 
+        if use_nav_bar:
+            st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+
         # specify the primary menu definition
         menu_data = [
             {"id": "athlete", "icon": "💗"},

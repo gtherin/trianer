@@ -18,6 +18,9 @@ class Labels:
         # Race
         "slope": ["Slope", "Pente"],
         "speed": ["Speed", "Vitesse"],
+        "swimming": ["Swimming", "Natation"],
+        "cycling": ["Cycling", "Cyclisme"],
+        "running": ["Running", "Course"],
         # Variables
         "cduration_min": ["Since start", "Depuis depart"],
         "dtime_str": ["Transit time", "Temps de passage"],

@@ -69,6 +69,14 @@ class Triathlon:
 
         return data
 
+    def get_dinfo(self, discipline):
+        if discipline != "Total":
+            duration = self.data.query(f"discipline == '{discipline.lower()}'")["duration"].sum()
+            speed, pace = self.athlete.get_dinfo(discipline)
+            return speed, pace, duration
+        distance, duration = self.data["fdistance"].iloc[-1], self.data["duration"].sum()
+        return distance / duration, 3600 * duration / distance, duration
+
     def get_color(self, discipline):
         colors = {"swimming": "blue", "cycling": "brown", "running": "green"}
         return colors[discipline]
@@ -135,7 +143,7 @@ class Triathlon:
         if xaxis in data.columns:
             data = data.set_index(xaxis)
 
-        print(xaxis, yaxis)
+        # print(xaxis, yaxis)
         fuels = data[~data["drinks"].isna()]
 
         fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(15, 5), sharex=True, gridspec_kw={"height_ratios": [5, 2]})
@@ -181,10 +189,11 @@ class Triathlon:
             ax.pcolorfast(
                 ax.get_xlim(),
                 ax.get_ylim(),
-                [dd["slope"].clip(3, 60).values],
+                [dd["slope"].clip(5, 60).values],
                 cmap=cm,
                 vmin=5,
             )
+
         # plot ravitos
         Triathlon.plot_ravitos(fuels, ax, xaxis, yaxis)
         ax.set_xlabel(xlabel=gl(xaxis, u=True))
@@ -288,10 +297,6 @@ class Triathlon:
             color="red",
             alpha=0.8,
         )
-
-        # xtext = xmin + 0.1 * (xmax - xmin)
-        # ax.text(xtext, -caloric_reserve, gl("caloric_reserve"), fontsize=20)
-
         ax.grid()
 
         # drinks = data["drinks"].sum()
@@ -299,8 +304,9 @@ class Triathlon:
 
         patches = [
             Line2D([0], [0], color="purple", label=gl("caloric_balance", u=True)),
-            Line2D([0], [0], color="darkcyan", label=gl("hydric_balance", u=True)),
             Patch(facecolor="red", edgecolor="r", label=gl("caloric_balance", u=True)),
+            Line2D([0], [0], color="darkcyan", label=gl("hydric_balance", u=True)),
+            Line2D([0], [0], color="green", label=gl("hydration_ideal", u=True)),
         ]
         ax.legend(handles=patches, prop={"size": 16}, framealpha=0)  # , loc=6
         ax.set_ylabel(ylabel=gl("caloric_balance", u=True))
@@ -365,7 +371,6 @@ class Triathlon:
             ax.xaxis.set_major_formatter(formatter)
 
         patches = [
-            Line2D([0], [0], color="green", label=gl("hydration_ideal", u=True)),
             Patch(facecolor="red", edgecolor="r", label=gl("risk_zone", u=True), alpha=0.2),
             Patch(facecolor="red", edgecolor="r", label=gl("perf_loss_20", u=True), alpha=0.8),
         ]

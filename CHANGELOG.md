@@ -1,5 +1,6 @@
 #### [TODO list]
 
+- Move to a native language (dart)
 - Make it possible to add gpx files
 - Have a algorithm to clean gpx files
 - Improve predictions with data analyses
@@ -8,10 +9,12 @@
 - Add language menu
 
 
-#### [2.8.2] - 2022-09-28
+#### [2.8.3] - 2022-09-29
 
 - Fix speed problem
 - Add more graphs options
+- Reformat summary
+- A bit of refactoring
 
 #### [2.7.6] - 2022-09-27
 

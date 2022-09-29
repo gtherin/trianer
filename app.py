@@ -9,18 +9,16 @@ import trianer.strapp.inputs as tsti
 from trianer.core.labels import gl, set_language
 
 st.set_option("deprecation.showPyplotGlobalUse", False)
-st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+# st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+# st.set_page_config(initial_sidebar_state="collapsed")
 
 
 # Set up cache
-cookie_manager = strapp.cache.get_manager()
-all_cookies = cookie_manager.get_all()
-strapp.cache.set_var_on_change_function(strapp.cache.update_cookie)
-strapp.cache.set_var_cookies(all_cookies)
-
-
-def get_pars(pars):
-    return {"name" if k in ["race_format", "race_default"] else k: tsti.get_value(k) for k in pars}
+with st.empty():
+    cookie_manager = strapp.cache.get_manager()
+    all_cookies = cookie_manager.get_all(key="trianer_app")
+    strapp.cache.set_var_on_change_function(strapp.cache.update_cookie)
+    strapp.cache.set_var_cookies(all_cookies)
 
 
 def main():
@@ -85,68 +83,13 @@ def main():
 
     if menu.is_menu(menu_id := "simulation"):
         st.header(gl(menu_id))
-
-        athlete = trianer.Athlete(
-            **get_pars(
-                ["swimming_sX100m", "cycling_kmXh", "running_sXkm", "sudation"]
-                + ["transition_swi2cyc_s", "transition_cyc2run_s", "weight_kg", "year_of_birth", "height_cm"]
-            )
+        race_menu = tsti.get_var_input("race_menu")
+        simulation = trianer.Triathlon(
+            race=strapp.get_race(), temperature=strapp.get_temperature(), athlete=strapp.get_athlete()
         )
 
-        race_menu = tsti.get_value("race_menu")
-        if race_menu == gl("existing_race"):
-            race = trianer.Race(name=tsti.get_value("race_default"))
-            temperature = tsti.get_temperature("race")
-        elif race_menu == gl("existing_format"):
-            pars = get_pars(["race_format", "cycling_dplus", "running_dplus"])
-            race = trianer.Race(**pars)
-            temperature = tsti.get_temperature("format")
-        else:
-            race = trianer.Race.init_from_cookies(tsti.get_value)
-            temperature = tsti.get_temperature("perso")
-
-        # st.success(f"Race info: {race.get_info()} (code={race.get_key()})")
-        simulation = trianer.Triathlon(race=race, temperature=temperature, athlete=athlete)
-
         with st.expander("Summary", expanded=True):
-            disciplines = ["Swimming", "Cycling", "Running", "Total"]
-            cols = st.columns(4)
-            for d, discipline in enumerate(disciplines):
-                r = race.get_dinfo(discipline)
-                if r[0] > 0:
-                    with cols[d]:
-                        st.subheader(gl(discipline))
-                        st.metric("Distance&D+", f"{r[0]:.2f} km", f"{r[1]:.0f} m", delta_color="off")
-
-            cols = st.columns(4)
-            for d, discipline in enumerate(disciplines):
-                r = race.get_dinfo(discipline)
-                if r[0] > 0:
-                    with cols[d]:
-                        if discipline != "Total":
-                            a = athlete.get_dinfo(discipline)
-                            st.metric(
-                                "Speed&pace",
-                                f"{a[0]:.2f} km/h",
-                                f"{a[1]:.0f} s/" + ("km" if discipline.lower() != "swimming" else "100m"),
-                                delta_color="off",
-                            )
-
-            cols = st.columns(4)
-            for d, discipline in enumerate(disciplines):
-                r = race.get_dinfo(discipline)
-                if r[0] > 0:
-                    with cols[d]:
-                        if discipline == "Total":
-                            du = simulation.data["duration"].sum()
-                        else:
-                            du = simulation.data.query(f"discipline == '{discipline.lower()}'")["duration"].sum()
-                        st.metric(
-                            "Duration",
-                            f"{du:.0f}h{60 * (du % 1):02.0f}min",
-                            f"{60*du:.0f}min",
-                            delta_color="off",
-                        )
+            strapp.show_metrics(simulation)
 
         if race_menu == gl("existing_race"):
             with st.expander("Show race gpx track", expanded=False):
