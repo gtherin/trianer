@@ -5,9 +5,11 @@
 - Have a algorithm to clean gpx files
 - Improve predictions with data analyses
 - Improve slope dependencies with speed
-- Set a french/english flag
-- Add language menu
 
+
+#### [3.0.0] - 2022-09-29
+
+- Add language menu
 
 #### [2.8.3] - 2022-09-29
 

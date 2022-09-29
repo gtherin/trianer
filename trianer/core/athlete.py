@@ -44,7 +44,7 @@ class Athlete:
         import datetime
 
         self.sudation = 1 + 0.1 * (sudation - 5.0)
-        self.sex = "F" if sex in ["F", "Female", "Fille"] else "M"
+        self.sex = "F" if sex in ["F", "Female", "Fille", "Femme"] else "M"
         self.height = float(height_cm)
         self.age = datetime.datetime.now().year - float(year_of_birth)
 

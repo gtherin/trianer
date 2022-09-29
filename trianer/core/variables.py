@@ -1,13 +1,11 @@
 import datetime
 from .variable import Variable
 from ..race.races import available_races
-from .labels import gl
 
 variables = [
     # Performances
     dict(
         key="swimming_sX100m",
-        label="Swimming pace (min/100m)",
         help="Pace is how much time you need to swim 100m",
         srange="t:1:5:1",
         default=datetime.time(2, 0),
@@ -15,7 +13,6 @@ variables = [
     ),
     dict(
         key="running_sXkm",
-        label="Running pace (min/km)",
         help="Pace is how much time you need to run 1km (flat surface)",
         srange="t:3:10:5",
         default=datetime.time(5, 30),
@@ -23,7 +20,6 @@ variables = [
     ),
     dict(
         key="cycling_kmXh",
-        label="Cycling speed (km/h)",
         help="Speed is the distance you do in an hour (flat surface)",
         srange="i:16:50:1",
         default=30,
@@ -31,7 +27,6 @@ variables = [
     # Transitions
     dict(
         key="transition_swi2cyc_s",
-        label="Transition time swi./cyc. (min:sec)",
         help="Transition time between swimming and cycling in minutes:seconds",
         srange="t:1:5:15",
         default=datetime.time(2, 0),
@@ -39,7 +34,6 @@ variables = [
     ),
     dict(
         key="transition_cyc2run_s",
-        label="Transition time cyc./run. (min:sec)",
         help="Transition time between cycling and running in minutes:seconds",
         srange="t:1:5:15",
         default=datetime.time(2, 0),
@@ -58,14 +52,12 @@ variables = [
     dict(key="running_lengh", srange="i:0:200:1", help="running_lengh", default=10),
     dict(
         key="cycling_dplus",
-        label="Positive elevation gain cyc. (m)",
         help="Positive elevation gain during cycling in meter",
         srange="i:0:5000:10",
         default=0,
     ),
     dict(
         key="running_dplus",
-        label="Positive elevation gain run. (m)",
         help="Positive elevation gain during running in meter",
         srange="i:0:10000:5",
         default=0,
@@ -79,14 +71,14 @@ variables = [
     ),
     dict(
         key="temperature_menu_race",
-        srange=["Automatic", "Manual", "From date"],
+        srange=["temp_auto", "temp_manual", "temp_from_date"],
         help="running_lengh",
-        default="Automatic",
+        default="temp_auto",
         input_format="radio",
     ),
     dict(
         key="dtemperature_race",
-        label="Temperature (°C)",
+        label="Date temp. (°C)",
         help="Expected temperature in degres Celsius",
         srange="d:0:365:1",
         default=datetime.date.today(),
@@ -94,7 +86,6 @@ variables = [
     ),
     dict(
         key="race_format",
-        label="Race format",
         help="Format of the selected race",
         srange=[
             "Ironman",
@@ -110,13 +101,11 @@ variables = [
     ),
     dict(
         key="race_menu",
-        label="Type of race",
         help="You can either use a default format, load an known race or build your own race",
-        srange=[gl("existing_format"), gl("existing_race"), "Personalized format"],
-        default=gl("existing_format"),
+        srange=["existing_format", "existing_race", "personalized_format"],
+        default="existing_format",
         input_format="radio",
     ),
-    dict(key="athlete_switch", label="Athlete's performances", help=None, srange="b", default=True),
     dict(
         key="race_default",
         srange=[r for r, c in available_races.items() if "type" not in c],
@@ -127,21 +116,19 @@ variables = [
     ),
     dict(
         key="sex",
-        label="Sex",
-        srange=["Female", "Male"],
+        srange=["female", "male"],
         help="Metabolism is different on average between man and woman",
-        default="Female",
+        default="female",
         input_format="radio",
     ),
     dict(
         key="language",
-        label=gl("favorite_language"),
         srange=["En", "Fr"],
         help="To switch language/Pour changer de langue",
         default="En",
         input_format="radio",
     ),
-    dict(key="weight_kg", label="Weight (kg)", help="Your weight (in kg)", srange="i:40:100:1", default=70),
+    dict(key="weight_kg", help="Your weight (in kg)", srange="i:40:100:1", default=70),
     dict(
         key="year_of_birth",
         srange="i:1930:2018:1",
@@ -155,7 +142,7 @@ variables = [
         default=5,
         input_format="slider",
     ),
-    dict(key="height_cm", label="Height (cm)", help="You height in centimeters", srange="i:100:240:1", default=175),
+    dict(key="height_cm", help="You height in centimeters", srange="i:100:240:1", default=175),
 ]
 
 variables = {v["key"]: Variable(**v) for v in variables}

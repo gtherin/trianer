@@ -1,14 +1,13 @@
 import streamlit as st
 
 from ..core.variables import variables
+from ..core.labels import gc
 
 
 def get_var_input(key, **kwargs):
     v = variables[key]
-    if v.input_format:
-        return v.get_input(getattr(st, v.input_format), **kwargs)
-
-    return v.get_input(st.number_input, **kwargs)
+    input_format = getattr(st, v.input_format) if v.input_format else st.number_input
+    return v.get_input(input_format, **kwargs)
 
 
 def get_value(key):
@@ -26,18 +25,18 @@ def get_temperature_menu(race_choice):
     col1, col2, col3 = st.columns(3)
     with col1:
         atemp = get_var_input(f"temperature_menu_{race_choice}")
-        is_automatic = atemp == "Automatic"
-        is_manual_temp = atemp == "Manual"
+        is_manual_temp = gc(atemp) == "temp_manual"
+        is_date_temp = gc(atemp) == "temp_from_date"
     with col2:
-        temperature = get_var_input(f"temperature_{race_choice}", disabled=is_automatic or not is_manual_temp)
+        temperature = get_var_input(f"temperature_{race_choice}", disabled=not is_manual_temp)
     with col3:
-        get_var_input(f"dtemperature_{race_choice}", disabled=is_automatic or is_manual_temp)
+        get_var_input(f"dtemperature_{race_choice}", disabled=not is_date_temp)
     return temperature
 
 
 def get_temperature(race_choice):
     return (
         None
-        if get_value(f"temperature_menu_{race_choice}") == "Automatic"
+        if get_value(f"temperature_menu_{race_choice}") == "temp_auto"
         else get_value(f"temperature_{race_choice}")
     )

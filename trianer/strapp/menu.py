@@ -2,7 +2,7 @@ import streamlit as st
 import hydralit_components as hc
 import extra_streamlit_components as stx
 
-from ..core.labels import gl
+from ..core.labels import gl, gc
 
 
 class Menu:
@@ -20,6 +20,7 @@ class Menu:
             # {"id": "about", "icon": "💻"},
         ]
         self.menu_steps = [m["id"] for m in menu_data]
+        self.menu_steps = [gl(m["id"]) for m in menu_data]
         for m in menu_data:
             m["label"] = gl(m["id"])
 
@@ -36,7 +37,7 @@ class Menu:
 
     def is_menu(self, code):
         def is_menu_str(c):
-            return self.menu_id == c or self.menu_id == self.menu_steps.index(c)
+            return self.menu_id == gl(c) or self.menu_id == self.menu_steps.index(gl(c))
 
         if type(code) is list:
             for c in code:
