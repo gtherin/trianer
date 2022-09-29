@@ -1,6 +1,6 @@
 import streamlit as st
 
-from trianer.core.labels import gl
+from trianer.core.labels import gl, Labels
 
 
 def get_metric(triathlon, discipline, label):
@@ -13,14 +13,16 @@ def get_metric(triathlon, discipline, label):
     elif label == "distance":
         st.metric("Distance&D+", f"{r[0]:.2f}km", f"{r[1]:.0f}m", delta_color="off")
     elif label == "speed":
+        txt = Labels.add_label(en="Speed&pace", fr="Vitesse&Allure")
         st.metric(
-            "Speed&pace",
+            txt,
             f"{a[0]:.2f}km/h",
             f"{a[1]:.0f}s/" + ("km" if discipline.lower() != "swimming" else "100m"),
             delta_color="off",
         )
     elif label == "duration":
-        st.metric("Duration", f"{a[2]:.0f}h{60 * (a[2] % 1):02.0f}min", f"{60*a[2]:.0f}min", delta_color="off")
+        txt = Labels.add_label(en="Duration", fr="Durée")
+        st.metric(txt, f"{a[2]:.0f}h{60 * (a[2] % 1):02.0f}min", f"{60*a[2]:.0f}min", delta_color="off")
 
 
 def show_metrics(triathlon):

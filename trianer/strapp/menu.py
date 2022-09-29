@@ -17,6 +17,7 @@ class Menu:
             {"id": "race", "icon": "🌍"},
             {"id": "perf", "icon": "🏊🚴🏃"},
             {"id": "simulation", "icon": "🏆"},
+            {"id": "training", "icon": "💦"},
             # {"id": "about", "icon": "💻"},
         ]
         self.menu_steps = [m["id"] for m in menu_data]

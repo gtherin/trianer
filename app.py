@@ -123,8 +123,17 @@ def main():
         with st.expander(Labels.add_label(en="F&B", fr="Evenements de course"), expanded=True):
             st.markdown(trianer.show_roadmap(simulation).to_html(), unsafe_allow_html=True)
 
+    if menu.is_menu(menu_id := "training"):
+        st.header(gl(menu_id))
+        st.warning(
+            Labels.add_label(
+                en=f"⚠️ Section is under construction 🚧",
+                fr=f"⚠️ Cette section est cours de construction ",
+            )
+        )
+
     # Show about section
-    if menu.is_menu(["athlete", "simulation"]):
+    if menu.is_menu(["athlete", "simulation", "training"]):
         strapp.about.get_section(all_cookies, cookie_manager)
 
 

@@ -16,6 +16,8 @@ class Labels:
         "perf": ["Performances", "Performances"],
         3: ["Simulation", "Simulation"],
         "simulation": ["Simulation", "Simulation"],
+        4: ["Training", "Entrainement"],
+        "training": ["Training", "Entrainement"],
         "about": ["About", "A propos"],
         "about_app": ["About this app", "A propos de l'appli"],
         "race_menu": ["Type of race", "Format de course"],

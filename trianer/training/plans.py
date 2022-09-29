@@ -31,6 +31,7 @@ training_plan_marathon = (
     + ["l:w12", "f:1h,hr:70-75", "rest", "w:h10"]  # Rest week
 )
 
+
 # https://www.schneiderelectricparismarathon.com/fr/se-preparer/plan-guides
 
 # https://www.timeto.com/Assets/TimeTo/plans/marathon_3h00
