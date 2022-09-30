@@ -14,12 +14,14 @@ port = $PORT\n\
 [logger]\n\
 # Level of logging: 'error', 'warning', 'info', or 'debug'.\n\
 # Default: 'info'\n\
-level = \"debug\"\n\
+level = \"warning\"\n\
 
 
 [theme]
-primaryColor='#020202'
-backgroundColor='#c4c3c3'
-secondaryBackgroundColor='#ebd316'
+backgroundColor='#e6dce2'
+secondaryBackgroundColor='#f5edf2'
+
+#primaryColor='#8f2c48'
+#textColor = '#581845'
 font ='sans serif'
 " > ~/.streamlit/config.toml
