@@ -72,7 +72,7 @@ variables = [
     dict(
         key="temperature_menu_race",
         srange=["temp_auto", "temp_manual", "temp_from_date"],
-        help="running_lengh",
+        help="The method to estimate the temperature",
         default="temp_auto",
         input_format="radio",
     ),
@@ -166,3 +166,6 @@ variables["temperature_menu_perso"] = Variable.clone(variables["temperature_menu
 
 variables["dtemperature_format"] = Variable.clone(variables["dtemperature_race"], "dtemperature_format")
 variables["dtemperature_perso"] = Variable.clone(variables["dtemperature_race"], "dtemperature_perso")
+
+# "transition_swi2cyc_s": ["Transition time swi./cyc. (min:sec)", "Temps de transition nat./cyc. (min:sec)"],
+# "transition_cyc2run_s": ["Transition time cyc./run. (min:sec)", "Temps de transition cyc./cou. (min:sec)"],

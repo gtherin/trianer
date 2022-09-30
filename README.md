@@ -1,6 +1,5 @@
 
-The aim of this package is dedicated to planify long races for triathlon.
-Data models need to be fitted on larger pools of athletes data to have more accurate predictions.
+The aim of this package is dedicated to planify running or triathlon long races.
 
 [Contact](mailto:gt@guydegnol.net)
 
@@ -19,6 +18,9 @@ Average slopes can be configured manualy.
 Gpx track quality might be poor. Shoud be nice to better filter them.
 
 3. Have a fully personalized race. Discipline can be added.
+
+
+##### Temperature
 
 Temperature is an important parameter to simulate the dehydration.
 By default (automatic mode), it is using the date and place of the race.

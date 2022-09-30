@@ -4,14 +4,29 @@ from streamlit_folium import folium_static
 
 import trianer
 from trianer import strapp
-from trianer.strapp.cache import Cache
 
 import trianer.strapp.inputs as tsti
 from trianer.core.labels import gl, gc, set_language, Labels
 
+
+menu_items = (
+    {
+        "Get Help": "http://guydegnol.net",
+        "Report a bug": "http://guydegnol.net",
+        "About": open("./README.md", "r").read(),
+    },
+)
+
+menu_items = {}
+st.set_page_config(
+    page_title="Trainer",
+    page_icon="🧊",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+    menu_items=menu_items,
+)
+
 st.set_option("deprecation.showPyplotGlobalUse", False)
-# st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
-# st.set_page_config(initial_sidebar_state="collapsed")
 
 
 # Get cache
@@ -24,7 +39,7 @@ def main():
     menu = strapp.Menu()
 
     if menu.is_menu(menu_id := "perf"):
-        st.header(gl(menu_id))
+        st.subheader(gl(menu_id))
         tsti.get_inputs(["swimming_sX100m", "cycling_kmXh", "running_sXkm"])
         tsti.get_inputs(["transition_swi2cyc_s", "transition_cyc2run_s"])
 
@@ -45,7 +60,7 @@ def main():
                     race_perso += f":{dplus}"
             race_title = trianer.Race.init_from_cookies(tsti.get_value).get_info()
 
-        st.header(f"{race_title}")
+        st.subheader(f"{race_title}")
 
         race_menu = tsti.get_var_input("race_menu")
         if race_menu == gl("existing_race"):
@@ -78,12 +93,12 @@ def main():
             tsti.get_temperature_menu("perso")
 
     if menu.is_menu(menu_id := "athlete"):
-        st.header(gl(menu_id))
+        st.subheader(gl(menu_id))
         tsti.get_inputs(["sex", "weight_kg", "height_cm"])
         tsti.get_inputs(["language", "year_of_birth", "sudation"], options=[dict(disabled=False), {}, {}])
 
     if menu.is_menu(menu_id := "simulation"):
-        st.header(gl(menu_id))
+        st.subheader(gl(menu_id))
         simulation = trianer.Triathlon(
             race=strapp.get_race(), temperature=strapp.get_temperature(), athlete=strapp.get_athlete()
         )
@@ -124,7 +139,7 @@ def main():
             st.markdown(trianer.show_roadmap(simulation).to_html(), unsafe_allow_html=True)
 
     if menu.is_menu(menu_id := "training"):
-        st.header(gl(menu_id))
+        st.subheader(gl(menu_id))
         st.warning(
             Labels.add_label(
                 en=f"⚠️ Section is under construction 🚧",

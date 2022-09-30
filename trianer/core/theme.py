@@ -69,5 +69,6 @@ plt.rcParams["legend.edgecolor"] = background_color
 plt.rcParams["xtick.color"] = get_color("axis")
 plt.rcParams["ytick.color"] = get_color("axis")
 
-plt.rcParams["axes.labelsize"] = "medium"
+plt.rcParams["font.size"] = 16
+# plt.rcParams["axes.labelsize"] = "medium"
 plt.rcParams["lines.linewidth"] = 4
