@@ -17,6 +17,7 @@ from ..race import weather
 from .. import nutrition
 from ..core import models
 from ..core.labels import gl, gc
+from ..core.theme import background_color
 
 
 logging.getLogger("matplotlib.font_manager").disabled = True
@@ -148,7 +149,7 @@ class Triathlon:
 
         fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(15, 5), sharex=True, gridspec_kw={"height_ratios": [5, 2]})
         fig.subplots_adjust(hspace=0)
-        fig.patch.set_facecolor("#cdcdcd")
+        fig.patch.set_facecolor(background_color)
         axes[0].set_title(
             triathlon.race.get_info(),
             loc="center",
@@ -175,7 +176,7 @@ class Triathlon:
 
         if xaxis == "fdistance" or 1:
             # TODO: Fix it with other axis
-            cm = LinearSegmentedColormap.from_list("Custom", ["#cdcdcd", "#f08205DD"], N=30)
+            cm = LinearSegmentedColormap.from_list("Custom", [background_color, "#f08205DD"], N=30)
             ax.set_xlim([data.index[0], data.index[-1]])
 
             if "etime" == xaxis:
@@ -201,7 +202,7 @@ class Triathlon:
 
         ax = axes[1]
 
-        ax.set_facecolor("#cdcdcd")
+        ax.set_facecolor(background_color)
         data["temperature"].plot(color="yellow", ax=ax)
         ax.fill_between(data.index, data["temperature"] - 1, data["temperature"] + 2, color="yellow", alpha=0.2)
         ax.grid()
@@ -237,7 +238,7 @@ class Triathlon:
         ax.grid()
 
     def plot_core(self, data, ax, variable):
-        ax.set_facecolor("#cdcdcd")
+        ax.set_facecolor(background_color)
         for discipline in self.race.disciplines:
             ddata = self.get_gpx(data, discipline)
             ddata[variable].plot(
@@ -274,7 +275,7 @@ class Triathlon:
 
         fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(15, 6), sharex=True)
         fig.subplots_adjust(hspace=0)
-        fig.patch.set_facecolor("#cdcdcd")
+        fig.patch.set_facecolor(background_color)
         axes[0].set_title(
             triathlon.race.get_info(),
             loc="center",
@@ -282,7 +283,7 @@ class Triathlon:
         )
 
         ax = axes[0]
-        ax.set_facecolor("#cdcdcd")
+        ax.set_facecolor(background_color)
         data["kcalories"].cumsum().plot(ax=ax, lw=3, color="purple")
 
         ax.set_xlim([data.index[0], data.index[-1]])
@@ -312,8 +313,8 @@ class Triathlon:
         ax.set_ylabel(ylabel=gl("caloric_balance", u=True))
 
         ax = axes[1]
-        fig.patch.set_facecolor("#cdcdcd")
-        ax.set_facecolor("#cdcdcd")
+        fig.patch.set_facecolor(background_color)
+        ax.set_facecolor(background_color)
 
         ax.fill_between(
             data.index,

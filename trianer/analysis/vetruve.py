@@ -2,9 +2,11 @@ import numpy as np
 from PIL import Image
 import random as rd
 import matplotlib.pyplot as plt
+import os
 
 
 from .. import nutrition
+from ..core.theme import background_color
 
 
 def hist_calories_per_sport():
@@ -28,16 +30,18 @@ def hist_calories_per_sport():
 
 
 def update_version():
-    logs = open("CHANGELOG.md", "r").read().split("####")
+
+    from ..__version__ import __version__ as pversion
+
+    path = "./" if os.path.exists("CHANGELOG.md") else "../"
+    logs = open(path + "CHANGELOG.md", "r").read().split("####")
+
     for l in logs:
         if "TODO" not in l and "[" in l:
             break
-
     version = l[l.find("[") + 1 : l.find("]")]
-    with open("trianer/__version__.py", "w") as the_file:
+    with open(path + "trianer/__version__.py", "w") as the_file:
         the_file.write(f"__version__ = '{version}'")
-
-    from ..__version__ import __version__ as pversion
 
     if pversion == version:
         print(f"Using version {version}")
@@ -52,9 +56,12 @@ def wordcloud_calories_per_sport(filename=None, generate=True):
     Show activities depending on the calories spent
 
     """
-
     plt.figure(figsize=(15, 10))
     if not generate:
+
+        if not os.path.exists(filename):
+            filename = "../data/" + filename
+
         print(f"Read file {filename}")
         import matplotlib.image as mpimg
 
@@ -84,10 +91,11 @@ def wordcloud_calories_per_sport(filename=None, generate=True):
         # print(words)
 
         # read the mask image
-        alice_mask = np.array(Image.open("./notebooks/vetruve.png"))
+        path = "./" if os.path.exists("CHANGELOG.md") else "../"
+        alice_mask = np.array(Image.open(path + "notebooks/vetruve.png"))
 
         wc = WordCloud(
-            background_color="white",
+            background_color=background_color,  # "white",
             max_words=2000,
             mask=alice_mask,
             contour_width=0,

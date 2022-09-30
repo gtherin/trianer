@@ -2,6 +2,7 @@ import datetime
 import pandas as pd
 
 from ..core.labels import gl, Labels
+from ..core.theme import background_color
 
 pd.plotting.register_matplotlib_converters()
 
@@ -103,7 +104,7 @@ def show_roadmap(triathlon):
         .apply(highlight, axis=1)
         .set_table_styles(
             [
-                {"selector": "th", "props": "background-color: #cdcdcd; color: white;"},
+                {"selector": "th", "props": f"background-color: {background_color}; color: white;"},
             ],
             overwrite=False,
         )

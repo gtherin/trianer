@@ -3,6 +3,7 @@ import pandas as pd
 
 from . import met
 from ..core import models
+from ..core.theme import background_color
 
 """
 
@@ -210,18 +211,18 @@ def show_kcalories():
     import matplotlib.pyplot as plt
 
     fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15, 4))
-    fig.patch.set_facecolor("#cdcdcd")
+    fig.patch.set_facecolor(background_color)
 
     ax = axes[0]
-    ax.set_facecolor("#cdcdcd")
+    ax.set_facecolor(background_color)
     kcalories.query("discipline == 'running'").set_index("speed").plot(ax=ax)
 
     ax.grid()
     ax.legend(loc=1, prop={"size": 16})
 
     ax = axes[1]
-    fig.patch.set_facecolor("#cdcdcd")
-    ax.set_facecolor("#cdcdcd")
+    fig.patch.set_facecolor(background_color)
+    ax.set_facecolor(background_color)
     kcalories.query("discipline == 'cycling'").set_index("speed").plot(ax=ax)
 
     ax.grid()
