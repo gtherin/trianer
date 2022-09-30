@@ -6,6 +6,7 @@
 - Improve predictions with data analyses
 - Improve slope dependencies with speed
 - Fix site for ios/safari Universe
+- Have a clear chart color and share it with the app
 
 
 #### [3.0.3] - 2022-09-29

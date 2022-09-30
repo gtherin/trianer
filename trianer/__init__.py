@@ -14,3 +14,5 @@ from .race.weather import *
 from .race.race import Race
 from .race.races import available_races
 from .race.display import show_gpx_track
+
+from . import training
