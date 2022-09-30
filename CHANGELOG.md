@@ -9,11 +9,11 @@
 - Have a clear chart color and share it with the app
 
 
-#### [3.1.0] - 2022-09-29
+#### [3.1.1] - 2022-09-30
 
 - Add language menu
 - Add More docs
-- Add theme
+- Add a better theme
 
 #### [2.8.3] - 2022-09-29
 

@@ -96,8 +96,9 @@ def get_hr(val):
     return float(val)
 
 
-def get_training_plan():
-    tp = training_plan_marathon
+def get_training_plan(name="Marathon (Decathlon, 5h, 12w)"):
+
+    tp = plans[name]
 
     t_in_days = 0
     data = []

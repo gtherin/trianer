@@ -117,16 +117,24 @@ variables = [
     dict(
         key="sex",
         srange=["female", "male"],
-        help="Metabolism is different on average between man and woman",
+        help="Metabolism varies differently between man and woman",
         default="female",
         input_format="radio",
     ),
+    # Profile
     dict(
         key="language",
         srange=["En", "Fr"],
         help="To switch language/Pour changer de langue",
         default="En",
         input_format="radio",
+    ),
+    dict(
+        key="beta_mode",
+        # srange=["main", "Beta"],
+        help="To activate beta mode",
+        default=False,
+        input_format="checkbox",
     ),
     dict(key="weight_kg", help="Your weight (in kg)", srange="i:40:100:1", default=70),
     dict(

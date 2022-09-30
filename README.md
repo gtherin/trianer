@@ -4,12 +4,12 @@ Data models need to be fitted on larger pools of athletes data to have more accu
 
 [Contact](mailto:gt@guydegnol.net)
 
-#### Athlete
+#### 💗 Athlete
 
 This section summarizes physiological constraints. 
 Only the weights might be updated once in a while
 
-#### Race
+#### 🌍 Race
 
 This section let you the choice between:
 1. Use a known format for a race (ironman,  marathon, ...). 
@@ -24,14 +24,14 @@ Temperature is an important parameter to simulate the dehydration.
 By default (automatic mode), it is using the date and place of the race.
 For all cases, **it is filtered by typical intraday** to replicate best its estimations.
 
-#### Performances
+#### 🏊🚴🏃 Performances
 
 It is what you think you can perform on that distance.
 **The estimated speed will take into account the relief and temperatures parameters.**
 
-#### Simulation
+#### 🏆Simulation
 
 The final estimation and nutrition plans need for the accomplishement of the race
-#### Training
+#### 💦 Training (beta mode ⚠️🚧)
 
 Should contains the training plan to get to that objective.

@@ -2,7 +2,7 @@ import datetime
 import pandas as pd
 
 from ..core.labels import gl, Labels
-from ..core.theme import background_color
+from ..core import theme
 
 pd.plotting.register_matplotlib_converters()
 
@@ -69,20 +69,6 @@ def show_roadmap(triathlon):
         if c in ff.columns:
             del ff[c]
 
-    def highlight(s):
-        if s.Discipline == gl("cycling"):
-            return ["background-color: rgba(196, 77, 86, 0.2);"] * len(s)
-        elif "transition" in s.Discipline:
-            return ["background-color: rgba(204, 204, 204, 0.5);"] * len(s)
-        elif s.Discipline == gl("running"):
-            return ["background-color: rgba(0, 255, 0, 0.3);"] * len(s)
-        elif s.Discipline == gl("swimming"):
-            return ["background-color: rgba(0, 0, 255, 0.2);"] * len(s)
-        elif s.Discipline == "The end":
-            return ["background-color: rgba(0, 6, 57, 112);color: red; font-weight: bolder"] * len(s)
-        else:
-            return ["background-color: white"] * len(s)
-
     return (
         ff[
             [
@@ -101,10 +87,10 @@ def show_roadmap(triathlon):
             ]
         ]
         .style.hide(axis="index")
-        .apply(highlight, axis=1)
+        .apply(theme.roadmap_highlight, axis=1)
         .set_table_styles(
             [
-                {"selector": "th", "props": f"background-color: {background_color}; color: white;"},
+                {"selector": "th", "props": f"background-color: {theme.background_color}; color: white;"},
             ],
             overwrite=False,
         )
@@ -120,5 +106,5 @@ def show_roadmap(triathlon):
                 gl("D+"): "{0:.0f} m",
             }
         )
-        .bar(color=["Red", "Green"], subset=[gl("cduration_min")], align="left")
+        .bar(color=theme.roadmap_progress_bar, subset=[gl("cduration_min")], align="left")
     )

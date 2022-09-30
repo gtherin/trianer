@@ -1,4 +1,3 @@
-import datetime
 import numpy as np
 import pandas as pd
 import logging
@@ -7,13 +6,10 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.lines import Line2D
 import matplotlib
-import time
-import sys
 
 
-from ..race import weather
-from .. import nutrition
 from ..core.labels import gl
+from ..core import theme
 
 logging.getLogger("matplotlib.font_manager").disabled = True
 logging.getLogger("matplotlib").setLevel(logging.ERROR)
@@ -40,7 +36,7 @@ def show_gpx_track(triathlon):
 
         folium.PolyLine(
             list(zip(gpx["latitude"], gpx["longitude"])),
-            color=triathlon.get_color(discipline),
+            color=theme.get_color(discipline),
             weight=3,
             opacity=0.8,
         ).add_to(trimap)
@@ -57,7 +53,9 @@ def show_gpx_track(triathlon):
         folium.Marker(
             location=[r["latitude"], r["longitude"]],
             popup="Ravito",
-            icon=folium.DivIcon(html=f"""<div style="color: black; background-color:white">{f}</div>"""),
+            icon=folium.DivIcon(
+                html=f"""<div style="color: black; background-color:{theme.background_color}">{f}</div>"""
+            ),
         ).add_to(marker_cluster)
 
     for f in triathlon.race.fuelings:
@@ -70,6 +68,6 @@ def show_gpx_track(triathlon):
         folium.Marker(
             location=[r["latitude"], r["longitude"]],
             popup="Ravito",
-            icon=folium.Icon(color="red", icon_color="darkblue", icon="coffee", angle=0, prefix="fa"),
+            icon=folium.Icon(color=theme.danger_color, icon_color="darkblue", icon="coffee", angle=0, prefix="fa"),
         ).add_to(marker_cluster)
     return trimap

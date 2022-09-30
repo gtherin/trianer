@@ -2,7 +2,7 @@ import streamlit as st
 import hydralit_components as hc
 import extra_streamlit_components as stx
 
-from ..core.labels import gl, gc
+from ..core.labels import gl
 
 
 class Menu:
