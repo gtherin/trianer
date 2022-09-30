@@ -20,7 +20,14 @@ class Variable:
         self.orange, self.input_format = orange, input_format
 
     def get_format_value(self, var):
-        if self.srange[0] == "t" and type(var) == str and ":" in var:
+
+        if self.input_format in ["checkbox", "expander"]:
+            if type(var) == str and var not in ["false", "False"]:
+                return True
+            elif type(var) == bool:
+                return var
+            return False
+        elif self.srange[0] == "t" and type(var) == str and ":" in var:
             dtimes = str(var).split(":")
             return datetime.time(int(dtimes[0]), int(dtimes[1]))
         elif self.srange[0] == "t" and type(var) in [str, int, str]:
@@ -56,9 +63,13 @@ class Variable:
 
         if input_cls in [st.expander]:
             kwargs.update(dict(expanded=self.get_init_value()))
-            return input_cls(label, **kwargs)
+        if input_cls in [st.checkbox]:
+            kwargs.update(dict(value=self.get_init_value()))
 
         smin_value, smax_value, sstep = self.get_range_values()
+
+        if input_cls in [st.expander, st.checkbox]:
+            return input_cls(label, **kwargs)
 
         if input_cls in [st.radio]:
             kwargs.update(dict(horizontal=True))
@@ -89,7 +100,7 @@ class Variable:
         return input_cls(label, **kwargs)
 
     def get_range_values(self):
-        if type(self.srange) == list:
+        if type(self.srange) == list or self.srange is None:
             return [0, 0, 0]
 
         stype, smin_value, smax_value, sstep = self.srange.split(":")

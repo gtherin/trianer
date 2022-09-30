@@ -1,5 +1,6 @@
 import datetime
 from .variable import Variable
+from .labels import Labels
 from ..race.races import available_races
 
 variables = [
@@ -131,7 +132,6 @@ variables = [
     ),
     dict(
         key="beta_mode",
-        # srange=["main", "Beta"],
         help="To activate beta mode",
         default=False,
         input_format="checkbox",
@@ -169,3 +169,7 @@ variables["dtemperature_perso"] = Variable.clone(variables["dtemperature_race"],
 
 # "transition_swi2cyc_s": ["Transition time swi./cyc. (min:sec)", "Temps de transition nat./cyc. (min:sec)"],
 # "transition_cyc2run_s": ["Transition time cyc./run. (min:sec)", "Temps de transition cyc./cou. (min:sec)"],
+
+
+# Some menu
+Labels.add_label("beta_mode", en="Beta mode activation", fr="Activation du mode beta")

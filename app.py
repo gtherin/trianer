@@ -9,23 +9,17 @@ import trianer.strapp.inputs as tsti
 from trianer.core.labels import gl, gc, set_language, Labels
 
 
-menu_items = (
-    {
-        "Get Help": "http://guydegnol.net",
-        "Report a bug": "http://guydegnol.net",
+st.set_page_config(
+    page_title="Trianer",
+    page_icon=":running:",  # Image.open("favicon.ico")
+    layout="wide",
+    initial_sidebar_state="collapsed",
+    menu_items={
+        "Get Help": None,
+        "Report a bug": None,
         "About": open("./README.md", "r").read(),
     },
 )
-
-menu_items = {}
-st.set_page_config(
-    page_title="Trainer",
-    page_icon="🧊",
-    layout="wide",
-    initial_sidebar_state="collapsed",
-    menu_items=menu_items,
-)
-
 st.set_option("deprecation.showPyplotGlobalUse", False)
 
 
@@ -36,8 +30,7 @@ cookie_manager, all_cookies = strapp.cache.init_cache_manager(key="trianer_app")
 def main():
 
     set_language(tsti.get_value("language"))
-    menu = strapp.Menu()
-
+    menu = strapp.Menu(beta_mode=tsti.get_value("beta_mode"))
     if menu.is_menu(menu_id := "perf"):
         st.subheader(gl(menu_id))
         tsti.get_inputs(["swimming_sX100m", "cycling_kmXh", "running_sXkm"])

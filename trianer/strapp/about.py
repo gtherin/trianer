@@ -1,7 +1,8 @@
 import streamlit as st
 from ..race import gpx
 
-from ..core.labels import gl, gc
+from ..core.labels import gl, gc, Labels
+from . import inputs
 
 
 def get_expander():
@@ -29,8 +30,9 @@ def get_content(all_cookies, cookie_manager):
         cookie = st.text_input("Cookie", key="Cookie list")
         if st.button("Delete a cookie"):
             cookie_manager.delete(cookie)
-    if st.checkbox("Activate beta mode"):
-        st.success("Beta mode is activated !")
+
+    if inputs.get_var_input("beta_mode"):
+        st.success(Labels.add_label(en="Beta mode is activated !", fr="Le mode beta est activé !"))
 
 
 def get_section(all_cookies, cookie_manager):

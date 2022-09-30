@@ -9,11 +9,12 @@
 - Have a clear chart color and share it with the app
 
 
-#### [3.1.1] - 2022-09-30
+#### [3.1.2] - 2022-09-30
 
 - Add language menu
 - Add More docs
 - Add a better theme
+- Set up a beta mode
 
 #### [2.8.3] - 2022-09-29
 
