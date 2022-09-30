@@ -70,9 +70,6 @@ def wordcloud_calories_per_sport(filename=None, generate=True):
     else:
         version = update_version()
 
-        from ..__version__ import __version__
-
-        version = __version__
         rd.seed(42)
 
         from wordcloud import WordCloud
@@ -88,14 +85,13 @@ def wordcloud_calories_per_sport(filename=None, generate=True):
         words += [f"v_{version}".replace(".", "_")] * 100
 
         rd.shuffle(words)
-        # print(words)
 
         # read the mask image
         path = "./" if os.path.exists("CHANGELOG.md") else "../"
         alice_mask = np.array(Image.open(path + "notebooks/vetruve.png"))
 
         wc = WordCloud(
-            background_color=background_color,  # "white",
+            background_color=background_color,
             max_words=2000,
             mask=alice_mask,
             contour_width=0,
