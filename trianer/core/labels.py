@@ -1,8 +1,9 @@
 class Label:
-    def __init__(self, key="dummy", en=None, fr=None, units=False) -> None:
+    def __init__(self, key="dummy", en=None, fr=None, units=False, hen=None, hfr=None) -> None:
         self.key, self.units = key, units
         self.en = self.key if not en else en
         self.fr = self.en if not fr else fr
+        self.hen, self.hfr = hen, hen if not hfr else hfr
 
 
 class Labels:

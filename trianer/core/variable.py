@@ -14,7 +14,7 @@ class Variable:
         return v
 
     def __init__(
-        self, key=None, srange=None, help=None, label=None, default=None, orange=None, input_format=None
+        self, key=None, srange=[], help=None, label=None, default=None, orange=None, input_format=None
     ) -> None:
         self.key, self.srange, self.help, self.label, self.default = key, srange, help, label, default
         self.orange, self.input_format = orange, input_format
@@ -27,6 +27,8 @@ class Variable:
             elif type(var) == bool:
                 return var
             return False
+        elif len(self.srange) == 0:
+            return var
         elif self.srange[0] == "t" and type(var) == str and ":" in var:
             dtimes = str(var).split(":")
             return datetime.time(int(dtimes[0]), int(dtimes[1]))
@@ -58,49 +60,35 @@ class Variable:
         import streamlit as st
 
         label = gl(self.key if self.label is None else self.label, u=True)
+        srange = [gl(r) for r in self.srange]
 
         kwargs.update(dict(key=self.key, help=self.help, on_change=lambda: Variable.update_cookie(self.key)))
 
-        if input_cls in [st.expander]:
-            kwargs.update(dict(expanded=self.get_init_value()))
-        if input_cls in [st.checkbox]:
-            kwargs.update(dict(value=self.get_init_value()))
-
-        smin_value, smax_value, sstep = self.get_range_values()
-
-        if input_cls in [st.expander, st.checkbox]:
-            return input_cls(label, **kwargs)
-
-        if input_cls in [st.radio]:
-            kwargs.update(dict(horizontal=True))
-
         # Set default value
         if input_cls in [st.selectbox, st.radio]:
-            srange = [gl(r) for r in self.srange]
             kwargs.update(dict(index=srange.index(self.get_init_value())))
+        elif input_cls in [st.expander]:
+            kwargs.update(dict(expanded=self.get_init_value()))
         elif input_cls in [st.multiselect]:
             irange = [gl(r) for r in self.get_init_value()]
-            srange = [gl(r) for r in self.srange]
             kwargs.update(dict(default=irange))
         else:
             kwargs.update(dict(value=self.get_init_value()))
 
+        if input_cls in [st.radio]:
+            kwargs.update(dict(horizontal=True))
+
         if input_cls in [st.selectbox, st.radio, st.multiselect]:
-            srange = [gl(r) for r in self.srange]
             kwargs.update(dict(options=srange))
 
         if input_cls in [st.slider, st.number_input]:
+            smin_value, smax_value, sstep = self.get_range_values()
             kwargs.update(dict(min_value=smin_value, max_value=smax_value, step=sstep))
-        if input_cls in [st.date_input]:
-            kwargs.update(dict(min_value=smin_value, max_value=smax_value))
-
-        if input_cls in [st.date_input]:
-            kwargs.update(dict(min_value=smin_value, max_value=smax_value))
 
         return input_cls(label, **kwargs)
 
     def get_range_values(self):
-        if type(self.srange) == list or self.srange is None:
+        if type(self.srange) == list or self.srange is None or len(self.srange) == 0:
             return [0, 0, 0]
 
         stype, smin_value, smax_value, sstep = self.srange.split(":")

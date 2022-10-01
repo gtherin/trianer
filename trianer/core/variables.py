@@ -81,7 +81,7 @@ variables = [
         key="dtemperature_race",
         label="Date temp. (°C)",
         help="Expected temperature in degres Celsius",
-        srange="d:0:365:1",
+        # srange="d:0:365:1",
         default=datetime.date.today(),
         input_format="date_input",
     ),
@@ -167,9 +167,9 @@ variables["temperature_menu_perso"] = Variable.clone(variables["temperature_menu
 variables["dtemperature_format"] = Variable.clone(variables["dtemperature_race"], "dtemperature_format")
 variables["dtemperature_perso"] = Variable.clone(variables["dtemperature_race"], "dtemperature_perso")
 
-# "transition_swi2cyc_s": ["Transition time swi./cyc. (min:sec)", "Temps de transition nat./cyc. (min:sec)"],
-# "transition_cyc2run_s": ["Transition time cyc./run. (min:sec)", "Temps de transition cyc./cou. (min:sec)"],
-
 
 # Some menu
 Labels.add_label("beta_mode", en="Beta mode activation", fr="Activation du mode beta")
+# Labels.add_label(
+#    "height_cm", en="Height (cm)", fr="Taille (cm)", hen="You height in centimeters", srange="i:100:240:1", default=175
+# )
