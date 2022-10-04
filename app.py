@@ -139,6 +139,7 @@ def main():
                 fr=f"⚠️ Cette section est cours de construction ",
             )
         )
+        st.pyplot(trianer.training.show_plan("4h30"))
 
     # Show about section
     if menu.is_menu(["athlete", "simulation", "training"]):

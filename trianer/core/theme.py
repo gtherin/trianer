@@ -57,18 +57,31 @@ def get_ravitos_styles(ravito):
     )
 
 
-plt.rcParams["axes.edgecolor"] = get_color("axis")
-plt.rcParams["axes.labelcolor"] = get_color("axis")
-plt.rcParams["axes.titlecolor"] = get_color("axis")
-plt.rcParams["figure.edgecolor"] = get_color("axis")
-plt.rcParams["figure.facecolor"] = background_color
-# plt.rcParams["grid.color"] = "white"
-plt.rcParams["legend.facecolor"] = background_color
-plt.rcParams["legend.edgecolor"] = background_color
-# plt.rcParams["text.color"] = "white"
-plt.rcParams["xtick.color"] = get_color("axis")
-plt.rcParams["ytick.color"] = get_color("axis")
+def set_style():
+    plt.rcParams["axes.edgecolor"] = get_color("axis")
+    plt.rcParams["axes.labelcolor"] = get_color("axis")
+    plt.rcParams["axes.titlecolor"] = get_color("axis")
+    plt.rcParams["axes.facecolor"] = background_color
+    plt.rcParams["figure.edgecolor"] = get_color("axis")
+    plt.rcParams["figure.facecolor"] = background_color
+    # plt.rcParams["grid.color"] = "white"
+    plt.rcParams["legend.facecolor"] = background_color
+    plt.rcParams["legend.edgecolor"] = background_color
+    # plt.rcParams["text.color"] = "white"
+    plt.rcParams["xtick.color"] = get_color("axis")
+    plt.rcParams["ytick.color"] = get_color("axis")
 
-plt.rcParams["font.size"] = 16
-# plt.rcParams["axes.labelsize"] = "medium"
-plt.rcParams["lines.linewidth"] = 4
+    plt.rcParams["font.size"] = 16
+    # plt.rcParams["axes.labelsize"] = "medium"
+    plt.rcParams["lines.linewidth"] = 4
+
+    from cycler import cycler
+
+    # mpl.rcParams['axes.prop_cycle'] = cycler(color='bgrcmyk')
+    # mpl.rcParams['axes.prop_cycle'] = cycler(color='bgrcmyk')
+    plt.rcParams["axes.prop_cycle"] = cycler(
+        color=[get_color(c) for c in ["swimming", "cycling", "running", "The end"]]
+    )
+
+
+set_style()

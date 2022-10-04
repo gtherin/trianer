@@ -3,12 +3,9 @@ import pandas as pd
 import logging
 
 import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
-from matplotlib.lines import Line2D
 import matplotlib
 
 
-from ..core.labels import gl
 from ..core import theme
 
 logging.getLogger("matplotlib.font_manager").disabled = True
