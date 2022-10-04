@@ -107,7 +107,12 @@ def set_language(language):
     Labels.language_idx = 1 if language == "Fr" else 0
 
 
-def gl(name, u=False):
+def gl(name=None, u=False, en=None, fr=None):
+    if en is not None and Labels.language_idx == 0:
+        return en
+    if en is not None and Labels.language_idx == 1:
+        return en if fr is None else fr
+
     if name not in Labels.labels.keys():
         return name
 

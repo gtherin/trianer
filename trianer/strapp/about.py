@@ -17,8 +17,19 @@ def get_content(all_cookies, cookie_manager):
 
     vetruve_file = gpx.get_file("vetruve_gen.png")
     st.image(vetruve_file)
+    vetruve_file2 = gpx.get_file("relative_intensity_vs_running_time.png")
+    st.image(vetruve_file2)
     st.success(f"Version {version}")
-    st.markdown(open("./README.md", "r").read())
+    rd = open("./README.md", "r").read()
+    st.markdown(rd)
+
+    """
+![alt text](./data/relative_intensity_vs_running_time.png "Title")
+
+<img src="./data/relative_intensity_vs_running_time.png" alt="isolated" width="200"/>
+<img src="../data/relative_intensity_vs_running_time.png" alt="isolated" width="200"/>
+<img src="data/relative_intensity_vs_running_time.png" alt="isolated" width="200"/>
+"""
 
     cl = open("./CHANGELOG.md", "r").read().split("[")
     st.markdown("[".join(cl[:3]))

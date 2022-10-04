@@ -36,4 +36,11 @@ It is what you think you can perform on that distance.
 The final estimation and nutrition plans need for the accomplishement of the race
 #### 💦 Training (beta mode ⚠️🚧)
 
+![alt text](../data/relative_intensity_vs_running_time.png "Title")
+![alt text](data/relative_intensity_vs_running_time.png "Title2")
+
+<img src="./data/relative_intensity_vs_running_time.png" alt="isolated" width="200"/>
+<img src="../data/relative_intensity_vs_running_time.png" alt="isolated" width="200"/>
+<img src="data/relative_intensity_vs_running_time.png" alt="isolated" width="200"/>
+
 Should contains the training plan to get to that objective.
