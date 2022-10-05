@@ -1,21 +1,19 @@
 mkdir -p ~/.streamlit/
 
 echo "\
-[general]\n\
-email = \"gt@guydegnol.net\"\n\
+[general]
+email = \"gt@guydegnol.net\"
 " > ~/.streamlit/credentials.toml
 
 echo "\
-[server]\n\
-headless = true\n\
-enableCORS=false\n\
-port = $PORT\n\
+[server]
+headless = true
+enableCORS=false
+port = $PORT
 
-[logger]\n\
-# Level of logging: 'error', 'warning', 'info', or 'debug'.\n\
-# Default: 'info'\n\
-level = \"warning\"\n\
-
+[logger]
+# Level of logging: 'error', 'warning', 'info', or 'debug'.
+level = \"warning\"
 
 [theme]
 backgroundColor='#e6dce2'
