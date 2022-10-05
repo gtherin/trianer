@@ -133,13 +133,38 @@ def main():
 
     if menu.is_menu(menu_id := "training"):
         st.subheader(gl(menu_id))
+
+        race_title = trianer.Race.init_from_cookies(tsti.get_value).get_info()
+        race = strapp.get_race()
+        st.subheader(f"{race_title}")
+
         st.warning(
             Labels.add_label(
                 en=f"⚠️ Section is under construction 🚧",
                 fr=f"⚠️ Cette section est cours de construction ",
             )
         )
-        st.pyplot(trianer.training.show_plan("4h30"))
+        tsti.get_inputs(["target_time", "vo2max"])
+
+        target_time = tsti.get_value("target_time")
+        h, m = [int(t) for t in str(target_time).split(":")[:2]]
+        ttime = f"{h}h{m}" if m != 0 else f"{h}h"
+
+        st.subheader(f"{race_title}")
+
+        athlete = strapp.get_athlete()
+
+        gpace = trianer.training.allures[ttime]
+        st.write(f"Marathon in {ttime}: estimated pace {gpace}")
+
+        if ttime in ["4h", "4h30", "5h"]:
+            st.pyplot(trianer.training.show_plan(ttime, race=race, athlete=athlete))
+        else:
+            st.error(f"Training plan not available in {ttime} (estimated pace {gpace})")
+
+        training = trianer.Training(athlete=athlete, race="Marathon", target="4h")
+        st.pyplot(training.show_speed_vs_duration())
+        st.pyplot(training.show_pace_vs_percentage())
 
     # Show about section
     if menu.is_menu(["athlete", "simulation", "training"]):

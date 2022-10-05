@@ -70,6 +70,7 @@ def get_training_plan(name="5h"):
     plan = Plan(name, vo2max=vo2max)
 
     tp = plan.plan
+    print(tp)
 
     t_in_days = 0
     data = []
@@ -134,6 +135,12 @@ def get_training_plan(name="5h"):
     data["dtime"] = data["atime"].max() - data["atime"]
 
     data = data[data["activity"] == "footing"]
+
+    # print(data[data["pace"].isnull()])
+
+    if "distance" not in data.columns:
+        data["speed"] = (3600.0 / data["pace"].dt.seconds).replace([np.inf], np.nan)  # .fillna(0.0)
+        data["distance"] = data["speed"] * data["duration"].dt.seconds / 3600.0
 
     data["pace"] = data["pace"].fillna(
         (data["duration"].dt.seconds / data["distance"]).fillna(0.0).astype("timedelta64[s]")

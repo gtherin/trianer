@@ -41,7 +41,7 @@ def get_temperature():
 def get_athlete():
     return trianer.Athlete(
         **get_pars(
-            ["swimming_sX100m", "cycling_kmXh", "running_sXkm", "sudation"]
+            ["swimming_sX100m", "cycling_kmXh", "running_sXkm", "sudation", "vo2max"]
             + ["transition_swi2cyc_s", "transition_cyc2run_s", "weight_kg", "year_of_birth", "height_cm"]
         )
     )

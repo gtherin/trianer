@@ -2,7 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from ..core import theme
+from ..core import tools
 from ..core.labels import gl
+
+from .hermann import get_hermann, Hermann
 
 
 def get_speed_from_vo2max(vo2max):
@@ -32,15 +35,8 @@ def get_vo2max_from_hr(hr):
     return (hr - 0.23) / 0.78
 
 
-def get_max_heart_rate(age, model=""):
-    """
-    Calculate your maximum heart rate. The most common way to calculate your maximum heart rate is to subtract your age from 220.[4] If you’re 25 years old, your HRmax = 220 -25 = 195 beats per minute (bpm).
-    There is some research that suggests this formula oversimplifies the calculation. You can also estimate your max heart rate with the formula HRmax = 205.8 – (0.685 x age).[5]"""
-
-    if model == "basic":
-        return 220 - age
-    else:
-        return 205.8 - 0.685 * age
+def get_hr_from_vo2max(vo2m):
+    return 0.78 * vo2m + 0.23
 
 
 def get_maxspeed_for_duration(vo2max, duration):
@@ -84,22 +80,31 @@ def show_perhrmax_vs_pervo2max():
     plt.ylabel("Relative intensity (%VO2max)")
     plt.legend()
 
-    filename = "../data/perhrmax_vs_pervo2max.png"
+    filename = tools.get_file("perhrmax_vs_pervo2max.png", read=False, write=False)
     print(f"Write in {filename}")
     plt.savefig(filename)
 
     plt.show()
 
 
-def show_relative_intensity_vs_running_time():
-    running_time = np.linspace(1, 180, 100)
-    plt.plot(running_time, 100.0 * get_relative_intensity(running_time), label="% of VO2max")
-    plt.hlines(85, 1, 180, label="85% of VO2max", color=theme.get_color("running"))
+def show_relative_intensity_vs_running_time(tmax=300):
+    """
+    3 5 10 15 20 30 42.195
+    13:30 23:40 50:58 1:20:03 1:50:27 2:54:15 4:16:20
+    """
+
+    running_time = np.linspace(1, tmax, 100)
+    relative_intensity = 100.0 * get_relative_intensity(running_time)
+
+    plt.plot(running_time, relative_intensity, label="% of VO2max")
+    plt.hlines(100.0 * 0.85, 1, tmax, label="85% of VO2max", color=theme.get_color("running"))
     plt.title("%VO2max you can reach versus duration of the race")
     plt.ylabel("Relative intensity (%VO2max)")
+
     plt.xlabel("Running time in minutes")
     plt.legend()
-    filename = "../data/relative_intensity_vs_running_time.png"
+
+    filename = tools.get_file("relative_intensity_vs_running_time.png", read=False, write=False)
     print(f"Write in {filename}")
     plt.savefig(filename)
     plt.show()
@@ -108,14 +113,14 @@ def show_relative_intensity_vs_running_time():
 def show_vo2max_vs_speed():
 
     vo2max = np.linspace(40, 65, 100)
-
     speed = get_speed_from_vo2max(vo2max)
 
     plt.plot(speed, vo2max)
     plt.title(gl(en="Reachable speed for a given vo2max"))
     plt.xlabel("Speed (km/h)")
     plt.ylabel("VO2max (ml/kg/min)")
-    filename = "../data/vo2max_vs_speed.png"
+
+    filename = tools.get_file("vo2max_vs_speed.png", read=False, write=False)
     print(f"Write in {filename}")
     plt.savefig(filename)
     plt.show()

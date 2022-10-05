@@ -16,3 +16,4 @@ from .race.races import available_races
 from .race.display import show_gpx_track
 
 from . import training
+from .training.training_class import Training

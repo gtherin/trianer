@@ -58,13 +58,14 @@ def get_ravitos_styles(ravito):
 
 
 def set_style():
+    plt.rcParams["axes.grid"] = True
     plt.rcParams["axes.edgecolor"] = get_color("axis")
     plt.rcParams["axes.labelcolor"] = get_color("axis")
     plt.rcParams["axes.titlecolor"] = get_color("axis")
     plt.rcParams["axes.facecolor"] = background_color
     plt.rcParams["figure.edgecolor"] = get_color("axis")
     plt.rcParams["figure.facecolor"] = background_color
-    # plt.rcParams["grid.color"] = "white"
+    plt.rcParams["grid.color"] = "white"
     plt.rcParams["legend.facecolor"] = background_color
     plt.rcParams["legend.edgecolor"] = background_color
     # plt.rcParams["text.color"] = "white"
@@ -74,6 +75,8 @@ def set_style():
     plt.rcParams["font.size"] = 16
     # plt.rcParams["axes.labelsize"] = "medium"
     plt.rcParams["lines.linewidth"] = 4
+
+    # ax.grid(True, axis="y", color="white")
 
     from cycler import cycler
 

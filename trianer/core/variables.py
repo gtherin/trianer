@@ -137,6 +137,7 @@ variables = [
         input_format="checkbox",
     ),
     dict(key="weight_kg", help="Your weight (in kg)", srange="i:40:100:1", default=70),
+    dict(key="vo2max", help="Your Vo2 max (in ml/kg/min)", srange="i:30:80:1", default=45),
     dict(
         key="year_of_birth",
         srange="i:1930:2018:1",
@@ -151,6 +152,14 @@ variables = [
         input_format="slider",
     ),
     dict(key="height_cm", help="You height in centimeters", srange="i:100:240:1", default=175),
+    # Transitions
+    dict(
+        key="target_time",
+        help="Target time in minutes:seconds",
+        srange="t:2:5:30",
+        default=datetime.time(4, 30),
+        input_format="slider",
+    ),
 ]
 
 variables = {v["key"]: Variable(**v) for v in variables}

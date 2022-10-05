@@ -37,7 +37,12 @@ def plot_rectangle(ax, x_coo, y_coo, width, color, label, fontsize=8):
     )
 
 
-def show_plan(plan):
+def show_plan(target_time, athlete=None, race="Marathon"):
+    if target_time not in ["5h"]:
+        plan = "4h30"
+    else:
+        plan = target_time
+
     data = get_training_plan(plan)
     data["ds"] = data["duration"].dt.seconds
     data["rpace"] = data["pace"].dt.ceil(freq="30S")
