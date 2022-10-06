@@ -1,5 +1,7 @@
 import numpy as np
 import streamlit as st
+from PIL import Image
+
 from streamlit_folium import folium_static
 
 import trianer
@@ -11,7 +13,7 @@ from trianer.core.labels import gl, gc, set_language, Labels
 
 st.set_page_config(
     page_title="Trianer",
-    page_icon=":running:",  # Image.open("favicon.ico")
+    page_icon=Image.open(trianer.get_file("trianer_v3.png")),  # ":running:"
     layout="wide",
     initial_sidebar_state="collapsed",
     menu_items={

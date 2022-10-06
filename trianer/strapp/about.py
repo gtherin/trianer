@@ -15,10 +15,8 @@ def get_content(all_cookies, cookie_manager):
 
     from ..__version__ import __version__ as version
 
-    vetruve_file = gpx.get_file("vetruve_gen.png")
-    st.image(vetruve_file)
-    vetruve_file2 = gpx.get_file("relative_intensity_vs_running_time.png")
-    st.image(vetruve_file2)
+    # st.image(gpx.get_file("trianer_maquette.png"), width=300)
+    st.image(gpx.get_file("vetruve_gen.png"))
     st.success(f"Version {version}")
     rd = open("./README.md", "r").read()
     st.markdown(rd)

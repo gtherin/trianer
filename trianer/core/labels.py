@@ -20,7 +20,7 @@ class Labels:
         4: ["Training", "Entrainement"],
         "training": ["Training", "Entrainement"],
         "about": ["About", "A propos"],
-        "about_app": ["About this app", "A propos de l'appli"],
+        "about_app": ["About trainer app", "A propos de l'appli trianer"],
         "race_menu": ["Type of race", "Format de course"],
         "temp_auto": ["Automatic", "Automatique"],
         "temp_manual": ["Manual", "Manuel"],
