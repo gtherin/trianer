@@ -6,10 +6,9 @@
 - Improve predictions with data analyses
 - Improve slope dependencies with speed
 - Fix site for ios/safari Universe
-- Have a clear chart color and share it with the app
 
 
-#### [3.2.2] - 2022-10-06
+#### [3.2.3] - 2022-10-06
 
 - Add first training graph
 - Add training graph
@@ -23,6 +22,7 @@
 - Add a better theme
 - Set up a beta mode
 - Fix date issue
+- Have a clear chart color and share it with the app
 
 #### [2.8.3] - 2022-09-29
 
