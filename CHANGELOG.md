@@ -9,11 +9,12 @@
 - Have a clear chart color and share it with the app
 
 
-#### [3.2.2] - 2022-10-05
+#### [3.2.2] - 2022-10-06
 
 - Add first training graph
-- Add traning graph
+- Add training graph
 - Use Hermann table to estimate speeds
+- Add Marathon pour tous
 
 #### [3.1.4] - 2022-10-01
 

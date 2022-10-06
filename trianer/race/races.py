@@ -4,6 +4,24 @@ import datetime
 available_races = {
     v["key"]: v
     for v in [
+        # Paris
+        dict(
+            key="Jeux olympiques Paris (Marathon)",
+            start_time=datetime.datetime.strptime("2023-08-10 08:00", "%Y-%m-%d %H:%M"),
+            distances=[42.195],
+            elevations=[438],
+            disciplines=["running"],
+            dfuelings=[[0, 7.5, 12.5, 17.5, 22.5, 27.5, 32.5, 37.5]],
+            gpx_data=["ParisJO_Marathon.gpx"],
+        ),
+        dict(
+            key="Paris (Ecotrail)",
+            start_time=datetime.datetime.strptime("2023-03-18 11:30", "%Y-%m-%d %H:%M"),
+            distances=[80.0],
+            disciplines=["running"],
+            dfuelings=[[0, 24, 46, 56, 69]],
+            gpx_data=["Paris_Ecotrail.gpx"],
+        ),
         # Chtriman
         dict(
             key="Nice (Ironman)",
@@ -30,6 +48,23 @@ available_races = {
             gpx_data=[",x2", "Embrunman_XL_cycling.gpx", "Embrunman_XL_running.gpx,x3"],
             comments=["d:100,c:Col de l'Isoard 2361m"],
             weather_coordonates=[45.188529, 5.724524],  # Grenoble
+        ),
+        dict(
+            key="Paris (Marathon)",
+            start_time=datetime.datetime.strptime("2023-04-02 10:00", "%Y-%m-%d %H:%M"),
+            distances=[42.195],
+            disciplines=["running"],
+            dfuelings=[[0, 7, 12.8, 17.7, 22.8, 27, 29.9, 34.6, 38.5]],
+            gpx_data=["Paris_Marathon.gpx"],
+        ),
+        dict(
+            key="Paris (M)",
+            start_time=datetime.datetime.strptime("2022-09-10 08:00", "%Y-%m-%d %H:%M"),
+            # distances=[1.5, 40, 11],
+            # elevations=[0, 472, 132],
+            # options=["x2", "", "Mx2"],
+            dfuelings=[[0], [0], [0, 6.0]],
+            gpx_data=["Paris_M_swimming.gpx,x2", "Paris_M_cycling.gpx", "Paris_M_running.gpx,x2"],
         ),
         # Elsassman
         dict(
@@ -83,32 +118,6 @@ available_races = {
             # options=["x2", "", "Mx2"],
             dfuelings=[[0], [0, 43], [0, 3.5, 6.5]],
             gpx_data=["Bois_le_Roi_L_swimming.gpx,x2", "Bois_le_Roi_L_cycling.gpx", "Bois_le_Roi_L_running.gpx,x2"],
-        ),
-        # Paris
-        dict(
-            key="Paris (Marathon)",
-            start_time=datetime.datetime.strptime("2023-04-02 10:00", "%Y-%m-%d %H:%M"),
-            distances=[42.195],
-            disciplines=["running"],
-            dfuelings=[[0, 7, 12.8, 17.7, 22.8, 27, 29.9, 34.6, 38.5]],
-            gpx_data=["Paris_Marathon.gpx"],
-        ),
-        dict(
-            key="Paris (Ecotrail)",
-            start_time=datetime.datetime.strptime("2023-03-18 11:30", "%Y-%m-%d %H:%M"),
-            distances=[80.0],
-            disciplines=["running"],
-            dfuelings=[[0, 24, 46, 56, 69]],
-            gpx_data=["Paris_Ecotrail.gpx"],
-        ),
-        dict(
-            key="Paris (M)",
-            start_time=datetime.datetime.strptime("2022-09-10 08:00", "%Y-%m-%d %H:%M"),
-            # distances=[1.5, 40, 11],
-            # elevations=[0, 472, 132],
-            # options=["x2", "", "Mx2"],
-            dfuelings=[[0], [0], [0, 6.0]],
-            gpx_data=["Paris_M_swimming.gpx,x2", "Paris_M_cycling.gpx", "Paris_M_running.gpx,x2"],
         ),
         dict(key="Marathon", distances=[42.195], disciplines=["running"], type="format"),
         dict(key="Half-Marathon", distances=[21.195], disciplines=["running"], type="format"),
