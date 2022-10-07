@@ -18,6 +18,7 @@ class Menu:
         self.beta_mode = beta_mode
         if beta_mode:
             menu_data.append({"id": "training", "icon": "💦"})
+            menu_data = [{"id": "training", "icon": "💦"}]
 
         self.menu_steps = [self.get_label(m["id"]) for m in menu_data]
 

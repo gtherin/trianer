@@ -33,12 +33,13 @@ def main():
 
     set_language(tsti.get_value("language"))
     menu = strapp.Menu(beta_mode=tsti.get_value("beta_mode"))
-    if menu.is_menu(menu_id := "perf"):
-        st.subheader(gl(menu_id))
-        tsti.get_inputs(["swimming_sX100m", "cycling_kmXh", "running_sXkm"])
-        tsti.get_inputs(["transition_swi2cyc_s", "transition_cyc2run_s"])
 
-    if menu.is_menu(menu_id := "race"):
+    if menu.is_menu(menu_id := "athlete"):
+        st.subheader(gl(menu_id))
+        tsti.get_inputs(["sex", "weight_kg", "height_cm"])
+        tsti.get_inputs(["language", "year_of_birth", "sudation"], options=[dict(disabled=False), {}, {}])
+
+    if menu.is_menu(["race", "training"]):
         race_menu = tsti.get_value("race_menu")
         if race_menu == gl("existing_race"):
             race_title = trianer.Race(tsti.get_value("race_default")).get_info()
@@ -87,11 +88,6 @@ def main():
 
             tsti.get_temperature_menu("perso")
 
-    if menu.is_menu(menu_id := "athlete"):
-        st.subheader(gl(menu_id))
-        tsti.get_inputs(["sex", "weight_kg", "height_cm"])
-        tsti.get_inputs(["language", "year_of_birth", "sudation"], options=[dict(disabled=False), {}, {}])
-
     if menu.is_menu(menu_id := "simulation"):
         st.subheader(gl(menu_id))
         simulation = trianer.Triathlon(
@@ -133,12 +129,12 @@ def main():
         with st.expander(Labels.add_label(en="F&B", fr="Evenements de course"), expanded=True):
             st.markdown(trianer.show_roadmap(simulation).to_html(), unsafe_allow_html=True)
 
-    if menu.is_menu(menu_id := "training"):
+    if menu.is_menu(menu_id := "perf"):
         st.subheader(gl(menu_id))
+        tsti.get_inputs(["swimming_sX100m", "cycling_kmXh", "running_sXkm"])
+        tsti.get_inputs(["transition_swi2cyc_s", "transition_cyc2run_s"])
 
-        race_title = trianer.Race.init_from_cookies(tsti.get_value).get_info()
-        race = strapp.get_race()
-        st.subheader(f"{race_title}")
+    if menu.is_menu(menu_id := "training"):
 
         st.warning(
             Labels.add_label(
@@ -146,6 +142,9 @@ def main():
                 fr=f"⚠️ Cette section est cours de construction ",
             )
         )
+        race_title = trianer.Race.init_from_cookies(tsti.get_value).get_info()
+        race = strapp.get_race()
+
         tsti.get_inputs(["target_time", "vo2max"])
 
         target_time = tsti.get_value("target_time")

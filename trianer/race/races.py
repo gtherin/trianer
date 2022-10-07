@@ -22,15 +22,6 @@ available_races = {
             dfuelings=[[0, 24, 46, 56, 69]],
             gpx_data=["Paris_Ecotrail.gpx"],
         ),
-        # Chtriman
-        dict(
-            key="Nice (Ironman)",
-            start_time=datetime.datetime.strptime("2023-06-25 07:30", "%Y-%m-%d %H:%M"),
-            distances=[3.8, 180, 42.195],
-            dfuelings=[[0], [0, 24, 51, 72, 94, 116, 137, 156], np.arange(0.0, 10.8, 1.8)],
-            gpx_data=[",x2", "Nice_XL_cycling.gpx", "Nice_XL_running.gpx,x4"],
-        ),
-        # Chtriman
         dict(
             key="Chtriman (Ironman)",
             start_time=datetime.datetime.strptime("2023-07-02 07:00", "%Y-%m-%d %H:%M"),
@@ -39,7 +30,13 @@ available_races = {
             elevations=[0.0, 1220.0, 40.0],  # From data
             gpx_data=[",x2", "Chtriman_XL_cycling.gpx,x2", "Chtriman_XL_running.gpx,x4"],
         ),
-        # Embrunman
+        dict(
+            key="Nice (Ironman)",
+            start_time=datetime.datetime.strptime("2023-06-25 07:30", "%Y-%m-%d %H:%M"),
+            distances=[3.8, 180, 42.195],
+            dfuelings=[[0], [0, 24, 51, 72, 94, 116, 137, 156], np.arange(0.0, 10.8, 1.8)],
+            gpx_data=[",x2", "Nice_XL_cycling.gpx", "Nice_XL_running.gpx,x4"],
+        ),
         dict(
             key="Embrunman (Ironman)",
             start_time=datetime.datetime.strptime("2023-08-15 06:00", "%Y-%m-%d %H:%M"),
