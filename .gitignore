@@ -15,3 +15,5 @@ notebooks/colab_installer.py
 **.pyc
 trianer_db_credentials.json
 nohup.out
+Makefile
+setup.py

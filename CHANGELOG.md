@@ -8,6 +8,10 @@
 - Fix site for ios/safari Universe
 
 
+#### [3.2.4] - 2022-10-14
+
+- Add docker container
+
 #### [3.2.3] - 2022-10-06
 
 - Add first training graph
