@@ -1,0 +1,4 @@
+black
+worldcloud
+ipython
+ipykernel

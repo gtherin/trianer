@@ -32,13 +32,17 @@ docker build . -t streamlit-image
 # Run a local version
 docker run -p 8080:8080 --name streamlit-container streamlit-image
 
+#
+docker run -p 8081:8081 --name streamlit-container streamlit-image
+
 # Run a local container
 docker restart streamlit-container
 
 # Deploy on google
 gcloud: Configuration is in the app.yaml and script 
 
-docker build . -t streamlit-image && gcloud app deploy app.yaml --quiet
+docker build . -t streamlit-image && gcloud app deploy app.yaml
+ --quiet
 
 # Some gcloud options
 gcloud projects create default
@@ -46,5 +50,6 @@ gcloud projects list
 gcloud config configurations list
 
 
+docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q)
 
 

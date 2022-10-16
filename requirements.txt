@@ -21,4 +21,8 @@ folium
 streamlit-folium
 
 google-cloud-firestore
+
+fastapi
+uvicorn
+python-multipart
 #worldcloud

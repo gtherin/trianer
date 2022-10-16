@@ -23,11 +23,10 @@ create:
 	$(CONDA) create -n ${ENV_NAME} python=$(PYTHON_VERSION) -y;
 
 requirements:
-	($(CONDA) activate ${ENV_NAME}; pip install -r requirements.txt;)
-
+	($(CONDA) activate ${ENV_NAME}; pip install -r requirements.txt; pip install -r requirements-dev.txt;)
 
 kernel:
-	$(CONDA) activate ${ENV_NAME}; pip install ipython ipykernel; ipython3 kernel install --user --name=${ENV_NAME};
+	$(CONDA) activate ${ENV_NAME}; ipython3 kernel install --user --name=${ENV_NAME};
 
 install: $(LOCAL_DEPENDENCIES)
 	($(CONDA) activate ${ENV_NAME} ; python setup.py develop)
