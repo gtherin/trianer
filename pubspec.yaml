@@ -11,11 +11,16 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  url_launcher: any
   cupertino_icons: "any"
-  webview_flutter: "any"
-  syncfusion_flutter_sliders: "any"
+  flutter_swiper_null_safety: any
+  font_awesome_flutter: any
+  shared_preferences: any
+  syncfusion_flutter_datepicker: "any"
   syncfusion_flutter_gauges: "any"
+  syncfusion_flutter_sliders: "any"
+  url_launcher: any
+  webview_flutter: any
+
 
 dev_dependencies:
   flutter_test:
