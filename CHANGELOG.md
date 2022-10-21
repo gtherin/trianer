@@ -8,6 +8,10 @@
 - Fix site for ios/safari Universe
 
 
+#### [3.3.0] - 2022-10-21
+
+- Merge with flutter/dart package
+
 #### [3.2.4] - 2022-10-14
 
 - Add docker container
