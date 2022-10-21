@@ -7,6 +7,7 @@ notebooks/races/*
 notebooks/pace_data/*
 .vscode/*
 dart/*
+build/*
 
 # Packages
 *.egg
