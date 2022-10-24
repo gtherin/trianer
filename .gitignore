@@ -6,7 +6,7 @@ notebooks/.ipynb_checkpoints/*
 notebooks/races/*
 notebooks/pace_data/*
 .vscode/*
-dart/*
+wedart/*
 build/*
 
 # Packages
