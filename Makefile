@@ -44,7 +44,7 @@ clean-pyc:
 	find . -name '*.pyo' -exec rm --force {} +;
 
 test: clean-pyc
-	py.test --verbose --color=yes tests;
+	pytest --verbose --color=yes tests;
 
 package:
 	# Build package
