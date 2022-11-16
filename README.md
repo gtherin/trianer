@@ -38,25 +38,4 @@ The final estimation and nutrition plans need for the accomplishement of the rac
 #### 💦 Training (beta mode ⚠️🚧)
 
 Should contains the training plan to get to that objective.
-
-# Trianer
-
-This project is a web wrapper to the trianer website:
-
-- [Trainer app1](https://trianer.guydegnol.net)
-- [Trainer app2](https://fathomless-brook-99194.herokuapp.com/)
-
-## Colors
-
-0xe6dce2
-
-eb7a58 235 122 88
-
-# <https://github.com/edwardinubuntu/flutter-web-dockerfile>
-docker build -t trainer-app .
-
-# Or
-
-# <http://localhost:1200/>
-
- --app morning-bayou-58742
+The app is a web wrapper to the [trianer website](https://trianer.guydegnol.net).

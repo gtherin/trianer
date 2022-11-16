@@ -53,3 +53,25 @@ gcloud config configurations list
 docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q)
 
 
+## Colors
+
+0xe6dce2
+
+eb7a58 235 122 88
+
+# <https://github.com/edwardinubuntu/flutter-web-dockerfile>
+docker build -t trainer-app .
+
+# Or
+
+# <http://localhost:1200/>
+
+ --app morning-bayou-58742
+
+
+
+## Colors
+
+0xe6dce2
+
+eb7a58 235 122 88

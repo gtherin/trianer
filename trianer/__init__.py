@@ -8,6 +8,7 @@ from .core.roadmap import show_roadmap
 from .core import models
 
 from .nutrition.fueling import *
+from .nutrition import children
 
 from .race.gpx import *
 from .race.weather import *
