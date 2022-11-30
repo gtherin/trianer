@@ -159,9 +159,7 @@ class Race:
                     altitude=np.linspace(0, self.elevations[d], step)
                 )
 
-            #if (corr := self.distances[d] / df.distance.iloc[-1]) > 0:
-            corr = self.distances[d] / df.distance.iloc[-1]
-            if corr > 0:
+            if (corr := self.distances[d] / df.distance.iloc[-1]) > 0:
                 df["distance"] *= corr
 
             df["elevation"] = (df["altitude"] - df["altitude"].iloc[0]).diff().fillna(0.0)
