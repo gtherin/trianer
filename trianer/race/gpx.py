@@ -3,148 +3,11 @@ import os
 import json
 import logging
 
+# WARNING: numpy not available for Francois
 import numpy as np
 import pandas as pd
 
-
-def get_default_datetime():
-    return datetime.datetime.now().replace(hour=8, minute=0, second=0, microsecond=0)
-
-
-class Point:
-    @staticmethod
-    def get_anchor_value(point, anchor):
-        return point[point.find(f"<{anchor}>") + len(f"<{anchor}>") : point.find(f"</{anchor}>")]
-
-    @staticmethod
-    def get_latitude(point):
-        for p in point.split():
-            if "lat=" in p:
-                return float(p[5:-2])
-
-    @staticmethod
-    def get_longitude(point):
-        for p in point.split():
-            if "lon=" in p:
-                return float(p[5:-2])
-
-    @staticmethod
-    def get_altitude(point):
-        if "ele" in point:
-            return np.round(float(Point.get_anchor_value(point, "ele")), 2)
-        else:
-            return 0.0
-
-    @staticmethod
-    def get_time(point):
-        if "time" not in point:
-            return get_default_datetime()
-        ttime = Point.get_anchor_value(point, "time")
-        return datetime.datetime.strptime(ttime[:19], "%Y-%m-%dT%H:%M:%S")
-
-    @staticmethod
-    def update_altitude(altitude, point):
-        fpoint = point[: point.find("<ele>") + len("<ele>")] + "%.2f" % altitude + point[point.find("</ele>") :]
-        return fpoint
-
-    @staticmethod
-    def delete_tag(point, tag):
-        if tag not in point:
-            return point
-        return point[: point.find(tag)] + point[point.find(tag.replace("<", "</")) + len(tag) + 1 :]
-
-    def __init__(self, point, splitter="<trkpt", remove_time=True, debug=False):
-        self.is_valid_gpx = "lat=" in point
-        self.is_valid_tcx = "<AltitudeMeters>" in point
-
-        self.point = point
-        self.latitude = -1
-        self.longitude = -1
-        self.altitude = -1
-        self.distance = -1
-        self.dtime = get_default_datetime()
-        self.temperature = -1
-        self.hr = -1
-        self.remove_time = remove_time
-        self.debug = debug
-
-        if self.is_valid_gpx:
-
-            self.point = splitter + point
-            self.latitude = self.get_latitude(self.point)
-            self.longitude = self.get_longitude(self.point)
-            self.altitude = self.get_altitude(self.point)
-            self.dtime = self.get_time(self.point)
-            if "gpxtpx:atemp" in point:
-                self.temperature = Point.get_anchor_value(self.point, "gpxtpx:atemp")
-            if "ns3:atemp" in point:
-                self.temperature = Point.get_anchor_value(self.point, "ns3:atemp")
-            if "gpxtpx:hr" in point:
-                self.hr = Point.get_anchor_value(self.point, "gpxtpx:hr")
-            if "ns3:hr" in point:
-                self.hr = Point.get_anchor_value(self.point, "ns3:hr")
-        elif self.is_valid_tcx:
-            self.point = splitter + point
-            self.latitude = Point.get_anchor_value(self.point, "LatitudeDegrees")
-            self.longitude = Point.get_anchor_value(self.point, "LongitudeDegrees")
-            self.altitude = Point.get_anchor_value(self.point, "AltitudeMeters")
-            self.dtime = Point.get_anchor_value(self.point, "Time")
-            self.distance = Point.get_anchor_value(self.point, "DistanceMeters")
-
-    def get_formatted_point(self):
-        if not self.is_valid_gpx:
-            return self.point
-        point = Point.delete_tag(self.point, "<extensions>")
-        if self.remove_time:
-            point = Point.delete_tag(point, "<time>")
-        # S'il n'y a pas d'extensions : (et commenter ligne au dessus
-        point = Point.update_altitude(self.altitude, point)
-        point = point.replace("\n", "").replace("\t", " ")
-
-        if self.debug:
-            print(point)
-
-        return point + "\n"
-
-
-def clean_file(filename, filters, remove_time=True, debug=False, creator="GPS Track Editor"):
-
-    if not os.path.exists(filename):
-        print(f"{filename}: File does not exist")
-        return
-
-    xml = open(filename, "r").read()
-
-    xml = xml.replace(creator, "https://www.horizonrando.fr")
-    xml = xml.split("<trkpt")
-
-    text = ""
-    for d, p in enumerate(xml):
-        point = Point(p, remove_time=remove_time, debug=debug and d < 10)
-
-        for filter in filters:
-            ctime = point.dtime.time()
-
-            altitude_offset = 0
-            if ctime >= filter["min_time"] and ctime <= filter["max_time"]:
-                if type(filter["altitude_offset"]) == dict:
-                    altitude_global_offset = filter["altitude_offset"]["max"] - filter["altitude_offset"]["min"]
-
-                    altitude_offset = altitude_global_offset * (
-                        get_diff_in_seconds(ctime, filter["min_time"]) / filter["diff_time"]
-                    )
-                    altitude_offset += filter["altitude_offset"]["min"]
-
-                else:
-                    altitude_offset = filter["altitude_offset"]
-
-                print("%s: Altitude %s offset to %sm" % (filename, point.dtime.time(), int(altitude_offset)))
-                point.altitude += altitude_offset
-
-        text += point.get_formatted_point()
-
-    with open(filename.replace(".gpx", "_hr.gpx"), "w") as f:
-        f.write(text)
+from .gpx_formatter import Point
 
 
 def haversine(lat1, lon1, lat2, lon2, to_radians=True, earth_radius=6371):
@@ -183,6 +46,9 @@ def get_file(filename, read=False):
 
 def get_data_from_file(filename):
 
+    # WARNING: not available for Francois
+    import pandas as pd
+
     xml = get_file(filename, read=True)
 
     if "<trkpt" in xml:
@@ -213,13 +79,6 @@ def get_data_from_file(filename):
     return pd.DataFrame(data, columns=["latitude", "longitude", "altitude", "distance", "dtime", "temperature", "hr"])
 
 
-def get_diff_in_seconds(time1, time2):
-    return (
-        datetime.datetime.combine(datetime.date.today(), time1)
-        - datetime.datetime.combine(datetime.date.today(), time2)
-    ).seconds
-
-
 def enrich_data(data, target_distance=None, target_elelevation=None):
 
     # FIlter distance
@@ -246,6 +105,8 @@ def enrich_data(data, target_distance=None, target_elelevation=None):
 
 def get_data(filename=None, nlaps=1):
     #    filename = "http://trianer.guydegnol.net/" + filename
+    import pandas as pd
+
     data = get_data_from_file(filename)
     data = pd.concat([data] * nlaps)
 
@@ -265,21 +126,3 @@ def get_data(filename=None, nlaps=1):
     data["altitude"] = pd.Series(data["altitude"]).apply(lambda x: int(5 * round(float(x) / 5)))
 
     return data
-
-
-def clean_files(filename="anon_gpx.json"):
-
-    filters = json.load(open(filename, "r"))
-
-    for filename, filters in filters.items():
-
-        for filter in filters:
-            filter["min_time"] = datetime.datetime.strptime(filter["min_time"], "%H:%M:%S").time()
-            filter["max_time"] = datetime.datetime.strptime(filter["max_time"], "%H:%M:%S").time()
-            filter["diff_time"] = get_diff_in_seconds(filter["max_time"], filter["min_time"])
-
-        clean_file(filename, filters)
-
-
-if __name__ == "__main__":
-    clean_files()

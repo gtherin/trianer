@@ -11,6 +11,7 @@ from .nutrition.fueling import *
 from .nutrition import children
 
 from .race.gpx import *
+from .race.gpx_formatter import *
 from .race.weather import *
 from .race.race import Race
 from .race.races import available_races
