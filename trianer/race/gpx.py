@@ -48,12 +48,12 @@ class Point:
         return fpoint
 
     @staticmethod
-    def delete_extensions(point):
-        if "<extensions>" not in point:
+    def delete_tag(point, tag):
+        if tag not in point:
             return point
-        return point[: point.find("<extensions>")] + point[point.find("</extensions>") + len("</extensions>") :]
+        return point[: point.find(tag)] + point[point.find(tag.replace("<", "</")) + len(tag) + 1 :]
 
-    def __init__(self, point, splitter="<trkpt"):
+    def __init__(self, point, splitter="<trkpt", remove_time=True, debug=False):
         self.is_valid_gpx = "lat=" in point
         self.is_valid_tcx = "<AltitudeMeters>" in point
 
@@ -65,6 +65,8 @@ class Point:
         self.dtime = get_default_datetime()
         self.temperature = -1
         self.hr = -1
+        self.remove_time = remove_time
+        self.debug = debug
 
         if self.is_valid_gpx:
 
@@ -90,25 +92,35 @@ class Point:
             self.distance = Point.get_anchor_value(self.point, "DistanceMeters")
 
     def get_formatted_point(self):
-        if not self.is_valid:
+        if not self.is_valid_gpx:
             return self.point
-        point = Point.delete_extensions(self.point)
+        point = Point.delete_tag(self.point, "<extensions>")
+        if self.remove_time:
+            point = Point.delete_tag(point, "<time>")
         # S'il n'y a pas d'extensions : (et commenter ligne au dessus
         point = Point.update_altitude(self.altitude, point)
-        return point
+        point = point.replace("\n", "").replace("\t", " ")
+
+        if self.debug:
+            print(point)
+
+        return point + "\n"
 
 
-def clean_file(filename, filters):
+def clean_file(filename, filters, remove_time=True, debug=False, creator="GPS Track Editor"):
 
     if not os.path.exists(filename):
         print(f"{filename}: File does not exist")
         return
 
-    xml = open(filename, "r").read().split("<trkpt")
+    xml = open(filename, "r").read()
+
+    xml = xml.replace(creator, "https://www.horizonrando.fr")
+    xml = xml.split("<trkpt")
 
     text = ""
-    for p in xml:
-        point = Point(p)
+    for d, p in enumerate(xml):
+        point = Point(p, remove_time=remove_time, debug=debug and d < 10)
 
         for filter in filters:
             ctime = point.dtime.time()
@@ -255,9 +267,9 @@ def get_data(filename=None, nlaps=1):
     return data
 
 
-def clean_files():
+def clean_files(filename="anon_gpx.json"):
 
-    filters = json.load(open("anon_gpx.json", "r"))
+    filters = json.load(open(filename, "r"))
 
     for filename, filters in filters.items():
 

@@ -18,3 +18,4 @@ trianer_db_credentials.json
 nohup.out
 Makefile
 setup.py
+tests/Barden_hr.gpx
