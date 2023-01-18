@@ -94,8 +94,8 @@ class Point:
 
     def get_formatted_point(self, debug=False):
         self.npoint = self.npoint.replace("\n", "").replace("\t", " ")
-        if self.is_valid_gpx and debug:
-            print(self.npoint)
+        # if self.is_valid_gpx and debug:
+        print(self.npoint)
         return self.npoint + "\n"
 
 
@@ -175,20 +175,21 @@ class GpxFormatter:
 
         gpx_file.save()
 
+    @staticmethod
+    def clean_files(filename="gpx.json", filters=None, debug=False, remove_time=True):
 
-def clean_files(filename="gpx.json"):
+        if filters is None:
+            filters = json.load(open(filename, "r"))
 
-    filters = json.load(open(filename, "r"))
+        for filename, filters in filters.items():
 
-    for filename, filters in filters.items():
+            for filter in filters:
+                filter["min_time"] = datetime.datetime.strptime(filter["min_time"], "%H:%M:%S").time()
+                filter["max_time"] = datetime.datetime.strptime(filter["max_time"], "%H:%M:%S").time()
+                filter["diff_time"] = get_diff_in_seconds(filter["max_time"], filter["min_time"])
 
-        for filter in filters:
-            filter["min_time"] = datetime.datetime.strptime(filter["min_time"], "%H:%M:%S").time()
-            filter["max_time"] = datetime.datetime.strptime(filter["max_time"], "%H:%M:%S").time()
-            filter["diff_time"] = get_diff_in_seconds(filter["max_time"], filter["min_time"])
-
-        GpxFormatter.clean_file(filename, filters)
+            GpxFormatter.clean_file(filename, filters, debug=debug, remove_time=remove_time)
 
 
 if __name__ == "__main__":
-    clean_files()
+    GpxFormatter.clean_files()
