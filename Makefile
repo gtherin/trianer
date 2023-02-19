@@ -44,7 +44,7 @@ clean-pyc:
 	find . -name '*.pyo' -exec rm --force {} +;
 
 test: clean-pyc
-	py.test --verbose --color=yes tests;
+	pytest --verbose --color=yes tests;
 
 package:
 	# Build package
@@ -65,10 +65,4 @@ export-config:
 	/usr/bin/google-drive-ocamlfuse /home/guydegnol/export/
 
 web:
-	# Sync website
-	#lftp -u webmaster@guydegnol.net,${DIST_PARAM} privftp.online.net -e "mirror -e -R /home/guydegnol/projects/web/guydegnol.net www ; quit"
-	@lftp -u ${ONLINE_CONNECT} privftp.online.net -e "mirror -e -R /home/guydegnol/projects/web/guydegnol.net www ; quit"
-    #curlftpfs privftp.online.net /mnt/online -o user=${ONLINE_CONNECT},allow_other -o uid=1000 -o gid=1000
-
-
-sdist: package notebooks web
+	/home/guydegnol/projects/web/deploy2online.sh

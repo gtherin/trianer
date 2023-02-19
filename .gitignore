@@ -6,7 +6,7 @@ notebooks/.ipynb_checkpoints/*
 notebooks/races/*
 notebooks/pace_data/*
 .vscode/*
-dart/*
+wedart/*
 build/*
 
 # Packages
@@ -18,3 +18,6 @@ trianer_db_credentials.json
 nohup.out
 Makefile
 setup.py
+tests/Barden_hr.gpx
+tests/Barden_HR.gpx
+tests/A Maniccia_HR.gpx

@@ -24,6 +24,7 @@ heroku builds:cache:purge -a fathomless-brook-99194  --confirm fathomless-brook-
 killall streamlit
 
 # Docker
+
 <https://medium.com/analytics-vidhya/deploying-streamlit-apps-to-google-app-engine-in-5-simple-steps-5e2e2bd5b172>
 
 # Build
@@ -66,3 +67,26 @@ pub global activate webdev
 flutter build web
 scp -r web/
 python -m http.server 8000 &
+=======
+
+## Colors
+
+0xe6dce2
+
+eb7a58 235 122 88
+
+# <https://github.com/edwardinubuntu/flutter-web-dockerfile>
+
+docker build -t trainer-app .
+
+# Or
+
+# <http://localhost:1200/>
+
+ --app morning-bayou-58742
+
+## Colors
+
+0xe6dce2
+
+eb7a58 235 122 88

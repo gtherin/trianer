@@ -19,3 +19,4 @@ from . import cache
 from .menu import Menu
 from .metrics import show_metrics
 from .getters import get_athlete, get_race, get_temperature
+from . import research

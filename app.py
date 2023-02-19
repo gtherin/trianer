@@ -171,6 +171,10 @@ def main():
     if menu.is_menu(["athlete", "simulation", "training"]):
         strapp.about.get_section(all_cookies, cookie_manager)
 
+    # Show about section
+    if menu.is_menu(["research"]):
+        strapp.research.get_section(all_cookies, cookie_manager)
+
 
 if __name__ == "__main__":
     main()
