@@ -90,3 +90,8 @@ docker build -t trainer-app .
 0xe6dce2
 
 eb7a58 235 122 88
+
+flutter build web
+wsl -- rsync -avzh --rsh='ssh -p13390' /mnt/c/Users/gt/projects/trianer/build/web/ 192.168.0.50:/home/guydegnol/projects/trianer/wedart
+scp -r web/
+python -m http.server 9400 &
