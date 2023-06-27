@@ -46,23 +46,5 @@ clean-pyc:
 test: clean-pyc
 	pytest --verbose --color=yes tests;
 
-package:
-	# Build package
-	python setup.py bdist_wheel -d /mnt/tutar/git/dist/
-	#python setup.py sdist -d /mnt/google_drive/packages/
-	# Dump last version number in specific file
-	python setup.py --version > /mnt/tutar/git/dist/${PACKAGE_NAME}.lastversion
-	# Copy the colab installer to google drive
-	cp -f /home/guydegnol/projects/colab_installer.py /mnt/tutar/git/dist/packages/
-
-notebook:
-	mkdir -p /home/guydegnol/export/projects/${PACKAGE_NAME}
-	# Copy the notebooks to google drive
-	#rsync -avu --progress --delete /home/guydegnol/projects/${PACKAGE_NAME}/notebooks/*.ipynb /home/guydegnol/export/projects/${PACKAGE_NAME}
-	#cp /home/guydegnol/projects/${PACKAGE_NAME}/README.rst /home/guydegnol/export/projects/${PACKAGE_NAME}/
-
-export-config:
-	/usr/bin/google-drive-ocamlfuse /home/guydegnol/export/
-
 web:
 	/home/guydegnol/projects/web/deploy2online.sh
