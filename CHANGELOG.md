@@ -4,8 +4,11 @@
 - Have a algorithm to clean gpx files
 - Improve predictions with data analyses
 - Improve slope dependencies with speed
-- Fix site for ios/safari Universe
 
+#### [4.0.1] - 2023-08-05
+
+- Make it a pure web service (no more flutter dart)
+- Make it open source
 
 #### [3.3.0] - 2022-10-21
 

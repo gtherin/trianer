@@ -1,34 +1,11 @@
 import numpy as np
 import pandas as pd
 import os
-from google.cloud import firestore
-
-
-if os.path.exists("/home/guydegnol/projects/trianer/trianer_db_credentials.json"):
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/guydegnol/projects/trianer/trianer_db_credentials.json"
 
 from . import gpx_formatter
 from . import gpx
 from .races import available_races
 from ..core.labels import gl
-
-
-"""
-
-Through a unique systematic approach scientific perspective, the main goal of my job was to extract values from data analyses, to create added value (as research manager). 
-The main goal of my job was to extract values from data analyses, to create added value (as research manager). 
-Make sure that these systems have the right impact in production.
-Leading projects making sure they reach their purpose by adding value to the company.
-
-
-Why are you interested in designing for subscription growth at Strava? *
-
-Strava has built the biggest sport's community in the world by offering well designed products.
-Designing new products are the key to garantee a future subscription growth.
-
-In particular, strava's athletes database built over the years, can play a key role to build new products to improve the custormer experience.
-I'll be glad to help strava developing new products and services, and make them available to athletes around the world.
-"""
 
 
 class Race:
@@ -186,7 +163,15 @@ class Race:
 
     @staticmethod
     def load_races_configs():
+        from google.cloud import firestore
+
+        if os.path.exists("/home/guydegnol/projects/trianer/trianer_db_credentials.json"):
+            os.environ[
+                "GOOGLE_APPLICATION_CREDENTIALS"
+            ] = "/home/guydegnol/projects/trianer/trianer_db_credentials.json"
+
         races_db = firestore.Client().collection("races")
         races_stream = races_db.stream()
         races_configs = {doc.id: doc.to_dict() for doc in races_stream}
+        print(races_configs)
         return races_configs

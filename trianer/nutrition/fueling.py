@@ -5,41 +5,6 @@ from . import met
 from ..core import models
 from ..core.theme import background_color
 
-"""
-
-    https://www.ericfavre.com/lifestyle/tableau-depenses-des-calories/#:~:text=Par%20exemple%2C%20pour%20un%20homme,1%2C8%20%3D%203006%20kcal.
-    https://www.lepape-info.com/entrainement/les-systemes-energetiques-en-natation/#:~:text=En%20natation%2C%20comme%20dans%20les,a%C3%A9robie%20qui%20utilise%20l'oxyg%C3%A8ne
-    https://britishswimschool.com/seattle/the-burn-how-many-calories-do-you-burn-swimming/#:~:text=Because%20most%20people%20are%20unable,and%20750%20calories%20per%20hour.
-
-# Do it in a navigator
-https://www.strava.com/oauth/authorize?client_id=93746&redirect_uri=http://localhost&response_type=code&approval_prompt=force&scope=activity:read_all
-=> GET: code=3f5b0c1958bc3b5271771322048289377bf5580d
-
-# Use new received code
-https://www.strava.com/oauth/token?client_id=93746&client_secret=310f65abdda89164047e3881c3f3ec674f968665&code=3f5b0c1958bc3b5271771322048289377bf5580d&grant_type=authorization_code
-=> POST: access_token=8e7ba78aef1a1f5f867a14c9d577be274c3b1ef3
-
-https://www.strava.com/api/v3/athlete/activities?access_token=8e7ba78aef1a1f5f867a14c9d577be274c3b1ef3
-
-
-
-https://www.strava.com/oauth/token?client_id=93746&client_secret=310f65abdda89164047e3881c3f3ec674f968665&code=8e7ba78aef1a1f5f867a14c9d577be274c3b1ef3&grant_type=refresh_token
-
-
-https://www.strava.com/oauth/authorize?client_id=93746&redirect_uri=http://developers.strava.com&response_type=code&approval_prompt=force&scope=profile:read_all,activity:read_all
-
-https://www.strava.com/oauth/authorize?client_id=93746&redirect_uri=http://localhost&response_type=code&approval_prompt=force&scope=read_all
-
-
-=>
-http://localhost/?state=&code=04eaa98832882031a3808f68fe0f906e5cac1b41&scope=read,read_all
-http://localhost/?state=&code=ee79113371c136533bfe6d80347dcb4665996817&scope=read_all,activity:read_all,profile:read_all
-=>
-
-https://www.strava.com/api/v3/athlete/activities?client_id=93746&access_token=9f4a54258fffb124953127fe1bf8680abeaf8e9d
-
-
-    """
 
 
 def calculate_kcalories(df, race, athlete) -> pd.DataFrame:
