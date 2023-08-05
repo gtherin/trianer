@@ -1,7 +1,9 @@
 
 The aim of this package is dedicated to planify running or triathlon long races.
 
-[Contact](mailto:gt@guydegnol.net)
+> This package used to be deployed on heroku. 
+See se
+
 
 #### 💗 Athlete
 
@@ -39,3 +41,14 @@ The final estimation and nutrition plans need for the accomplishement of the rac
 
 Should contains the training plan to get to that objective.
 The app is a web wrapper to the [trianer website](https://trianer.guydegnol.net).
+
+### Installation
+
+
+To run it localy
+```
+git clone 
+https://github.com/guydegnol/trianer
+
+```
+[Contact](mailto:gt@guydegnol.net)

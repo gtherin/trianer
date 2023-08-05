@@ -1,6 +1,5 @@
 #### [TODO list]
 
-- Move to a native language (dart)
 - Make it possible to add gpx files
 - Have a algorithm to clean gpx files
 - Improve predictions with data analyses

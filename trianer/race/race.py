@@ -7,6 +7,7 @@ from google.cloud import firestore
 if os.path.exists("/home/guydegnol/projects/trianer/trianer_db_credentials.json"):
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/guydegnol/projects/trianer/trianer_db_credentials.json"
 
+from . import gpx_formatter
 from . import gpx
 from .races import available_races
 from ..core.labels import gl
@@ -32,7 +33,6 @@ I'll be glad to help strava developing new products and services, and make them 
 
 class Race:
     def __init__(self, name=None, cycling_dplus=0, running_dplus=0) -> None:
-
         # Init epreuve and longueur
         self.init_basic(name, cycling_dplus, running_dplus)
 
@@ -98,7 +98,6 @@ class Race:
             self.dfuelings = [[] for _ in self.disciplines]
             immutable_fuelings = available_races[name]["dfuelings"].copy()
             for d, discipline in enumerate(self.disciplines):
-
                 gpx_info = self.gpx_data[d].split(",x")
                 nlaps = 1 if len(gpx_info) == 1 or discipline == "swimming" else int(gpx_info[1])
 
@@ -117,7 +116,7 @@ class Race:
         self.disciplines, self.distances, self.elevations = [], [], []
         self.ielevations = {"swimming": 0, "cycling": cycling_dplus, "running": running_dplus}
         self.gpx_data = ["", "", ""]
-        self.start_time = gpx.get_default_datetime()
+        self.start_time = gpx_formatter.get_default_datetime()
 
     def init_elevations(self) -> None:
         if not self.elevations:
@@ -147,7 +146,6 @@ class Race:
         self.fuelings = [0]
 
         for d, discipline in enumerate(self.disciplines):
-
             gpx_info = self.gpx_data[d].split(",x")
 
             if len(gpx_info[0]) > 0:
