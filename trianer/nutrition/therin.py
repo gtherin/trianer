@@ -6,6 +6,7 @@ import datetime
 def get_data():
     data = StringIO(
         """date name weight_kg height_cm
+20230803 Celestine 28 137
 20221126 Celestine 25 134
 20220727 Celestine 23.5 130
 20220123 Celestine 23 128
@@ -14,6 +15,7 @@ def get_data():
 20200627 Celestine  118
 20181023 Celestine  108
 20160327 Celestine  086
+20230803 Victor 49 153
 20221126 Victor 44 148
 20220727 Victor 41.5 144
 20220123 Victor 39 143

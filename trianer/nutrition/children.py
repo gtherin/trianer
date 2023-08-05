@@ -35,6 +35,7 @@ def plot_data(in_column=False):
         print(f"{name} grandit en moyenne de {reg.coef_[0]:.2f} cm par an ({last_slope:.1f})")
         for n, q in enumerate(quantities):
             ax[n].plot(df["age"], df[q[0]], label=name)
+        print(df)
 
     for name, df in norm.groupby("name"):
         for n, q in enumerate(quantities):
