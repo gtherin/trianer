@@ -1,57 +1,22 @@
-# Welcome to Trianer, an app for TRIathlon trainer
+# Trianer: an app for TRIAthlon/Running, acting as a basic traiNER
 
-to tutorial cOURSes
+### 🛠️The aim of the app is to help you to planify your race:
+- 💗 Athlete can personalize their basic physiological constraints.
+- 🌍 Races formats and well-known races (mostly french races) are directly available.
+- 🏊🚴🏃 Performances has to be filled by the athlete (**might be automatic if linked to another sport app**). Heights differences and expected temperatures are also taken into account.
+- 🏆 It will finally generate an ideal nutrition plan to accomplish your race.
+- 💦 Training (beta mode ⚠️🚧) Should contains the training plan to get to that objective.
 
-![](data/vetruve.gen.png)
+### 📚 **Documentation of the app is available here [wiki](https://github.com/guydegnol/trianer/wiki) (📧 [contact](mailto:trianer@guydegnol.net))**.
 
-### 🛠️The aim of the package:
-- 🔗 Create a real-time interactivity between 🧑‍🎓students and 👨‍🏫teachers (through Jupyter notebooks),
-- 📈 Serve as as data provider for practical case studies to support courses,
-- 🤖 Automatic evaluation of students,
-- 👨‍💻 Tools to develop in C/C++/CUDA within a jupyter notebook environement (with a python kernel),
-- 🧠 Simple Interfaces with new machine learning trends packages🤗.
-
-### 📚 **Documentation (with practical examples) is available here [wiki](https://github.com/guydegnol/bulkhours/wiki) (📧 [contact](mailto:bulkhours@guydegnol.net))**.
-With great feed-backs 🚀🏆🎯 from users, there is an on-going effort to industrialize the package.
-
-> This package used to be deployed on heroku. 
-See se
-
+> ⚠️ This package used to be deployed on heroku (pure web app). It has now to be installed localy to be tested.
 
 [![CC-by-nc-sa license](https://badgen.net/badge/icon/CC%20by-nc-sa?label=Licence)](https://creativecommons.org/licenses/by-nc-sa/4.0)
 
+💡 Different sports according to calories spent
 
-#### 💗 Athlete
-
-This section summarizes physiological constraints.
-Only the weights might be updated once in a while
-
-#### 🌍 Race
-
-This section let you the choice between:
+![](data/vetruve_gen.png)
 
 
-#### 🏊🚴🏃 Performances
-
-It is what you think you can perform on that distance.
-**The estimated speed will take into account the relief and temperatures parameters.**
-
-#### 🏆Simulation
-
-The final estimation and nutrition plans need for the accomplishement of the race
-
-#### 💦 Training (beta mode ⚠️🚧)
-
-Should contains the training plan to get to that objective.
-The app is a web wrapper to the [trianer website](https://trianer.guydegnol.net).
-
-### Installation
 
 
-To run it localy
-```
-git clone 
-https://github.com/guydegnol/trianer
-
-```
-[Contact](mailto:gt@guydegnol.net)
