@@ -12,7 +12,6 @@ def get_expander():
 
 
 def get_content(all_cookies, cookie_manager):
-
     from ..__version__ import __version__ as version
 
     # st.image(gpx.get_file("trianer_maquette.png"), width=300)
@@ -20,14 +19,6 @@ def get_content(all_cookies, cookie_manager):
     st.success(f"Version {version}")
     rd = open("./README.md", "r").read()
     st.markdown(rd)
-
-    """
-![alt text](./data/relative_intensity_vs_running_time.png "Title")
-
-<img src="./data/relative_intensity_vs_running_time.png" alt="isolated" width="200"/>
-<img src="../data/relative_intensity_vs_running_time.png" alt="isolated" width="200"/>
-<img src="data/relative_intensity_vs_running_time.png" alt="isolated" width="200"/>
-"""
 
     cl = open("./CHANGELOG.md", "r").read().split("[")
     st.markdown("[".join(cl[:3]))

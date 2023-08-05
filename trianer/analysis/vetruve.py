@@ -10,7 +10,6 @@ from ..core.theme import background_color
 
 
 def hist_calories_per_sport():
-
     from plotly.subplots import make_subplots
     import plotly.graph_objects as go
 
@@ -30,17 +29,15 @@ def hist_calories_per_sport():
 
 
 def update_version():
-
     from ..__version__ import __version__ as pversion
 
-    path = "./" if os.path.exists("CHANGELOG.md") else "../"
-    logs = open(path + "CHANGELOG.md", "r").read().split("####")
+    logs = open("../trianer.wiki/CHANGELOG.md", "r").read().split("####")
 
     for l in logs:
         if "TODO" not in l and "[" in l:
             break
     version = l[l.find("[") + 1 : l.find("]")]
-    with open(path + "trianer/__version__.py", "w") as the_file:
+    with open("trianer/__version__.py", "w") as the_file:
         the_file.write(f"__version__ = '{version}'")
 
     if pversion == version:
@@ -58,7 +55,6 @@ def wordcloud_calories_per_sport(filename=None, generate=True):
     """
     plt.figure(figsize=(15, 10))
     if not generate:
-
         if not os.path.exists(filename):
             filename = "../data/" + filename
 
@@ -87,8 +83,7 @@ def wordcloud_calories_per_sport(filename=None, generate=True):
         rd.shuffle(words)
 
         # read the mask image
-        path = "./" if os.path.exists("CHANGELOG.md") else "../"
-        alice_mask = np.array(Image.open(path + "notebooks/vetruve.png"))
+        alice_mask = np.array(Image.open("notebooks/vetruve.png"))
 
         wc = WordCloud(
             background_color=background_color,
