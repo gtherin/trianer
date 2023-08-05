@@ -1,13 +1,11 @@
-import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
 from . import average
-from . import therin
 
 
-def plot_data(in_column=False):
-    data = therin.get_data()
+def plot_data(data, in_column=False):
+    # Plot the time evolution data
     norm = average.get_data()
 
     data["bmr"] = (-161.0 * data["is_woman"]).fillna(5.0)
