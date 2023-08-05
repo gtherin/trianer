@@ -1,21 +1,14 @@
-# Not all packages can be installed on server
 streamlit>=1.12.2
 extra-streamlit-components
 hydralit_components
 
 pandas
-#pandas-datareader
 meteostat
-#uncertainties
 
 seaborn
 plotly
 matplotlib
-sklearn
-#xgboost
-
-#flaml
-#black
+scikit-learn
 
 folium
 streamlit-folium
@@ -25,4 +18,3 @@ google-cloud-firestore
 fastapi
 uvicorn
 python-multipart
-#worldcloud

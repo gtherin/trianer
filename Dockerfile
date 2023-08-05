@@ -1,5 +1,5 @@
 # Base Image to use
-FROM python:3.10.5-slim
+FROM python:3.10-slim
 
 # Change Working Directory to app directory
 WORKDIR /app
@@ -9,5 +9,5 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt 
 WORKDIR /app
 
 # Choose port
-EXPOSE 8080
+EXPOSE 8502
 CMD sh setup.sh && streamlit run app.py --server.fileWatcherType none
