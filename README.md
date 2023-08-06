@@ -7,6 +7,8 @@
 - 🏆 It will finally generate an ideal nutrition plan to accomplish your race.
 - 💦 Training (beta mode ⚠️🚧) Should contains the training plan to get to that objective.
 
+**All models are simple analytical models based on research articles. Might be nice to have access to a large athlete database to compare them to data based models**
+
 ### 📚 **Documentation of the app is available here [wiki](https://github.com/guydegnol/trianer/wiki) (📧 [contact](mailto:trianer@guydegnol.net))**.
 
 > ⚠️ This package used to be deployed on heroku (pure web app). It has now to be installed localy to be tested.
