@@ -14,8 +14,6 @@
 
 [![CC-by-nc-sa license](https://badgen.net/badge/icon/CC%20by-nc-sa?label=Licence)](https://creativecommons.org/licenses/by-nc-sa/4.0)
 
-💡 Different sports according to calories spent
-
 ![](data/vetruve_gen.png)
 
 
