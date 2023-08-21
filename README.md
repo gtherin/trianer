@@ -10,8 +10,7 @@
 **💡Models are simple analytical models based on research articles. Might be nice to have access to a large athlete database, to have a better emprirical models🎁.**
 ### 📚 **Documentation of the app is available here [wiki](https://github.com/guydegnol/trianer/wiki) (📧 [contact](mailto:trianer@guydegnol.net))**.
 
-> ⚠️ This package used to be deployed on heroku (pure web app). It has now to be installed localy to be tested.
-
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://trianer.streamlit.app/) 
 [![CC-by-nc-sa license](https://badgen.net/badge/icon/CC%20by-nc-sa?label=Licence)](https://creativecommons.org/licenses/by-nc-sa/4.0)
 
 ![](data/vetruve_gen.png)
