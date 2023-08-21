@@ -6,6 +6,7 @@ from .labels import *
 class Variable:
     update_cookie = None
     cookies = {}
+    values = {}
 
     @staticmethod
     def clone(var, key):
@@ -18,9 +19,9 @@ class Variable:
     ) -> None:
         self.key, self.srange, self.help, self.label, self.default = key, srange, help, label, default
         self.orange, self.input_format = orange, input_format
+        self.value = default
 
     def get_format_value(self, var):
-
         if self.input_format in ["checkbox", "expander"]:
             if type(var) == str and var not in ["false", "False"]:
                 return True
@@ -55,6 +56,12 @@ class Variable:
             var = translate(var)
 
         return var
+
+    def set_value(self, var):
+        var = self.get_format_value(var)
+        if type(var) == str:
+            var = translate(var)
+        self.value = var
 
     def get_input(self, input_cls, **kwargs):
         import streamlit as st

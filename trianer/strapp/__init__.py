@@ -20,3 +20,5 @@ from .menu import Menu
 from .metrics import show_metrics
 from .getters import get_athlete, get_race, get_temperature
 from . import research
+from .persistent_settings import PersistentSettings
+from .athlete_menu import AthleteMenu

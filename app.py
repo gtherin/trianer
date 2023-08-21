@@ -1,19 +1,15 @@
 import numpy as np
 import streamlit as st
 from PIL import Image
-
 from streamlit_folium import folium_static
+import os
 
-import trianer
-from trianer import strapp
 
-import trianer.strapp.inputs as tsti
-from trianer.core.labels import gl, gc, set_language, Labels
-
+logo_file = os.path.abspath(os.path.dirname(__file__) + f"/data/trianer_v3.png")
 
 st.set_page_config(
     page_title="Trianer",
-    page_icon=Image.open(trianer.get_file("trianer_v3.png")),  # ":running:"
+    page_icon=Image.open(logo_file),  # ":running:"
     layout="wide",
     initial_sidebar_state="collapsed",
     menu_items={
@@ -24,23 +20,32 @@ st.set_page_config(
 )
 st.set_option("deprecation.showPyplotGlobalUse", False)
 
+import trianer
+from trianer import strapp
+
+import trianer.strapp.inputs as tsti
+from trianer.core.labels import gl, gc, set_language, Labels
+
 
 # Get cache
 cookie_manager, all_cookies = strapp.cache.init_cache_manager(key="trianer_app")
 
 
 def main():
-
     set_language(tsti.get_value("language"))
     menu = strapp.Menu(beta_mode=tsti.get_value("beta_mode"))
 
     if menu.is_menu(menu_id := "athlete"):
         st.subheader(gl(menu_id))
-        tsti.get_inputs(["sex", "weight_kg", "height_cm"])
+        # tsti.get_inputs(["sex", "weight_kg", "height_cm"])
+        tsti.get_inputs(["sex", "height_cm"])
+        weight_kg = tsti.get_var_input("weight_kg")
+        # df["weight_kg"].set_value(weight_kg)
         tsti.get_inputs(["language", "year_of_birth", "sudation"], options=[dict(disabled=False), {}, {}])
+    else:
+        weight_kg = tsti.get_var_input("weight_kg")
 
     if menu.is_menu(["race", "training"]):
-        race_menu = tsti.get_value("race_menu")
         if race_menu == gl("existing_race"):
             race_title = trianer.Race(tsti.get_value("race_default")).get_info()
         elif race_menu == gl("existing_format"):
@@ -58,7 +63,8 @@ def main():
 
         st.subheader(f"{race_title}")
 
-        race_menu = tsti.get_var_input("race_menu")
+        # race_menu = tsti.get_var_input("race_menu")
+        st.subheader("AAAAAAAAAAAAAAAAAAAAAAAAA", race_menu)
         if race_menu == gl("existing_race"):
             tsti.get_var_input("race_default")
             tsti.get_temperature_menu("race")
@@ -98,13 +104,13 @@ def main():
             strapp.show_metrics(simulation)
 
         race_menu = tsti.get_value("race_menu")
+        print(race_menu)
         if race_menu == gl("existing_race"):
             txt = Labels.add_label(en="Show race gpx track", fr="Voir le tracé gpx")
             with st.expander(txt, expanded=False):
                 folium_static(trianer.show_gpx_track(simulation))
 
         with st.expander(Labels.add_label(en="Show race details", fr="Details de la course"), expanded=True):
-
             xaxis = st.radio(
                 Labels.add_label(en="x axis", fr="Axe des x"),
                 [gl("fdistance"), gl("time_total"), gl("dtime")],
@@ -135,7 +141,6 @@ def main():
         tsti.get_inputs(["transition_swi2cyc_s", "transition_cyc2run_s"])
 
     if menu.is_menu(menu_id := "training"):
-
         st.warning(
             Labels.add_label(
                 en=f"⚠️ Section is under construction 🚧",

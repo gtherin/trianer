@@ -3,7 +3,9 @@ from .variable import Variable
 from .labels import Labels
 from ..race.races import available_races
 
-variables = [
+import streamlit as st
+
+svariables = [
     # Performances
     dict(
         key="swimming_sX100m",
@@ -162,19 +164,27 @@ variables = [
     ),
 ]
 
-variables = {v["key"]: Variable(**v) for v in variables}
 
-variables["pcycling_dplus"] = Variable.clone(variables["cycling_dplus"], "pcycling_dplus")
-variables["prunning_dplus"] = Variable.clone(variables["running_dplus"], "prunning_dplus")
+@st.cache_data
+def load_default_data():
+    st.write("Loading default data")
+    variables = {v["key"]: Variable(**v) for v in svariables}
 
-variables["temperature_format"] = Variable.clone(variables["temperature_race"], "temperature_format")
-variables["temperature_perso"] = Variable.clone(variables["temperature_race"], "temperature_perso")
+    variables["pcycling_dplus"] = Variable.clone(variables["cycling_dplus"], "pcycling_dplus")
+    variables["prunning_dplus"] = Variable.clone(variables["running_dplus"], "prunning_dplus")
 
-variables["temperature_menu_format"] = Variable.clone(variables["temperature_menu_race"], "temperature_menu_format")
-variables["temperature_menu_perso"] = Variable.clone(variables["temperature_menu_race"], "temperature_menu_perso")
+    variables["temperature_format"] = Variable.clone(variables["temperature_race"], "temperature_format")
+    variables["temperature_perso"] = Variable.clone(variables["temperature_race"], "temperature_perso")
 
-variables["dtemperature_format"] = Variable.clone(variables["dtemperature_race"], "dtemperature_format")
-variables["dtemperature_perso"] = Variable.clone(variables["dtemperature_race"], "dtemperature_perso")
+    variables["temperature_menu_format"] = Variable.clone(
+        variables["temperature_menu_race"], "temperature_menu_format"
+    )
+    variables["temperature_menu_perso"] = Variable.clone(variables["temperature_menu_race"], "temperature_menu_perso")
+
+    variables["dtemperature_format"] = Variable.clone(variables["dtemperature_race"], "dtemperature_format")
+    variables["dtemperature_perso"] = Variable.clone(variables["dtemperature_race"], "dtemperature_perso")
+
+    return variables
 
 
 # Some menu

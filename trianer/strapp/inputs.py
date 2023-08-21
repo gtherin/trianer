@@ -1,7 +1,10 @@
 import streamlit as st
 
-from ..core.variables import variables
+from ..core.variables import load_default_data
 from ..core.labels import gc
+
+
+variables = load_default_data()
 
 
 def get_var_input(key, **kwargs):
