@@ -99,12 +99,19 @@ def main():
 
 import streamlit as st
 from google.cloud import firestore
+from google.oauth2 import service_account
 
-# Authenticate to Firestore with the JSON account key.
-db = firestore.Client.from_service_account_json("firestore-key.json")
+import json
+
+key_dict = json.loads(st.secrets["textkey"])
+creds = service_account.Credentials.from_service_account_info(key_dict)
+db = firestore.Client(credentials=creds, project="trianer-8e6eb")
 
 # Create a reference to the Google post.
 doc_ref = db.collection("athletes").document("cypress")
+# doc_ref.document("cypress").set({"name": "Cypress", "age": 1})
+
+# db.collection("athletes").document("cypress").set({"name": "Cypress", "age": 1})
 
 # Then get the data at that reference.
 doc = doc_ref.get()
