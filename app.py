@@ -23,7 +23,7 @@ st.set_page_config(
 )
 st.set_option("deprecation.showPyplotGlobalUse", False)
 
-
+"""
 import trianer
 from trianer import strapp
 
@@ -96,6 +96,7 @@ def main():
 
 # if __name__ == "__main__":
 #    main()
+"""
 
 import streamlit as st
 from google.cloud import firestore
