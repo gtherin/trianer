@@ -26,13 +26,23 @@ def plot_data(data, in_column=False):
         ["IMC", "IMC"],
         ["bmr", "Metabolisme de base"],
     ]
+
     for name, df in data.groupby("name"):
-        df["slope"] = data["height_cm"].diff() / data["age"].diff()
-        reg = LinearRegression().fit(df[["age"]], df["height_cm"])
-        last_slope = df["slope"].ewm(3).mean().iloc[-1]
-        print(f"{name} grandit en moyenne de {reg.coef_[0]:.2f} cm par an ({last_slope:.1f})")
-        for n, q in enumerate(quantities):
-            ax[n].plot(df["age"], df[q[0]], label=name)
+        kwargs = {}
+        if name == "Stephanie":
+            kwargs = dict(ls="dashdot", alpha=0.4)
+        if name == "Guillaume":
+            kwargs = dict(ls="dashdot", alpha=0.4)
+        if name == "Pierrette":
+            for n, q in enumerate(quantities):
+                ax[n].scatter(df["age"], df[q[0]], 100, label=name, color="red", zorder=100, marker="X")
+        else:
+            df["slope"] = data["height_cm"].diff() / data["age"].diff()
+            reg = LinearRegression().fit(df[["age"]], df["height_cm"])
+            last_slope = df["slope"].ewm(3).mean().iloc[-1]
+            print(f"{name} grandit en moyenne de {reg.coef_[0]:.2f} cm par an ({last_slope:.1f})")
+            for n, q in enumerate(quantities):
+                ax[n].plot(df["age"], df[q[0]], label=name, **kwargs)
 
     for name, df in norm.groupby("name"):
         for n, q in enumerate(quantities):
