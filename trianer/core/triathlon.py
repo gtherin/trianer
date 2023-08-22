@@ -10,6 +10,7 @@ from matplotlib.patches import Patch
 import matplotlib
 import time
 import sys
+import streamlit as st
 
 
 from ..race import weather
@@ -80,7 +81,6 @@ class Triathlon:
         return distance / duration, 3600 * duration / distance, duration
 
     def simulate_race(self, race, athlete, temperature=None):
-
         data = []
 
         for c in ["temperature", "hr", "hydration", "kcalories", "speed", "dtime"]:
@@ -132,9 +132,9 @@ class Triathlon:
         return f"The expected temperature is {self.get_temperature()} °C"
 
     def show_race_details(triathlon, xaxis="fdistance", yaxis="altitude"):
-
         data = triathlon.data
         # data["cspeed"] = data["duration"].cumsum()
+
         xaxis = triathlon.get_axis(xaxis)
         yaxis = triathlon.get_axis(yaxis)
 
@@ -222,7 +222,6 @@ class Triathlon:
 
     @staticmethod
     def plot_ravitos(fuels, ax, x, variable):
-
         ymin = ax.get_ylim()[0]
 
         for i, ravito in fuels.iterrows():
@@ -251,6 +250,9 @@ class Triathlon:
     def get_axis(axis):
         xaxis = gc(axis)
 
+        if xaxis in ["fdistance", "distance", "dtime"]:
+            return xaxis
+
         if "time" in xaxis.lower() and "day" in xaxis.lower():
             return "dtime"
         elif "time" in xaxis.lower():
@@ -265,7 +267,6 @@ class Triathlon:
             return "fdistance"
 
     def show_nutrition(triathlon, xaxis="fdistance"):
-
         data = triathlon.data
         # data["etime"] = data["duration"].cumsum()
         xaxis = triathlon.get_axis(xaxis)

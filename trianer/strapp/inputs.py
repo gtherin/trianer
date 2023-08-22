@@ -11,7 +11,7 @@ from ..core.variable import Variable
 # @st.cache(allow_output_mutation=True, suppress_st_warning=False)
 def get_session_id():
     session_id = "TRAINER"  # + datetime.datetime.now().strftime("%H%M%S") + "_" + str(random.randint(0, 1000))
-    st.toast(f"session_id is set to {session_id}", icon="🔆")
+    # st.toast(f"session_id is set to {session_id}", icon="🔆")
     return session_id + "_"
 
 

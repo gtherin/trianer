@@ -8,7 +8,6 @@ pd.plotting.register_matplotlib_converters()
 
 
 def show_roadmap(triathlon):
-
     ff = (
         triathlon.data[
             [
@@ -38,7 +37,7 @@ def show_roadmap(triathlon):
             }
         )
     )
-    Labels.add_label("dtime_str", en="Transit time", fr="Temps de passage")
+    Labels.add_label("dtime_str", en="Expected time", fr="Temps de passage")
     ff[gl("dtime_str")] = ff["dtime"].dt.strftime("%H:%M")
     ff[gl("hydric_balance")] = ff["hydration"].fillna(0).cumsum()
     ff[gl("caloric_balance")] = ff["kcalories"].fillna(0).cumsum()
@@ -107,4 +106,5 @@ def show_roadmap(triathlon):
             }
         )
         .bar(color=theme.roadmap_progress_bar, subset=[gl("cduration_min")], align="left")
+        .set_properties(**{"background-color": theme.background_color}, subset=[gl("dtime_str")], align="left")
     )
