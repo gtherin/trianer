@@ -46,7 +46,7 @@ def plot_data(data, in_column=False):
 
     for name, df in norm.groupby("name"):
         for n, q in enumerate(quantities):
-            ax[n].fill_between(df["age"], df[q[0]] * 0.9, df[q[0]] * 1.1, label=name, alpha=0.1)
+            ax[n].fill_between(df["age"], df[q[0]] * 0.87, df[q[0]] * 1.13, label=name, alpha=0.1)
             ax[n].set_ylabel(q[1])
             ax[n].set_xlabel("Age (années)")
 
