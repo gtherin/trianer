@@ -1,10 +1,31 @@
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
+import pandas as pd
 
 from . import average
 
 
-def plot_data(data, in_column=False):
+def get_data(doc_id):
+    data = pd.read_csv(f"https://docs.google.com/spreadsheets/d/{doc_id}/export?gid=0&format=csv", parse_dates=[0])
+    birthdays = pd.read_csv(
+        f"https://docs.google.com/spreadsheets/d/{doc_id}/export?gid=578003644&format=csv", parse_dates=[1]
+    )
+
+    data = data.merge(birthdays, on="name")
+    data["age"] = (data["date"] - data["birthday"]).dt.days / 365.25
+    data["age"] = data["age"].astype(float)
+
+    data["height_cm"] = data["height_cm"].astype(float)
+    data["name"] = data["name"].astype(str)
+    data["IMC"] = 10**4 * data["weight_kg"] / data["height_cm"] ** 2
+
+    return data
+
+
+def plot_data(data=None, doc_id=None, in_column=False):
+    if doc_id is not None:
+        data = get_data(doc_id)
+
     # Plot the time evolution data
     norm = average.get_data()
 
@@ -29,11 +50,11 @@ def plot_data(data, in_column=False):
 
     for name, df in data.groupby("name"):
         kwargs = {}
-        if name == "Stephanie":
+
+        style = data["style"].unique()[0]
+        if style == "dashdot":
             kwargs = dict(ls="dashdot", alpha=0.4)
-        if name == "Guillaume":
-            kwargs = dict(ls="dashdot", alpha=0.4)
-        if name == "Pierrette":
+        elif style == "points":
             for n, q in enumerate(quantities):
                 ax[n].scatter(df["age"], df[q[0]], 100, label=name, color="red", zorder=100, marker="X")
         else:
