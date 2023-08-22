@@ -2,7 +2,6 @@ import trianer
 
 
 def test_race():
-
     race = trianer.Race(name="Bois-le-Roi (L)")
     race = trianer.Race(name="Deauville (L)")
     print(trianer.Race(name="Elsassman (L)").get_key())
@@ -17,3 +16,9 @@ def test_race():
     print(trianer.Race(name="Ironman").get_info())
     race = trianer.Race(name="swimming:1.9,cycling:60:600,running:20:100")
     race = trianer.Race(name="swimming:1.9,running:21.195:100")
+
+
+def test_srm():
+    race = trianer.Race(name="Saint-Raphael (M)")
+    print(race.get_info())
+    print(race.get_gpx_data(verbose=True))

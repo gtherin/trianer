@@ -45,14 +45,16 @@ def get_file(filename, read=False):
 
 
 def get_data_from_file(filename):
-
     # WARNING: not available for Francois
     import pandas as pd
 
+    print(filename)
     xml = get_file(filename, read=True)
 
     if "<trkpt" in xml:
         splitter = "<trkpt"
+    elif "<wpt" in xml:
+        splitter = "<wpt"
     elif "<Trackpoint" in xml:
         splitter = "<Trackpoint"
     elif "<ns3:TrackPointExtension" in xml:
@@ -80,7 +82,6 @@ def get_data_from_file(filename):
 
 
 def enrich_data(data, target_distance=None, target_elelevation=None):
-
     # FIlter distance
     data["fdistance"] = data["distance"].diff().clip(0, 10000).fillna(0.0).cumsum()
 

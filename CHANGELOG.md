@@ -5,6 +5,11 @@
 - Improve predictions with data analyses
 - Improve slope dependencies with speed
 
+#### [5.2.1] - 2023-08-22
+
+- Memory issue is based on env variables (no other robust solution was found)
+- Add nex triathons
+
 #### [4.0.1] - 2023-08-05
 
 - Make it a pure web service (no more flutter dart)

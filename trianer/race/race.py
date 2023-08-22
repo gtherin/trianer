@@ -118,11 +118,13 @@ class Race:
     def get_fuels(self):
         return {discipline: self.dfuelings[d] for d, discipline in enumerate(self.disciplines)}
 
-    def get_gpx_data(self):
+    def get_gpx_data(self, verbose=False):
         data = []
         self.fuelings = [0]
 
         for d, discipline in enumerate(self.disciplines):
+            if verbose:
+                print(d, discipline)
             gpx_info = self.gpx_data[d].split(",x")
 
             if len(gpx_info[0]) > 0:
@@ -142,7 +144,7 @@ class Race:
 
             if self.elevations[d] == 0 and df.aelevation.sum() != 0:
                 self.elevations[d] = df.aelevation.sum()
-            elif (corr := self.elevations[d] / df.aelevation.sum()) > 0:
+            elif df.aelevation.sum() > 0 and (corr := self.elevations[d] / df.aelevation.sum()) > 0:
                 df["aelevation"] *= corr
 
             data.append(df.assign(sequence=d * 2).assign(discipline=discipline))

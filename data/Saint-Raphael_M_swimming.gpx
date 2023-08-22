@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<gpx version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns="http://www.topografix.com/GPX/1/1" 
+    xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" 
+    creator="Openrunner - https://www.openrunner.com" >	<trk>
+						<name>Parcours natation Olympique  2023-10798257</name>
+						<trkseg>
+					<trkpt lat="43.421020" lon="6.768780">
+						<ele>2</ele>
+						<time>2023-08-22T09:20:04Z</time>
+					</trkpt>
+					<trkpt lat="43.418970" lon="6.767510">
+						<ele>0</ele>
+						<time>2023-08-22T09:23:04Z</time>
+					</trkpt>
+					<trkpt lat="43.421290" lon="6.767410">
+						<ele>2</ele>
+						<time>2023-08-22T09:26:10Z</time>
+					</trkpt>
+					<trkpt lat="43.420720" lon="6.766040">
+						<ele>0</ele>
+						<time>2023-08-22T09:27:42Z</time>
+					</trkpt>
+					<trkpt lat="43.421090" lon="6.764310">
+						<ele>0</ele>
+						<time>2023-08-22T09:29:27Z</time>
+					</trkpt>
+					<trkpt lat="43.420010" lon="6.763570">
+						<ele>0</ele>
+						<time>2023-08-22T09:31:03Z</time>
+					</trkpt>
+					<trkpt lat="43.418970" lon="6.767510">
+						<ele>0</ele>
+						<time>2023-08-22T09:35:07Z</time>
+					</trkpt>
+					<trkpt lat="43.421060" lon="6.768640">
+						<ele>2</ele>
+						<time>2023-08-22T09:38:07Z</time>
+					</trkpt>
+					</trkseg>
+				</trk>
+			</gpx>

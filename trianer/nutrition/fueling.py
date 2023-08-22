@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
+import streamlit as st
 
 from . import met
 from ..core import models
 from ..core.theme import background_color
-
 
 
 def calculate_kcalories(df, race, athlete) -> pd.DataFrame:
@@ -50,34 +50,7 @@ def get_caloric_reserve(athlete):
     return 3.5 * get_basal_metabolic_rate(athlete)
 
 
-def get_ravitos(df, athlete) -> pd.DataFrame:
-
-    needed_calories = df["kcalories"].sum() + get_caloric_reserve(athlete)
-
-    ravitos = {}
-    for discipline, ddf in df.groupby("discipline"):
-        if discipline == "swimming":
-            ravitos[discipline] = np.array([])
-        elif "transition" in discipline:
-            ravitos[discipline] = np.array([0.0])
-        else:
-            dduration = ddf["duration"].sum()
-            nor = np.round(2 * dduration)
-            ravitos[discipline] = (np.linspace(0.0, 1.0, int(nor) + 2) * dduration)[1:-1]
-
-    nor = np.sum([len(r) for r in ravitos.values()])
-    calories_per_stop = np.clip(np.round(-needed_calories / nor / 100), 1, 4)
-
-    max_hydration = df["duration"].sum() * models.get_maximum_ideal_hydration("mean", athlete)
-    ratio = np.min([df["hydration"].abs().sum() / max_hydration, 1])
-
-    hydr = 10 * np.floor(ratio * 30)
-
-    return [hydr, calories_per_stop * 100, f"Iso+{calories_per_stop:.0f}xFruitPaste"]
-
-
 def calculate_fuelings(df, race, athlete) -> pd.DataFrame:
-
     df["cduration"] = df.groupby("discipline")["duration"].cumsum()
     df["etime"] = df["duration"].cumsum()
     df["ddistance"] = df["distance"].diff().clip(0, 1000).fillna(0.0)
@@ -102,19 +75,21 @@ def calculate_fuelings(df, race, athlete) -> pd.DataFrame:
             ravitos[discipline] = (np.linspace(0.0, 1.0, int(nor) + 2) * dduration)[1:-1]
 
     nor = np.sum([len(r) for r in ravitos.values()])
-    calories_per_stop = np.clip(np.round(-needed_calories / nor / 100), 1, 4)
+    calories_per_stop = np.clip(np.round(-needed_calories / nor / 100), 1, 3)
 
     max_hydration = df["duration"].sum() * models.get_maximum_ideal_hydration("mean", athlete)
     ratio = np.min([df["hydration"].abs().sum() / max_hydration, 1])
 
-    hydr = 10 * np.floor(ratio * 30)
+    hydr = 10 * np.floor(ratio * 33)
 
+    dfood, rfood = f"Iso+{calories_per_stop:.0f}xFP/B", f"Iso+{calories_per_stop:.0f}xGel"
+    dfood, rfood = f"Iso+FP/B", f"Iso+FP/B/Gel"
     foods_stuffs = {
         "swimming": [0, 0, f"Start"],
-        "running": [hydr, calories_per_stop * 100, f"Iso+{calories_per_stop:.0f}xGel"],  # "org: water+fruit"
-        "cycling": [hydr, calories_per_stop * 100, f"Iso+{calories_per_stop:.0f}xFruitPaste"],  # org: fill up water
-        "transition 1": [hydr, calories_per_stop * 100, f"Iso+{calories_per_stop:.0f}xFruitPaste"],
-        "transition 2": [hydr, calories_per_stop * 100, f"Iso+{calories_per_stop:.0f}xFruitPaste"],
+        "running": [hydr, calories_per_stop * 100, rfood],  # "org: water+fruit"
+        "cycling": [hydr, calories_per_stop * 100, dfood],  # org: fill up water
+        "transition 1": [hydr, calories_per_stop * 100, dfood],
+        "transition 2": [hydr, calories_per_stop * 100, dfood],
     }
 
     tot_distance, tot_duration, pdiscipline, pindex = 0, 0, race.disciplines[0], df.index[0]
@@ -160,7 +135,6 @@ def calculate_fuelings(df, race, athlete) -> pd.DataFrame:
     fuelings = fuelings.groupby("cduration", as_index=False).first().sort_values("index")
 
     df = df.join(fuelings.set_index("index")[["fooding", "drinks", "food"]])
-    print(df["food"].fillna(0.0).sum())
 
     df["kcalories"] += df["food"].fillna(0.0)
     df["ihydration"] = df["ihydration"].fillna(0.0) + df["hydration"].fillna(0.0)
@@ -170,7 +144,6 @@ def calculate_fuelings(df, race, athlete) -> pd.DataFrame:
 
 
 def show_kcalories():
-
     kcalories = met.get_kcalories(None)
 
     import matplotlib.pyplot as plt

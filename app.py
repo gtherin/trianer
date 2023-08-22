@@ -3,9 +3,11 @@ import streamlit as st
 from PIL import Image
 from streamlit_folium import folium_static
 import os
+import time
 
-
-logo_file = os.path.abspath(os.path.dirname(__file__) + f"/data/trianer_v3.png")
+# Wait for logo file to be available
+while not os.path.exists(logo_file := os.path.abspath(os.path.dirname(__file__) + f"/data/trianer_v3.png")):
+    time.sleep(1)
 
 st.set_page_config(
     page_title="Trianer",

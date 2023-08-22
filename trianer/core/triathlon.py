@@ -301,9 +301,6 @@ class Triathlon:
         )
         ax.grid()
 
-        # drinks = data["drinks"].sum()
-        # food = data["food"].sum()
-
         patches = [
             Line2D([0], [0], color=theme.get_color("caloric_balance"), label=gl("caloric_balance", u=True)),
             Patch(facecolor=theme.danger_color, edgecolor=theme.danger_color, label=gl("caloric_balance", u=True)),

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<gpx version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns="http://www.topografix.com/GPX/1/1" 
+    xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" 
+    creator="Openrunner - https://www.openrunner.com" >	<trk>
+						<name>Parcours natation  triathlon sprint 2023-12823724</name>
+						<trkseg>
+					<trkpt lat="43.421010" lon="6.768780">
+						<ele>2</ele>
+						<time>2023-08-22T09:18:43Z</time>
+					</trkpt>
+					<trkpt lat="43.418960" lon="6.767520">
+						<ele>0</ele>
+						<time>2023-08-22T09:21:43Z</time>
+					</trkpt>
+					<trkpt lat="43.419540" lon="6.765330">
+						<ele>0</ele>
+						<time>2023-08-22T09:23:58Z</time>
+					</trkpt>
+					<trkpt lat="43.421050" lon="6.768640">
+						<ele>2</ele>
+						<time>2023-08-22T09:27:46Z</time>
+					</trkpt>
+					</trkseg>
+				</trk>
+			</gpx>
