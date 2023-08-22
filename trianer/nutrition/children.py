@@ -49,12 +49,10 @@ def plot_data(data=None, doc_id=None, in_column=False):
     ]
 
     for name, df in data.groupby("name"):
-        kwargs = {}
-
         style = data["style"].unique()[0]
-        if style == "dashdot":
-            kwargs = dict(ls="dashdot", alpha=0.4)
-        elif style == "points":
+
+        kwargs = dict(ls="dashdot", alpha=0.4) if style == "dashdot" else {}
+        if style == "points":
             for n, q in enumerate(quantities):
                 ax[n].scatter(df["age"], df[q[0]], 100, label=name, color="red", zorder=100, marker="X")
         else:
