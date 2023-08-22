@@ -8,7 +8,7 @@
 #### [5.2.1] - 2023-08-22
 
 - Memory issue is based on env variables (no other robust solution was found)
-- Add nex triathons
+- Add new triathons
 
 #### [4.0.1] - 2023-08-05
 
