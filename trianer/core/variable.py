@@ -1,6 +1,9 @@
 import datetime
 import copy
 from .labels import *
+import streamlit as st
+import datetime
+import os
 
 
 class Variable:
@@ -49,8 +52,11 @@ class Variable:
     def get_key(self):
         return "trianer_" + self.key
 
-    def get_init_value(self):
-        var = Variable.cookies[self.get_key()] if self.get_key() in Variable.cookies else self.default
+    def get_init_value(self, session_id=""):
+        if (env_name := session_id + self.key) in os.environ:
+            var = os.environ[env_name]
+        else:
+            var = Variable.cookies[self.get_key()] if self.get_key() in Variable.cookies else self.default
         var = self.get_format_value(var)
         if type(var) == str:
             var = translate(var)
@@ -64,8 +70,6 @@ class Variable:
         self.value = var
 
     def get_input(self, input_cls, **kwargs):
-        import streamlit as st
-
         label = gl(self.key if self.label is None else self.label, u=True)
         srange = [gl(r) for r in self.srange]
 

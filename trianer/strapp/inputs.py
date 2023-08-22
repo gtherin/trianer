@@ -1,10 +1,43 @@
 import streamlit as st
+import datetime
+import os
+import random
 
 from ..core.variables import load_default_data
 from ..core.labels import gc
+from ..core.variable import Variable
 
 
+# @st.cache(allow_output_mutation=True, suppress_st_warning=False)
+def get_session_id():
+    session_id = "TRAINER"  # + datetime.datetime.now().strftime("%H%M%S") + "_" + str(random.randint(0, 1000))
+    st.toast(f"session_id is set to {session_id}", icon="😍")
+    return session_id + "_"
+
+
+session_id = get_session_id()
 variables = load_default_data()
+
+
+def update_cookie(name):
+    try:
+        val = st.session_state[name]
+        if type(val) == datetime.time:
+            fval = str(val)
+        elif type(val) == str:
+            fval = gc(val)
+        elif type(val) == list and (type(val[0]) == str):
+            fval = [gc(v) for v in val]
+        else:
+            fval = val
+
+        os.environ[get_session_id() + name] = str(fval)
+        st.toast(f"Update {name} to {fval}", icon="😍")
+    except Exception as e:
+        st.error(f"{name} {e}")
+
+
+Variable.update_cookie = update_cookie
 
 
 def get_var_input(key, **kwargs):
@@ -14,14 +47,15 @@ def get_var_input(key, **kwargs):
 
 
 def get_value(key):
-    return variables[key].get_init_value()
+    return variables[key].get_init_value(session_id=session_id)
 
 
-def get_inputs(vars, options=[]):
+def get_inputs(vars, options=[], rvals={}):
     for p, col in enumerate(st.columns(len(vars))):
         with col:
             kwargs = options[p] if len(options) > p else {}
-            get_var_input(vars[p], **kwargs)
+            rvals[vars[p]] = get_var_input(vars[p], **kwargs)
+    return rvals
 
 
 def get_temperature_menu(race_choice):

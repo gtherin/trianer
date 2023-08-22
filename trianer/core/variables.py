@@ -167,7 +167,6 @@ svariables = [
 
 @st.cache_data
 def load_default_data():
-    st.write("Loading default data")
     variables = {v["key"]: Variable(**v) for v in svariables}
 
     variables["pcycling_dplus"] = Variable.clone(variables["cycling_dplus"], "pcycling_dplus")
