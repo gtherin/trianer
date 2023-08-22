@@ -38,7 +38,7 @@ def plot_data(data=None, doc_id=None, in_column=False):
     if in_column:
         fig, ax = plt.subplots(4, 1, figsize=(8, 20))
     else:
-        fig, tax = plt.subplots(2, 2, figsize=(15, 10))
+        fig, tax = plt.subplots(2, 2, figsize=(15, 10), sharex=True)
         ax = [tax[0][0], tax[0][1], tax[1][0], tax[1][1]]
 
     quantities = [
