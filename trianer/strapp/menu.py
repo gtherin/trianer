@@ -33,7 +33,7 @@ class Menu:
             )
         else:
             self.menu_id = stx.stepper_bar(steps=self.menu_steps)
-            st.toast(f"Build the navigation bar ({self.menu_id})", icon="🔰")
+            # st.toast(f"Build the navigation bar ({self.menu_id})", icon="📚")
 
     def get_label(self, code):
         return gl(code)[:4] + "." if self.beta_mode else gl(code)

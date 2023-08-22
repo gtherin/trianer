@@ -37,7 +37,6 @@ menu = get_menu()
 
 def main():
     set_language(tsti.get_value("language"))
-    st.write(menu.menu_id)
 
     if menu.is_menu(menu_id := "athlete"):
         st.subheader(gl(menu_id))
@@ -104,7 +103,6 @@ def main():
             strapp.show_metrics(simulation)
 
         race_menu = tsti.get_value("race_menu")
-        print(race_menu)
         if race_menu == gl("existing_race"):
             txt = Labels.add_label(en="Show race gpx track", fr="Voir le tracé gpx")
             with st.expander(txt, expanded=False):
