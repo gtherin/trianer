@@ -39,7 +39,7 @@ def plot_data(data=None, doc_id=None, in_column=False):
         fig, ax = plt.subplots(4, 1, figsize=(8, 20))
     else:
         fig, tax = plt.subplots(2, 2, figsize=(15, 10))
-        ax = [tax[0][0], tax[0][1], tax[1][0], tax[0][1]]
+        ax = [tax[0][0], tax[0][1], tax[1][0], tax[1][1]]
 
     quantities = [
         ["height_cm", "Taille (cm)"],
@@ -49,7 +49,7 @@ def plot_data(data=None, doc_id=None, in_column=False):
     ]
 
     for name, df in data.groupby("name"):
-        style = data["style"].unique()[0]
+        style = df["style"].unique()[0]
 
         kwargs = dict(ls="dashdot", alpha=0.4) if style == "dashdot" else {}
         if style == "points":
@@ -59,7 +59,8 @@ def plot_data(data=None, doc_id=None, in_column=False):
             df["slope"] = data["height_cm"].diff() / data["age"].diff()
             reg = LinearRegression().fit(df[["age"]], df["height_cm"])
             last_slope = df["slope"].ewm(3).mean().iloc[-1]
-            print(f"{name} grandit en moyenne de {reg.coef_[0]:.2f} cm par an ({last_slope:.1f})")
+            if style == "solid":
+                print(f"{name} grandit en moyenne de {reg.coef_[0]:.2f} cm par an ({last_slope:.1f})")
             for n, q in enumerate(quantities):
                 ax[n].plot(df["age"], df[q[0]], label=name, **kwargs)
 
