@@ -13,6 +13,8 @@
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://trianer.streamlit.app/) 
 [![CC-by-nc-sa license](https://badgen.net/badge/icon/CC%20by-nc-sa?label=Licence)](https://creativecommons.org/licenses/by-nc-sa/4.0)
 
+https://github.com/guydegnol/trianer/assets/82407580/d2d32bd9-8f3e-458f-b999-3720226ee37f
+
 ![](data/vetruve_gen.png)
 
 
