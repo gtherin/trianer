@@ -22,7 +22,7 @@ def get_data(doc_id):
     return data
 
 
-def plot_data(data=None, doc_id=None, in_column=False):
+def plot_data(data=None, doc_id=None, in_column=False, black_list=None):
     if doc_id is not None:
         data = get_data(doc_id)
 
@@ -49,20 +49,23 @@ def plot_data(data=None, doc_id=None, in_column=False):
     ]
 
     for name, df in data.groupby("name"):
+        if black_list is not None and name in black_list:
+            continue
         style = df["style"].unique()[0]
-
-        kwargs = dict(ls="dashdot", alpha=0.4) if style == "dashdot" else {}
-        if style == "points":
-            for n, q in enumerate(quantities):
-                ax[n].scatter(df["age"], df[q[0]], 100, label=name, color="red", zorder=100, marker="X")
-        else:
+        if style == "solid":
             df["slope"] = data["height_cm"].diff() / data["age"].diff()
             reg = LinearRegression().fit(df[["age"]], df["height_cm"])
             last_slope = df["slope"].ewm(3).mean().iloc[-1]
-            if style == "solid":
-                print(f"{name} grandit en moyenne de {reg.coef_[0]:.2f} cm par an ({last_slope:.1f})")
-            for n, q in enumerate(quantities):
-                ax[n].plot(df["age"], df[q[0]], label=name, **kwargs)
+            print(f"{name} grandit en moyenne de {reg.coef_[0]:.2f} cm par an ({last_slope:.1f})")
+
+        if style == "points":
+            pfunc, kwargs = "scatter", dict(color="red", marker="X", s=100, zorder=100)
+        elif style == "ppoints":
+            pfunc, kwargs = "scatter", dict(color="purple", marker="*", s=100, zorder=100)
+        else:
+            pfunc, kwargs = "plot", dict(ls="dashdot", alpha=0.4) if style == "dashdot" else {}
+        for n, q in enumerate(quantities):
+            getattr(ax[n], pfunc)(df["age"], df[q[0]], label=name, **kwargs)
 
     for name, df in norm.groupby("name"):
         for n, q in enumerate(quantities):
