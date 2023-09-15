@@ -26,7 +26,7 @@ available_races = {
         ),
         dict(
             key="Chtriman (Ironman)",
-            start_time=datetime.datetime.strptime("2024-06-30 07:00", "%Y-%m-%d %H:%M"),
+            start_time=datetime.datetime.strptime("2024-09-14 07:00", "%Y-%m-%d %H:%M"),
             distances=[3.8, 180, 42.195],
             dfuelings=[[0], [0, 39], [0, 3.25, 6.75]],
             elevations=[0.0, 1220.0, 40.0],  # From data
