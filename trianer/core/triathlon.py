@@ -131,6 +131,38 @@ class Triathlon:
     def show_weather_forecasts(self):
         return f"The expected temperature is {self.get_temperature()} °C"
 
+    def show_temperature(triathlon):
+
+        data = triathlon.data
+
+        xaxis = "dtime"
+        yaxis = "altitude"
+
+        if xaxis in data.columns:
+            data = data.set_index(xaxis)
+
+        fig, ax = plt.subplots(figsize=(10, 3))
+        fig.subplots_adjust(hspace=0)
+        fig.patch.set_facecolor(theme.background_color)
+
+        data = weather.merge_temperature_forecasts(
+            None, coordonates=triathlon.get_mean_coordonates(), start_time=triathlon.race.start_time, temperature=triathlon.get_temperature()
+        )
+
+        ax.set_facecolor(theme.background_color)
+        data["temperature"].plot(color=theme.temperature_color, ax=ax)
+        ax.vlines(triathlon.race.start_time, data["temperature"].min() - 1, data["temperature"].max() + 2)
+        ax.fill_between(
+            data.index, data["temperature"] - 1, data["temperature"] + 2, color=theme.temperature_color, alpha=0.2
+        )
+        ax.grid()
+        formatter = matplotlib.ticker.FuncFormatter(
+            lambda ms, x: time.strftime("%H:%M", time.gmtime((ms % 1) * 24 * 3600))
+        )
+        ax.xaxis.set_major_formatter(formatter)
+        ax.set_ylabel(ylabel=gl("temperature", u=True))
+        ax.set_xlabel(xlabel=gl(xaxis, u=True))
+
     def show_race_details(triathlon, xaxis="fdistance", yaxis="altitude"):
         data = triathlon.data
         # data["cspeed"] = data["duration"].cumsum()

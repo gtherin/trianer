@@ -104,10 +104,15 @@ def merge_temperature_forecasts(data, coordonates=None, start_time=datetime.date
     else:
         tmin, tmax = temperature - 0.5 * (htmax - htmin), temperature + 0.5 * (htmax - htmin)
 
-    if "temperature" in data.columns:
-        del data["temperature"]
 
     itemps = get_intraday_temperature(start_time, tmin, tmax)
-    data = data.merge(itemps, how="left", left_on=data["dtime"].dt.floor("min"), right_index=True)
+    if data is not None:
+        if "temperature" in data.columns:
+            del data["temperature"]
+
+        data = data.merge(itemps, how="left", left_on=data["dtime"].dt.floor("min"), right_index=True)
+    else:
+        data = itemps
+
     data["temperature"] = data["temperature"].ffill().bfill()
     return data

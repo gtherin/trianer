@@ -105,11 +105,42 @@ def main():
             strapp.show_metrics(simulation)
 
         race_menu = tsti.get_value("race_menu")
+
         if race_menu == gl("existing_race"):
             txt = Labels.add_label(en="Show race gpx track", fr="Voir le tracé gpx")
             with st.expander(txt, expanded=False):
                 folium_static(trianer.show_gpx_track(simulation))
 
+    if menu.is_menu(["race"]):
+        race = strapp.get_race()
+        if race_menu == gl("existing_race"):
+            simulation = trianer.Triathlon(
+                race=race, temperature=strapp.get_temperature(), athlete=strapp.get_athlete()
+            )
+
+            st.subheader("Next edition is on the %s" % race.start_time.strftime("%d %B %Y at %H:%M"))
+
+            from PIL import Image
+
+            col1, col2 = st.columns(2)
+            with col1:
+                caption = race.url if race.url is not None else ""
+                if race.logo is not None:
+                    image = Image.open("data/" + race.logo)
+                    st.image(image, caption=caption)
+                else:
+                    st.subheader(caption)
+
+            with col2:
+                st.pyplot(simulation.show_temperature())
+
+            txt = Labels.add_label(en="Show race gpx track", fr="Voir le tracé gpx")
+            with st.expander(txt, expanded=True):
+                folium_static(trianer.show_gpx_track(simulation))
+
+            #st.pyplot(simulation.show_race_details(xaxis=gl("fdistance"), yaxis=gl("altitude")))
+
+    if menu.is_menu(menu_id := "simulation"):
         with st.expander(Labels.add_label(en="Show race details", fr="Details de la course"), expanded=True):
             xaxis = st.radio(
                 Labels.add_label(en="x axis", fr="Axe des x"),

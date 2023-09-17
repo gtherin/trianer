@@ -53,9 +53,14 @@ class Race:
 
     def init_from_race(self, name) -> None:
         self.disciplines = ["swimming", "cycling", "running"]
-        for k in ["disciplines", "start_time", "distances", "elevations", "gpx_data", "comments"]:
+        for k in ["disciplines", "start_time", "distances", "elevations", "gpx_data", "comments", "url", "logo"]:
             if k in available_races[name]:
                 setattr(self, k, available_races[name][k])
+            elif k in ["logo"]:
+                setattr(self, k, "generique.png")
+            elif k in ["url"]:
+                setattr(self, k, None)
+
         if not getattr(self, "distances"):
             self.distances = available_races["Triathlon (M)"]["distances"]
 
