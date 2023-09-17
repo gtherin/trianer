@@ -1,5 +1,4 @@
 black
-worldcloud
 ipython
 ipykernel
 ipywidgets
