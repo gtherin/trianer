@@ -157,7 +157,7 @@ available_races = {
             distances=[1.916, 82, 19.8],
             elevations=[0, 472, 132],
             dfuelings=[[0], [0, 43], [0, 3.5, 6.5]],
-            url="https://trialong.com/"
+            url="https://trialong.com/",
             gpx_data=["Bois_le_Roi_L_swimming.gpx,x2", "Bois_le_Roi_L_cycling.gpx", "Bois_le_Roi_L_running.gpx,x2"],
         ),
         dict(key="Marathon", distances=[42.195], disciplines=["running"], type="format"),
