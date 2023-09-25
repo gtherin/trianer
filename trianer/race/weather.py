@@ -68,18 +68,19 @@ def get_forecasts(coordonates=None, start=None, end=None):
     if type(coordonates) == tuple:
         coordonates = "%2.2f,%2.2f" % (coordonates[0], coordonates[1])
 
-    # Extract temperatures
-    print(f"https://wttr.in/{coordonates}?pqT&lang=fr")
-    res = requests.get(f"https://wttr.in/{coordonates}?pqT&lang=fr")
-    tt = [t[-8:-1].split("(") for t in res.text.split("°C")]
+    try:
+        # Extract temperatures
+        print(f"https://wttr.in/{coordonates}?pqT&lang=fr")
+        res = requests.get(f"https://wttr.in/{coordonates}?pqT&lang=fr")
+        tt = [t[-8:-1].split("(") for t in res.text.split("°C")]
 
-    # Get one temperature per day quarters
-    tt = [int(t[0][-3:]) if len(t) > 1 else int(t[0][-3:]) for t in tt[:-1]]
-    temp_forecast = tt[-4]
-    tmin, tmax = tt[-4], tt[-2]
+        # Get one temperature per day quarters
+        tt = [int(t[0][-3:]) if len(t) > 1 else int(t[0][-3:]) for t in tt[:-1]]
+        temp_forecast = tt[-4]
+        tmin, tmax = tt[-4], tt[-2]
+    except:
+        st.toast("Retrieve temperature information from past data", icon="☀️")
     tmin, tmax = htmin, htmax
-
-    res = requests.get(f"https://wttr.in/{coordonates}?lang=fr")
 
     fig, ax = plt.subplots(figsize=(18, 3))
     ax.plot(np.arange(24), (tmin + 0.5 * (tmax - tmin) * (1 + np.sin(0.25 * np.arange(24) + np.pi))), color="yellow")
