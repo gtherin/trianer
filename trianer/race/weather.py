@@ -69,6 +69,7 @@ def get_forecasts(coordonates=None, start=None, end=None):
         coordonates = "%2.2f,%2.2f" % (coordonates[0], coordonates[1])
 
     # Extract temperatures
+    print(f"https://wttr.in/{coordonates}?pqT&lang=fr")
     res = requests.get(f"https://wttr.in/{coordonates}?pqT&lang=fr")
     tt = [t[-8:-1].split("(") for t in res.text.split("°C")]
 
