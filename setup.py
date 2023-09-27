@@ -47,7 +47,7 @@ setup(
     packages=find_packages(),
     author="Guillaume Therin",
     author_email="guillaume.therin@gmail.com",
-    license="https://github.com/guydegnol/guydegnol-privacy/blob/main/privacy-policy.md",
+    license="https://github.com/gtherin/guydegnol-privacy/blob/main/privacy-policy.md",
     # Dependencies
     install_requires=["pandas"],
     # Script info

@@ -8,7 +8,7 @@
 - 💦 Training (beta mode ⚠️🚧) Should contains the training plan to get to that objective.
 
 **💡Models are simple analytical models based on research articles. Might be nice to have access to a large athlete database, to have a better emprirical models🎁.**
-### 📚 **Documentation of the app is available here [wiki](https://github.com/guydegnol/trianer/wiki) (📧 [contact](mailto:trianer@guydegnol.net))**.
+### 📚 **Documentation of the app is available here [wiki](https://github.com/gtherin/trianer/wiki) (📧 [contact](mailto:trianer@guydegnol.net))**.
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://trianer.streamlit.app/) 
 [![CC-by-nc-sa license](https://badgen.net/badge/icon/CC%20by-nc-sa?label=Licence)](https://creativecommons.org/licenses/by-nc-sa/4.0)
