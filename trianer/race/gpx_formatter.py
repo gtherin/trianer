@@ -41,11 +41,13 @@ class Point:
         return datetime.datetime.strptime(ttime[:19], "%Y-%m-%dT%H:%M:%S")
 
     def update_altitude(self, altitude):
-        if self.is_valid_gpx:
-            point = self.npoint
-            self.npoint = (
-                point[: point.find("<ele>") + len("<ele>")] + "%.2f" % altitude + point[point.find("</ele>") :]
-            )
+        if not self.is_valid_gpx:
+            return
+
+        point = self.npoint
+        self.npoint = (
+            point[: point.find("<ele>") + len("<ele>")] + "%.2f" % altitude + point[point.find("</ele>") :]
+        )
 
     def delete_tag(self, tag):
         if not self.is_valid_gpx or tag not in self.npoint:
@@ -111,6 +113,7 @@ class GpxFormatter:
         self.filename = filename
         self.xml = None
         self.filecontent = ""
+        self.ddo, self.dup, self.palt = 0, 0, -999
 
         if self.exists():
             xml = open(self.filename, "r").read()
@@ -158,6 +161,16 @@ class GpxFormatter:
 
         # S'il n'y a pas d'extensions : (et commenter ligne au dessus
         point.update_altitude(point.altitude)
+        if self.palt == -999:
+            self.palt = point.altitude
+        dalt = point.altitude - self.palt
+        if dalt > 0:
+            self.dup += dalt
+        else:
+            self.ddo += dalt
+
+        self.palt = point.altitude
+
 
         self.filecontent += point.get_formatted_point(debug=debug)
 
@@ -173,6 +186,7 @@ class GpxFormatter:
         for d, p in enumerate(gpx_file.xml):
             gpx_file.update_filecontent(p, filters, remove_time=remove_time, debug=debug and d < 10)
 
+        print(f"Denivelé total: d+={gpx_file.dup:.0f}m d-={-gpx_file.ddo:.0f}m")
         gpx_file.save()
 
     @staticmethod
