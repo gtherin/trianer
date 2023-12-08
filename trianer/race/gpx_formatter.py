@@ -174,10 +174,7 @@ class GpxFormatter:
                         n[: n.find("</name>")],
                         self.filename.split("/")[-1].split(".")[0],
                     )
-                    if ".gpx" not in nono:
-                        line = line.replace(
-                            f"<name>{nono}</name>", f"<name>{nona}</name>"
-                        )
+                    line = line.replace(f"<name>{nono}</name>", f"<name>{nona}</name>")
 
                 self.filecontent += line
             else:
