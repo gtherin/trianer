@@ -164,7 +164,25 @@ class GpxFormatter:
             point = self.apply_filter(point, filter)
 
         if not point.is_valid_gpx:
-            self.filecontent += point.npoint
+            line = point.npoint
+
+            # Replace the second name parameter in the file. Not sure it is used by the reader thought !
+            if "<name>" in point.npoint:
+                nlist = point.npoint.split("<name>")
+                for n in nlist[1:]:
+                    nono, nona = (
+                        n[: n.find("</name>")],
+                        self.filename.split("/")[-1].split(".")[0],
+                    )
+                    if ".gpx" not in nono:
+                        line = line.replace(
+                            f"<name>{nono}</name>", f"<name>{nona}</name>"
+                        )
+
+                self.filecontent += line
+            else:
+                self.filecontent += point.npoint
+
             return point.npoint
 
         point.delete_tag("<extensions>")
