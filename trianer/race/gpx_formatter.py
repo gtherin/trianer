@@ -102,8 +102,8 @@ class Point:
 
     def get_formatted_point(self, debug=False):
         self.npoint = self.npoint.replace("\n", "").replace("\t", " ")
-        # if self.is_valid_gpx and debug:
-        print(self.npoint)
+        if self.is_valid_gpx and debug:
+            print(self.npoint)
         return self.npoint + "\n"
 
 
@@ -164,6 +164,7 @@ class GpxFormatter:
             point = self.apply_filter(point, filter)
 
         if not point.is_valid_gpx:
+            self.filecontent += point.npoint
             return point.npoint
 
         point.delete_tag("<extensions>")
