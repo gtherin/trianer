@@ -1,7 +1,7 @@
 import datetime
 import os
 import json
-import logging
+import math
 
 
 def get_default_datetime():
@@ -114,9 +114,6 @@ def get_diff_in_seconds(time1, time2):
     ).seconds
 
 
-import numpy as np
-
-
 class Dd:
     def __init__(self, band=0, debug=False) -> None:
         self.ddo = 0
@@ -130,7 +127,7 @@ class Dd:
             self.previous_used_altitude = altitude
         diff_altitude = altitude - self.previous_used_altitude
 
-        if np.abs(diff_altitude) < self.band:
+        if math.fabs(diff_altitude) < self.band:
             return
 
         if diff_altitude > 0:

@@ -5,21 +5,22 @@ import trianer
 # python -d pytest tests
 
 
-def test_gpx_raw():
-    trianer.race.gpx_formatter.GpxFormatter.clean_file(
-        "tests/Barden.gpx", [], debug=True
-    )
-    print("AAAAAAAAAAAAaa")
+def test_gpx_barden():
+    dfilename = (filename := "data/Barden.gpx").replace(".gpx", "_HR.gpx")
+    trianer.race.gpx_formatter.GpxFormatter.clean_file(filename, [], debug=True)
     # trianer.race.gpx_formatter.clean_files(filename="tests/anon_gpx.json")
-    with open("tests/Barden_HR.gpx", "r") as f:
+    with open(dfilename, "r") as f:
         lines = f.readlines()
         print(lines[:10])
 
+    os.system(f"rm -rf '{dfilename}'")
 
-def test_gpx_kiki():
+
+def test_gpx_am():
+    dfilename = (filename := "data/A Maniccia.gpx").replace(".gpx", "_HR.gpx")
     trianer.race.gpx_formatter.GpxFormatter.clean_files(
         filters={
-            "tests/A Maniccia.gpx": [
+            filename: [
                 {
                     "min_time": "09:20:05",
                     "max_time": "13:59:18",
@@ -35,24 +36,24 @@ def test_gpx_kiki():
         debug=True,
         remove_time=True,
     )
-    return
-    print("AAAAAAAAAAAAaa")
     # trianer.race.gpx_formatter.clean_files(filename="tests/anon_gpx.json")
-    with open("tests/A Maniccia_HR.gpx", "r") as f:
+    with open(dfilename, "r") as f:
         lines = f.readlines()
         print(lines[:10])
 
+    os.system(f"rm -rf '{dfilename}'")
+
 
 def test_gpx_mc():
-    trianer.race.gpx_formatter.GpxFormatter.clean_file(
-        "tests/Monte Cinto.gpx", [], debug=True
-    )
+    dfilename = (filename := "data/Monte Cinto.gpx").replace(".gpx", "_HR.gpx")
+    trianer.race.gpx_formatter.GpxFormatter.clean_file(filename, [], debug=True)
+    os.system(f"rm -rf '{dfilename}'")
 
 
 def test_gpx_gt():
-    trianer.race.gpx_formatter.GpxFormatter.clean_file(
-        "tests/Gorges du Tavignano.gpx", [], debug=True
-    )
+    dfilename = (filename := "data/Gorges du Tavignano.gpx").replace(".gpx", "_HR.gpx")
+    trianer.race.gpx_formatter.GpxFormatter.clean_file(filename, [], debug=True)
+    os.system(f"rm -rf '{dfilename}'")
 
 
 def test_dd_toy():
@@ -73,4 +74,4 @@ def test_dd_toy():
 # python -m pytest tests/test_gpx.py -k test_gpx_raw -s
 # python tests/test_gpx.py
 if __name__ == "__main__":
-    test_gpx_mc()
+    test_gpx_am()
