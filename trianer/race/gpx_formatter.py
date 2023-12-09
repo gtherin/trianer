@@ -114,12 +114,51 @@ def get_diff_in_seconds(time1, time2):
     ).seconds
 
 
+import numpy as np
+
+
+class Dd:
+    def __init__(self, band=0, debug=False) -> None:
+        self.ddo = 0
+        self.dup = 0
+        self.previous_used_altitude = -999
+        self.band = band
+        self.debug = debug
+
+    def update(self, altitude) -> None:
+        if self.previous_used_altitude == -999:
+            self.previous_used_altitude = altitude
+        diff_altitude = altitude - self.previous_used_altitude
+
+        if np.abs(diff_altitude) < self.band:
+            return
+
+        if diff_altitude > 0:
+            self.dup += diff_altitude
+        else:
+            self.ddo += diff_altitude
+
+        if self.debug:
+            print(
+                f"alt={altitude}, prev_alt={self.previous_used_altitude}, d+={self.dup}, d-={self.ddo}"
+            )
+
+        self.previous_used_altitude = altitude
+
+    def print(self) -> None:
+        print(
+            f"Denivelé total (band={self.band}): d+={self.dup:.0f}m d-={-self.ddo:.0f}m"
+        )
+
+
 class GpxFormatter:
     def __init__(self, filename, creator="GPS Track Editor"):
         self.filename = filename
         self.xml = None
         self.filecontent = ""
-        self.ddo, self.dup, self.palt = 0, 0, -999
+        self.dds = [Dd(band=band) for band in [0, 1, 2, 3, 5]]
+
+        self.dd = Dd()
 
         if self.exists():
             xml = open(self.filename, "r").read()
@@ -188,15 +227,9 @@ class GpxFormatter:
 
         # S'il n'y a pas d'extensions : (et commenter ligne au dessus
         point.update_altitude(point.altitude)
-        if self.palt == -999:
-            self.palt = point.altitude
-        dalt = point.altitude - self.palt
-        if dalt > 0:
-            self.dup += dalt
-        else:
-            self.ddo += dalt
 
-        self.palt = point.altitude
+        for dd in self.dds:
+            dd.update(point.altitude)
 
         self.filecontent += point.get_formatted_point(debug=debug)
 
@@ -215,7 +248,9 @@ class GpxFormatter:
                 p, filters, remove_time=remove_time, debug=debug and d < 10
             )
 
-        print(f"Denivelé total: d+={gpx_file.dup:.0f}m d-={-gpx_file.ddo:.0f}m")
+        for dd in gpx_file.dds:
+            dd.print()
+
         gpx_file.save()
 
     @staticmethod

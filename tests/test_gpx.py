@@ -43,7 +43,34 @@ def test_gpx_kiki():
         print(lines[:10])
 
 
+def test_gpx_mc():
+    trianer.race.gpx_formatter.GpxFormatter.clean_file(
+        "tests/Monte Cinto.gpx", [], debug=True
+    )
+
+
+def test_gpx_gt():
+    trianer.race.gpx_formatter.GpxFormatter.clean_file(
+        "tests/Gorges du Tavignano.gpx", [], debug=True
+    )
+
+
+def test_dd_toy():
+    import pandas as pd
+
+    d = pd.Series([1] * 20 + [-1] * 10 + [1] * 40).cumsum()
+
+    dds = [trianer.race.gpx_formatter.Dd(band=band) for band in [0, 1, 2, 3, 5]]
+
+    for a in d:
+        for dd in dds:
+            dd.update(a)
+
+    for dd in dds:
+        dd.print()
+
+
 # python -m pytest tests/test_gpx.py -k test_gpx_raw -s
 # python tests/test_gpx.py
 if __name__ == "__main__":
-    test_gpx_raw()
+    test_gpx_mc()
