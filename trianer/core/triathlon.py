@@ -10,8 +10,10 @@ from matplotlib.patches import Patch
 import matplotlib
 import time
 import sys
-import streamlit as st
-
+try:
+    import streamlit as st
+except:
+    st = None
 
 from ..race import weather
 from .. import nutrition
