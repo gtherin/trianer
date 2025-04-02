@@ -3,7 +3,10 @@ from .variable import Variable
 from .labels import Labels
 from ..race.races import available_races
 
-import streamlit as st
+try:
+    import streamlit as st
+except:
+    st = None
 
 svariables = [
     # Performances
