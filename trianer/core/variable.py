@@ -1,9 +1,12 @@
 import datetime
 import copy
 from .labels import *
-import streamlit as st
 import datetime
 import os
+try:
+    import streamlit as st
+except:
+    st = None
 
 
 class Variable:
